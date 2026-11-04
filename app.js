@@ -22,8 +22,17 @@ function showDatabaseError(message){$('#databaseMessage').textContent=message;$(
 async function requestDatabase(body){const response=await fetch('api.php',{method:body?'PUT':'GET',credentials:'same-origin',cache:'no-store',headers:body?{'Content-Type':'application/json','X-CSRF-Token':csrfToken}:{},body:body?JSON.stringify(body):undefined});let result;try{result=await response.json()}catch{throw new Error('This app needs a PHP server. Open it through PHP or MAMP, rather than a static file server.')}if(!response.ok)throw new Error(result.error||'Could not save the family data.');return result}
 let personAliases={};
 function applyShared(result){personAliases=Object.fromEntries((result.personAliases||[]).map(row=>[row.old_id,row.person_id]));const resolve=id=>personAliases[id]||id;data.visible=data.visible.map(resolve);data.expanded=data.expanded.map(resolve);data.root=resolve(data.root);data.selected=resolve(data.selected);data.people=result.people;data.links=result.links;data.milestones=result.milestones||[];data.email=result.email;sharedRevision=result.revision;csrfToken=result.csrf;data.visible=data.visible.filter(id=>person(id));data.expanded=data.expanded.filter(id=>person(id));if(!person(data.selected))data.selected=null;if(!person(data.root))data.root=null;save()}
-async function saveShared(){if(!sharedReady||savingShared){notify('Please wait for the database connection.');return false}savingShared=true;syncStatus('● Saving to MySQL…');$('#editor').inert=true;$('#details').inert=true;$('#familyForm').inert=true;$('#milestoneForm').inert=true;$('#timeline').inert=true;try{const result=await requestDatabase(sharedPayload('save'));applyShared(result);syncStatus('● Saved to MySQL');$('#setupNotice').hidden=true;save();return true}catch(error){showDatabaseError(error.message);notify('Changes were not saved. '+error.message);return false}finally{savingShared=false;$('#editor').inert=false;$('#details').inert=false;$('#familyForm').inert=false;$('#milestoneForm').inert=false;$('#timeline').inert=false}}
-async function refreshShared(){if(!sharedReady||savingShared||!$('#editor').hidden||$('#familyDialog').open||!$('#relationships').hidden||$('#milestoneDialog').open||$('#photoLightbox').open||document.activeElement?.matches('input,textarea,select'))return;try{const result=await requestDatabase();if(result.revision!==sharedRevision){applyShared(result);render();if(!$('#timeline').hidden)renderTimeline()}syncStatus('● Saved to MySQL');$('#databaseNotice').hidden=true}catch(error){showDatabaseError(error.message)}}
+function ancestryCyclePerson(people,links){
+ const children=new Map(people.map(p=>[p.id,[]])),state=new Map();
+ for(const link of links){const parent=link.type==='parent'?link.b:link.type==='child'?link.a:null,child=link.type==='parent'?link.a:link.b;if(parent!==null&&children.has(parent)&&children.has(child))children.get(parent).push(child)}
+ for(const root of children.keys()){
+  if(state.has(root))continue;state.set(root,1);const stack=[{id:root,next:0}];
+  while(stack.length){const frame=stack.at(-1),descendants=children.get(frame.id);if(frame.next>=descendants.length){state.set(frame.id,2);stack.pop();continue}const child=descendants[frame.next++];if(state.get(child)===1)return child;if(!state.has(child)){state.set(child,1);stack.push({id:child,next:0})}}
+ }
+ return null;
+}
+async function saveShared(){const cycle=ancestryCyclePerson(data.people,data.links);if(cycle!==null){const message=`These connections would make ${displayName(person(cycle))} their own ancestor. Correct the parent/child relationships and try again.`;notify(message);if(!$('#editor').hidden)$('#formError').textContent=message;if($('#familyDialog').open)$('#familyError').textContent=message;return false}if(!sharedReady||savingShared){notify('Please wait for the database connection.');return false}savingShared=true;syncStatus('● Saving to MySQL…');$('#editor').inert=true;$('#details').inert=true;$('#familyForm').inert=true;$('#milestoneForm').inert=true;$('#timeline').inert=true;try{const result=await requestDatabase(sharedPayload('save'));applyShared(result);syncStatus('● Saved to MySQL');$('#setupNotice').hidden=true;save();return true}catch(error){showDatabaseError(error.message);notify('Changes were not saved. '+error.message);return false}finally{savingShared=false;$('#editor').inert=false;$('#details').inert=false;$('#familyForm').inert=false;$('#milestoneForm').inert=false;$('#timeline').inert=false}}
+async function refreshShared(){if(!sharedReady||savingShared||!$('#editor').hidden||$('#familyDialog').open||!$('#relationships').hidden||$('#milestoneDialog').open||$('#photoLightbox').open||$('#siblingGroupDialog').open||document.activeElement?.matches('input,textarea,select'))return;try{const result=await requestDatabase();if(result.revision!==sharedRevision){applyShared(result);render();if(!$('#timeline').hidden)renderTimeline()}syncStatus('● Saved to MySQL');$('#databaseNotice').hidden=true}catch(error){showDatabaseError(error.message)}}
 async function connectDatabase(){for(const el of document.querySelectorAll('main'))el.inert=true;syncStatus('● Connecting to MySQL…');try{let result=await requestDatabase();csrfToken=result.csrf;if(result.revision===0&&hadBrowserData)result=await requestDatabase(sharedPayload('bootstrap'));applyShared(result);sharedReady=true;$('#setupNotice').hidden=result.revision!==0;$('#databaseNotice').hidden=true;syncStatus('● Saved to MySQL');edit();showSection(savedSection());if(data.root)$('#search').value=(person(data.root)?displayName(person(data.root)):'');openSharedLink()}catch(error){showDatabaseError(error.message+' Your browser’s previous data is still preserved.')}finally{for(const el of document.querySelectorAll('main'))el.inert=!sharedReady}}
 
 function connections(id){const out=[];for(const l of data.links){if(l.a===id)out.push({id:l.b,type:l.type});else if(l.b===id)out.push({id:l.a,type:inverse[l.type]});}const parents=out.filter(c=>c.type==='parent').map(c=>c.id);for(const par of parents){for(const c of connectionsDirect(par)){if(c.type==='child'&&c.id!==id&&!out.some(o=>o.id===c.id))out.push({id:c.id,type:'sibling'});}}return out.filter(c=>person(c.id))}function connectionsDirect(id){return data.links.flatMap(l=>l.a===id?[{id:l.b,type:l.type}]:l.b===id?[{id:l.a,type:inverse[l.type]}]:[])}
@@ -82,6 +91,13 @@ function relationshipPathLines(layout){
   const route={group,points};highlights.push(`<path class="relationship-highlight" d="${connectorPath(route,normal)}" fill="none" stroke="#b47528" stroke-width="4" stroke-linejoin="round" ${edge.type==='sibling'?'stroke-dasharray="5 5"':''}/>`);
  }return highlights.join('');
 }
+function showSelectedPersonPath(id){
+ const result=findRelationship(data.root,id);
+ if(!result){notify('No connecting path is recorded for these people.');return}
+ relationshipTrace=result;
+ data.visible=[...new Set([...data.visible,...result.ids])];
+ data.selected=id;save();render();fitGraph();
+}
 function clearRelationshipPath(){relationshipTrace=null;$('#relationshipBanner').hidden=true;render()}
 function showRelationshipPath(result){
  if(!result)return;relationshipTrace=result;data.root=result.from;data.visible=[...result.ids];data.expanded=[];$('#search').value=person(result.from).name;
@@ -103,7 +119,7 @@ function collapseBranch(id){
  relationshipTrace=null;
  if(!data.expanded.includes(id))return;data.expanded=data.expanded.filter(personId=>personId!==id);data.visible=visibleFromExpanded(data.root,data.expanded);data.expanded=data.expanded.filter(personId=>data.visible.includes(personId));if(!data.visible.includes(data.selected))data.selected=data.root;save();render();notify('Branch collapsed. Shared connections stay visible.');
 }
-function expand(id){if(!person(id))return;data.selected=id;if(!data.visible.includes(id))data.visible.push(id);for(const c of connections(id))if(!data.visible.includes(c.id))data.visible.push(c.id);if(!data.expanded.includes(id))data.expanded.push(id);save();render({expanding:true,centerId:id})}
+function expand(id){if(!person(id))return;const relatives=connections(id);relationshipTrace=relatives.length?{from:id,to:id,immediate:true,ids:[id,...relatives.map(c=>c.id)],edges:relatives.map(c=>({from:id,to:c.id,type:c.type})),label:'Immediate family'}:null;data.selected=id;if(!data.visible.includes(id))data.visible.push(id);for(const c of connections(id))if(!data.visible.includes(c.id))data.visible.push(c.id);if(relationshipTrace)for(const pathId of relationshipTrace.ids)if(!data.visible.includes(pathId))data.visible.push(pathId);if(!data.expanded.includes(id))data.expanded.push(id);save();render({expanding:true,centerId:id})}
 function start(id){rememberSection('tree');$('#relationships').hidden=true;$('#openRelationshipFinder').classList.remove('active');$('#timeline').hidden=true;$('#editor').hidden=true;$('#explore').hidden=false;$('#treeTab').classList.add('active');$('#peopleTab').classList.remove('active');$('#timelineTab').classList.remove('active');relationshipTrace=null;data.visible=[];data.expanded=[];data.root=id;closeSearch();$('#search').value=displayName(person(id));expand(id)}
 const familyColors={parent:'#d6b345',child:'#b58bdd',sibling:'#2a9ca5',spouse:'#e7794e',self:'#8b78c5'};
 let graphScale=1, graphLayout=null, renderedRoot=null, cameraPadded=false;
@@ -277,8 +293,8 @@ function animateFamilyLines(previousLines){
 animateFamilyLines.serial=0;
 function render({expanding=false,centerId=null}={}){
  if(relationshipTrace?.ids.some(id=>!person(id)))relationshipTrace=null;
- $('#canvas').classList.toggle('showing-relationship',!!relationshipTrace);$('#relationshipBanner').hidden=!relationshipTrace;
- if(relationshipTrace){$('#relationshipSummary').textContent=`${displayName(person(relationshipTrace.from))} → ${displayName(person(relationshipTrace.to))} · ${relationshipTrace.label}`;}
+ $('#canvas').classList.toggle('showing-relationship',!!relationshipTrace&&!relationshipTrace.immediate);$('#relationshipBanner').hidden=!relationshipTrace||!!relationshipTrace.immediate;
+ if(relationshipTrace){$('#relationshipSummary').textContent=relationshipTrace.immediate?`${displayName(person(relationshipTrace.from))} · Immediate family`:`${displayName(person(relationshipTrace.from))} → ${displayName(person(relationshipTrace.to))} · ${relationshipTrace.label}`;}
  const oldRoot=renderedRoot,oldLayout=graphLayout,oldTransform=getComputedStyle($('#scene')).transform;
  const focusedCard=document.activeElement?.closest('.node')?.dataset.id;
  const oldNodes=new Map([...document.querySelectorAll('.node')].map(node=>[node.dataset.id,node]));
@@ -294,7 +310,7 @@ function render({expanding=false,centerId=null}={}){
   // Reuse cards to keep focus and avoid replaying entrances when selection changes.
   const currentMatrix=existing?new DOMMatrixReadOnly(getComputedStyle(node).transform):null;
   const before=existing?{x:parseFloat(node.style.left)+currentMatrix.e+node.offsetWidth/2,y:parseFloat(node.style.top)+currentMatrix.f+node.offsetHeight/2}:null;
-  node.className=`node ${id===data.selected?'selected':''} ${isRoot?'root-node':''} ${relationshipTrace?(relationshipTrace.ids.includes(id)?'path-member':'path-muted'):''}`;node.dataset.id=id;node.style.left=pos.x+'px';node.style.top=pos.y+'px';node.style.setProperty('--bubble',familyColors[kind]);node.setAttribute('aria-label',`${displayName(p)}, ${relation}. Reveal connections`);
+  node.className=`node ${id===data.selected?'selected':''} ${isRoot?'root-node':''} ${relationshipTrace&&!relationshipTrace.immediate?(relationshipTrace.ids.includes(id)?'path-member':'path-muted'):''}`;node.dataset.id=id;node.style.left=pos.x+'px';node.style.top=pos.y+'px';node.style.setProperty('--bubble',familyColors[kind]);node.setAttribute('aria-label',`${displayName(p)}, ${relation}. Reveal connections`);
   const contents=`${avatar(p)}<strong>${esc(displayName(p))}</strong><small>${relation}</small>`;if(node.innerHTML!==contents)node.innerHTML=contents;
   node.onclick=()=>expand(id);node.ondblclick=()=>centerPerson(id);node.title='Click to reveal immediate family and center';fragment.append(node);
   for(const animation of node.getAnimations())animation.cancel();
@@ -317,14 +333,30 @@ function render({expanding=false,centerId=null}={}){
  }
  renderedRoot=root;renderDetails()
 }
-function renderDetails(){renderDetailsContent()}
-function renderDetailsContent(){const p=person(data.selected);if(!p){renderSuggestions();return}$('#details').innerHTML=`<p class="eyebrow">A CLOSER LOOK</p>${avatar(p)}<h2>${esc(p.name)}</h2><p class="label-context">Tree labels are relative to this person.</p><div class="person-view-actions"><button id="sharePerson">Copy person link</button><button id="centerSelected">◎ Center person</button><button id="collapseSelected" ${data.expanded.includes(p.id)?'':'disabled'}>− Collapse branch</button></div><p>${esc(p.bio||'Their story is waiting to be told.')}</p>${p.birthday?`<p>Birthday · ${esc(p.birthday)}</p>`:''}${p.location?`<p>⌖ ${esc(p.location)}</p>`:''}<h3>Add to ${esc(p.name.split(/\s+/)[0])}’s family</h3><div class="quick-add">${["parent","sibling","spouse","child"].map(type=>`<button data-add-family="${type}">＋ Add ${type}</button>`).join("")}</div><h3>Family connections</h3>${connections(p.id).map(c=>`<button class="connection" data-id="${c.id}">${esc(person(c.id).name)} <span>· ${c.type}</span></button>`).join('')||'<p>No connections added yet.</p>'}<button id="editSelected">Edit person ↗</button>`;document.querySelectorAll('.connection').forEach(b=>b.onclick=()=>expand(b.dataset.id));$('#editSelected').onclick=()=>{tab(true);edit(p.id)};$('#sharePerson').onclick=()=>copyDirectLink({person:p.id});$('#centerSelected').onclick=()=>centerPerson(p.id);$('#collapseSelected').onclick=()=>collapseBranch(p.id);document.querySelectorAll('[data-add-family]').forEach(b=>b.onclick=()=>openFamilyDialog(p.id,b.dataset.addFamily))}
+function renderDetails(){
+ renderDetailsContent();
+ if(relationshipTrace&&!relationshipTrace.immediate&&data.selected===relationshipTrace.to){
+  const path=document.createElement('div');path.className='selected-person-path';
+  path.innerHTML=`<h3>Path from ${esc(displayName(person(relationshipTrace.from)))}</h3><p>${esc(relationshipTrace.label)}</p><ol>${relationshipTrace.ids.map((id,i)=>`<li>${i?`<small>${esc(relationshipTrace.edges[i-1].type)} → </small>`:''}${esc(displayName(person(id)))}</li>`).join('')}</ol>`;
+  $('#details').append(path);
+ }
+}
+function renderDetailsContent(){const p=person(data.selected);if(!p){renderSuggestions();return}$('#details').innerHTML=`<p class="eyebrow">A CLOSER LOOK</p>${avatar(p)}<h2>${esc(p.name)}</h2><p class="label-context">Tree labels are relative to this person.</p><div class="person-view-actions"><button id="sharePerson">Copy person link</button><button id="traceSelected" ${!data.root||data.root===p.id?'hidden':''}>Show path from starting person</button><button id="centerSelected">◎ Center person</button><button id="collapseSelected" ${data.expanded.includes(p.id)?'':'disabled'}>− Collapse branch</button></div><p>${esc(p.bio||'Their story is waiting to be told.')}</p>${p.birthday?`<p>Birthday · ${esc(p.birthday)}</p>`:''}${p.location?`<p>⌖ ${esc(p.location)}</p>`:''}<h3>Add to ${esc(p.name.split(/\s+/)[0])}’s family</h3><div class="quick-add">${["parent","sibling","spouse","child"].map(type=>`<button data-add-family="${type}">＋ Add ${type}</button>`).join("")}</div><h3>Family connections</h3>${connections(p.id).map(c=>`<button class="connection" data-id="${c.id}">${esc(person(c.id).name)} <span>· ${c.type}</span></button>`).join('')||'<p>No connections added yet.</p>'}<button id="editSelected">Edit person ↗</button>`;document.querySelectorAll('.connection').forEach(b=>b.onclick=()=>expand(b.dataset.id));$('#editSelected').onclick=()=>{tab(true);edit(p.id)};$('#traceSelected').onclick=()=>showSelectedPersonPath(p.id);$('#sharePerson').onclick=()=>copyDirectLink({person:p.id});$('#centerSelected').onclick=()=>centerPerson(p.id);$('#collapseSelected').onclick=()=>collapseBranch(p.id);document.querySelectorAll('[data-add-family]').forEach(b=>b.onclick=()=>openFamilyDialog(p.id,b.dataset.addFamily))}
 let suggestedPeople=[];
 function renderSuggestions(reshuffle=false){
- if(reshuffle||!suggestedPeople.length||suggestedPeople.some(id=>!person(id))){const ids=data.people.map(p=>p.id);for(let i=ids.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[ids[i],ids[j]]=[ids[j],ids[i]]}suggestedPeople=ids.slice(0,9)}
+ if(reshuffle||!suggestedPeople.length||suggestedPeople.some(id=>!person(id))){const ids=data.people.map(p=>p.id);for(let i=ids.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[ids[i],ids[j]]=[ids[j],ids[i]]}suggestedPeople=ids.slice(0,14)}
  $('#details').innerHTML='<p class="eyebrow">A CLOSER LOOK</p><div class="sidebar-welcome"><div class="welcome-heart" aria-hidden="true">♡</div><h2>Meet your people.</h2><p>Select a person to see their story and family connections.</p></div>';
- $('#emptySuggestions').innerHTML=`<div class="suggested-people">${suggestedPeople.map(id=>{const p=person(id);return `<button data-suggested="${id}">${avatar(p)}<span>${esc(displayName(p))}</span><span aria-hidden="true">↗</span></button>`}).join('')||'<p>Add a person to begin your family tree.</p>'}</div>${data.people.length?'<button id="shufflePeople">↻ Show other people</button>':''}`;
- document.querySelectorAll('[data-suggested]').forEach(button=>button.onclick=()=>start(button.dataset.suggested));if($('#shufflePeople'))$('#shufflePeople').onclick=()=>renderSuggestions(true);
+ $('#emptySuggestions').innerHTML=`<div class="suggested-people">${suggestedPeople.map(id=>{const p=person(id);return `<button data-suggested="${id}">${avatar(p)}<span>${esc(displayName(p))}</span><span aria-hidden="true">↗</span></button>`}).join('')||'<p>Add a person to begin your family tree.</p>'}<div class="suggestion-search"><input id="suggestionSearch" type="search" placeholder="Find someone else…" aria-label="Find someone in the family" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="suggestionMatches" autocomplete="off"><div id="suggestionMatches" role="listbox" hidden></div></div></div>${data.people.length?'<button id="shufflePeople">↻ Show other people</button>':''}`;
+ document.querySelectorAll('[data-suggested]').forEach(button=>button.onclick=()=>start(button.dataset.suggested));if($('#shufflePeople'))$('#shufflePeople').onclick=()=>renderSuggestions(true);setupSuggestionSearch();
+}
+function setupSuggestionSearch(){
+ const input=$('#suggestionSearch'),list=$('#suggestionMatches');let matches=[],active=-1;
+ function close(){list.hidden=true;active=-1;input.setAttribute('aria-expanded','false');input.removeAttribute('aria-activedescendant')}
+ function highlight(){[...list.querySelectorAll('button')].forEach((button,i)=>{button.classList.toggle('search-active',i===active);button.setAttribute('aria-selected',String(i===active))});if(active>=0){input.setAttribute('aria-activedescendant','suggestion-match-'+active);list.children[active]?.scrollIntoView({block:'nearest'})}}
+ function search(){const query=input.value.trim().toLocaleLowerCase();active=-1;input.removeAttribute('aria-activedescendant');if(!query){matches=[];close();return}matches=data.people.filter(p=>p.name.toLocaleLowerCase().includes(query)||displayName(p).toLocaleLowerCase().includes(query)).sort((a,b)=>a.name.localeCompare(b.name)).slice(0,10);list.innerHTML=matches.map((p,i)=>`<button type="button" role="option" id="suggestion-match-${i}" aria-selected="false">${esc(displayName(p))}</button>`).join('')||'<p>No matching people.</p>';list.hidden=false;input.setAttribute('aria-expanded','true');list.querySelectorAll('button').forEach((button,i)=>button.onclick=()=>start(matches[i].id))}
+ input.oninput=search;input.onfocus=search;
+ input.onkeydown=event=>{if(event.isComposing)return;if(event.key==='ArrowDown'||event.key==='ArrowUp'){event.preventDefault();if(list.hidden)search();if(matches.length&&!list.hidden){active=active<0?(event.key==='ArrowDown'?0:matches.length-1):(active+(event.key==='ArrowDown'?1:-1)+matches.length)%matches.length;highlight()}}else if(event.key==='Enter'){event.preventDefault();if(!list.hidden&&matches.length)start(matches[Math.max(0,active)].id)}else if(event.key==='Escape'||event.key==='Tab')close()};
+ input.parentElement.onfocusout=event=>{if(!event.currentTarget.contains(event.relatedTarget))close()};
 }
 function similarity(a,b){a=a.toLowerCase();b=b.toLowerCase();if(a.includes(b)||b.includes(a))return 0;let row=Array.from({length:b.length+1},(_,i)=>i);for(let i=1;i<=a.length;i++){let next=[i];for(let j=1;j<=b.length;j++)next[j]=Math.min(next[j-1]+1,row[j]+1,row[j-1]+(a[i-1]!==b[j-1]));row=next}return row[b.length]/Math.max(a.length,b.length)}
 let activeSearchIndex=-1;
@@ -463,7 +495,12 @@ $('#timelineTab').onclick=()=>showSection('timeline');
 $('#addBirthdays').onclick=()=>{tab(true);const missing=data.people.find(p=>!p.birthday);edit(missing?.id);$('#birthday').focus()};
 
 function directory(){
- $('#peopleList').innerHTML=`<h3>${data.people.length} people</h3><label for="directorySearch">Find a person to edit</label><input id="directorySearch" type="search" placeholder="Search by name…" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="directoryMatches"><div id="directoryMatches" role="listbox" hidden></div>`;
+ const connected=new Set(data.links.flatMap(link=>[link.a,link.b]));
+ const noConnections=data.people.filter(p=>!connected.has(p.id)).sort((a,b)=>a.name.localeCompare(b.name));
+ const noBirthdays=data.people.filter(p=>!p.birthday).sort((a,b)=>a.name.localeCompare(b.name));
+ const missingSection=(title,people,kind)=>`<section class="directory-missing"><h3>${title} <span>${people.length}</span></h3><div class="directory-missing-list">${people.map(p=>`<button type="button" data-missing-person="${esc(p.id)}" data-missing-kind="${kind}">${esc(displayName(p))} ↗</button>`).join('')||'<p>Everyone is up to date.</p>'}</div></section>`;
+ $('#peopleList').innerHTML=`<h3>${data.people.length} people</h3><label for="directorySearch">Find a person to edit</label><input id="directorySearch" type="search" placeholder="Search by name…" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="directoryMatches"><div id="directoryMatches" role="listbox" hidden></div>${missingSection('No connections',noConnections,'connections')}${missingSection('No birthday',noBirthdays,'birthday')}`;
+ $('#peopleList').querySelectorAll('[data-missing-person]').forEach(button=>button.onclick=()=>{edit(button.dataset.missingPerson);if(button.dataset.missingKind==='birthday')$('#birthday').focus({preventScroll:true})});
  const input=$('#directorySearch'),list=$('#directoryMatches');let matches=[],active=-1;
  function close(){list.hidden=true;input.setAttribute('aria-expanded','false');input.removeAttribute('aria-activedescendant');active=-1}
  function select(p){edit(p.id);input.value=displayName(p);close()}
@@ -473,10 +510,24 @@ function directory(){
  $('#peopleList').onfocusout=event=>{if(!event.currentTarget.contains(event.relatedTarget))close()};$('#requestEmail').value=data.email;
 }
 
-function relationRow(value={}){const row=document.createElement('div');row.className='relation-row';row.innerHTML=`<select aria-label="Family member"><option value="">Choose person</option>${data.people.filter(p=>p.id!==$('#personId').value).map(p=>`<option value="${p.id}" ${p.id===value.id?'selected':''}>${esc(displayName(p))}</option>`).join('')}</select><span class="relation-phrase">is their</span><select aria-label="Relationship">${['parent','child','sibling','spouse'].map(t=>`<option ${value.type===t?'selected':''}>${t}</option>`).join('')}</select><button type="button" aria-label="Remove connection">×</button>`;row.querySelector('button').onclick=()=>row.remove();$('#relations').append(row)}
+let relationPickerSerial=0;
+function relationRow(value={}){
+ const row=document.createElement('div');row.className='relation-row';const pickerId='relation-picker-'+(++relationPickerSerial);
+ row.innerHTML=`<div class="relation-person-picker"><input type="hidden" class="relation-person-id" value="${esc(value.id||'')}"><input class="relation-person-search" aria-label="Family member" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="${pickerId}" autocomplete="off" placeholder="Search for a person…" value="${esc(person(value.id)?displayName(person(value.id)):'')}"><div id="${pickerId}" class="relation-person-matches" role="listbox" hidden></div></div><span class="relation-phrase">is their</span><select aria-label="Relationship">${['parent','child','sibling','spouse'].map(t=>`<option ${value.type===t?'selected':''}>${t}</option>`).join('')}</select><button type="button" class="remove-relation" aria-label="Remove connection">×</button>`;
+ const input=row.querySelector('.relation-person-search'),hidden=row.querySelector('.relation-person-id'),list=row.querySelector('[role="listbox"]');let matches=[],active=-1;
+ function close(){list.hidden=true;active=-1;input.setAttribute('aria-expanded','false');input.removeAttribute('aria-activedescendant')}
+ function choose(p){hidden.value=p.id;input.value=displayName(p);input.setCustomValidity('');close();input.focus()}
+ function highlight(){[...list.querySelectorAll('button')].forEach((button,i)=>{button.classList.toggle('search-active',i===active);button.setAttribute('aria-selected',String(i===active))});if(active>=0){input.setAttribute('aria-activedescendant',pickerId+'-'+active);list.children[active]?.scrollIntoView({block:'nearest'})}}
+ function search(){const query=input.value.trim().toLocaleLowerCase();if(!query){matches=[];close();return}active=-1;input.removeAttribute('aria-activedescendant');matches=data.people.filter(p=>p.id!==$('#personId').value&&(p.name.toLocaleLowerCase().includes(query)||displayName(p).toLocaleLowerCase().includes(query))).sort((a,b)=>a.name.localeCompare(b.name));list.innerHTML=matches.map((p,i)=>`<button type="button" id="${pickerId}-${i}" role="option" aria-selected="false">${esc(displayName(p))}</button>`).join('')||'<p>No matching people.</p>';list.hidden=false;input.setAttribute('aria-expanded','true');list.querySelectorAll('button').forEach((button,i)=>button.onclick=()=>choose(matches[i]))}
+ input.oninput=()=>{hidden.value='';input.setCustomValidity(input.value.trim()?'Select a person from the matches.':'');search()};
+ input.onfocus=()=>{if(!hidden.value)search()};
+ input.onkeydown=event=>{if(event.isComposing)return;if(event.key==='ArrowDown'||event.key==='ArrowUp'){event.preventDefault();if(list.hidden)search();if(matches.length&&!list.hidden){active=active<0?(event.key==='ArrowDown'?0:matches.length-1):(active+(event.key==='ArrowDown'?1:-1)+matches.length)%matches.length;highlight()}}else if(event.key==='Enter'&&!list.hidden){event.preventDefault();if(matches.length)choose(matches[Math.max(0,active)])}else if(event.key==='Escape'&&!list.hidden){event.preventDefault();event.stopPropagation();close()}else if(event.key==='Tab')close()};
+ row.querySelector('.relation-person-picker').onfocusout=event=>{if(!event.currentTarget.contains(event.relatedTarget))close()};row.querySelector('.remove-relation').onclick=()=>row.remove();$('#relations').append(row);
+}
+
 let droppedPortraitFile=null,portraitPreviewVersion=0;
 function edit(id){droppedPortraitFile=null;portraitPreviewVersion++;const p=person(id);$('#personForm').reset();$('#personId').value=p?.id||'';$('#formTitle').textContent=p?'Edit '+displayName(p):'Add a person';for(const field of ['firstName','middleName','lastName','bio','birthday','location'])$('#'+field).value=(field.endsWith('Name')?nameParts(p)[field]:p?.[field])||'';draftPhoto=p?.photo||'';$('#personPhotoPreview').innerHTML=draftPhoto?`<img src="${esc(draftPhoto)}" alt="Portrait preview">`:'';$('#relations').innerHTML='';if(p)connectionsDirect(id).forEach(relationRow);$('#delete').hidden=!p;$('#formError').textContent=''}
-$('#personForm').onsubmit=async event=>{event.preventDefault();const firstName=$('#firstName').value.trim(),middleName=$('#middleName').value.trim(),lastName=$('#lastName').value.trim(),name=[firstName,middleName,lastName].filter(Boolean).join(' ');if(!name){$('#formError').textContent='Please enter a name.';return}const id=$('#personId').value||crypto.randomUUID();let photo=draftPhoto;const file=droppedPortraitFile||$('#photo').files[0];if(file){try{photo=await resizePhoto(file)}catch{$('#formError').textContent='Please choose a valid image.';return}}const p={id,name,firstName,middleName,lastName,photo,bio:$('#bio').value.trim(),birthday:$('#birthday').value,location:$('#location').value.trim()};const links=[];const seen=new Set();for(const row of document.querySelectorAll('.relation-row')){const [who,type]=row.querySelectorAll('select');if(!who.value)continue;if(seen.has(who.value)){$('#formError').textContent='Choose each family member only once.';return}seen.add(who.value);links.push({a:id,b:who.value,type:type.value})}const previous=JSON.stringify(data);data.people=data.people.filter(p=>p.id!==id).concat(p);data.links=data.links.filter(l=>l.a!==id&&l.b!==id).concat(links);if(!await saveShared()){data=JSON.parse(previous);return}directory();edit(id);render();notify('Person saved to MySQL')};
+$('#personForm').onsubmit=async event=>{event.preventDefault();const firstName=$('#firstName').value.trim(),middleName=$('#middleName').value.trim(),lastName=$('#lastName').value.trim(),name=[firstName,middleName,lastName].filter(Boolean).join(' ');if(!name){$('#formError').textContent='Please enter a name.';return}const id=$('#personId').value||crypto.randomUUID();let photo=draftPhoto;const file=droppedPortraitFile||$('#photo').files[0];if(file){try{photo=await resizePhoto(file)}catch{$('#formError').textContent='Please choose a valid image.';return}}const p={id,name,firstName,middleName,lastName,photo,bio:$('#bio').value.trim(),birthday:$('#birthday').value,location:$('#location').value.trim()};const links=[];const seen=new Set();for(const row of document.querySelectorAll('.relation-row')){const who=row.querySelector('.relation-person-id'),type=row.querySelector('select');if(!who.value)continue;if(seen.has(who.value)){$('#formError').textContent='Choose each family member only once.';return}seen.add(who.value);links.push({a:id,b:who.value,type:type.value})}const previous=JSON.stringify(data);data.people=data.people.filter(p=>p.id!==id).concat(p);data.links=data.links.filter(l=>l.a!==id&&l.b!==id).concat(links);if(!await saveShared()){data=JSON.parse(previous);return}directory();edit(id);render();notify('Person saved to MySQL')};
 function resizePhoto(file,maxDimension=320){return new Promise((resolve,reject)=>{const img=new Image(),url=URL.createObjectURL(file);img.onload=()=>{const canvas=document.createElement('canvas');const ratio=Math.min(1,maxDimension/Math.max(img.width,img.height));canvas.width=img.width*ratio;canvas.height=img.height*ratio;canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);URL.revokeObjectURL(url);resolve(canvas.toDataURL('image/jpeg',.8))};img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('Could not open this image. Choose a JPEG, PNG, or WebP photo.'))};img.src=url})}
 async function previewPortrait(file){
  const version=++portraitPreviewVersion;if(!file)return;
@@ -646,3 +697,52 @@ function restoreTimelinePosition(){
 window.addEventListener('scroll',()=>{if(timelinePositionFrame)return;timelinePositionFrame=requestAnimationFrame(()=>{timelinePositionFrame=0;saveTimelinePosition()})},{passive:true});
 window.addEventListener('pagehide',saveTimelinePosition);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)saveTimelinePosition()});
+
+// Sibling groups create ordinary reciprocal relationships, usable by every browser.
+function siblingGroupChanges(ids){
+ const unique=[...new Set(ids)],links=[],conflicts=[];
+ for(let i=0;i<unique.length;i++)for(let j=i+1;j<unique.length;j++){
+  const a=unique[i],b=unique[j],existing=data.links.find(link=>(link.a===a&&link.b===b)||(link.a===b&&link.b===a));
+  if(existing){if(existing.type!=='sibling')conflicts.push({a,b,type:existing.type});continue}
+  links.push({a,b,type:'sibling'});
+ }
+ return {links,conflicts};
+}
+let siblingGroupIds=[],siblingGroupBusy=false;
+function refreshSiblingGroupTags(){
+ $('#siblingGroupTags').innerHTML=siblingGroupIds.map(id=>`<button type="button" data-remove-sibling="${esc(id)}" aria-label="Remove ${esc(displayName(person(id)))}">${esc(displayName(person(id)))} ×</button>`).join('');
+ document.querySelectorAll('[data-remove-sibling]').forEach(button=>button.onclick=()=>{siblingGroupIds=siblingGroupIds.filter(id=>id!==button.dataset.removeSibling);refreshSiblingGroupTags();$('#siblingGroupSearch').focus()});
+ const changes=siblingGroupChanges(siblingGroupIds);
+ $('#siblingGroupSummary').textContent=`${siblingGroupIds.length} people selected · ${changes.links.length} new sibling connections`;
+ $('#siblingGroupError').textContent=changes.conflicts.length?'These people already have a different relationship: '+changes.conflicts.map(c=>displayName(person(c.a))+' and '+displayName(person(c.b))+' ('+c.type+')').join('; ')+'. Remove them from this group or correct their relationship first.':'';
+ $('#saveSiblingGroup').disabled=siblingGroupIds.length<2||changes.conflicts.length>0;
+}
+function setupSiblingGroupSearch(){
+ const input=$('#siblingGroupSearch'),list=$('#siblingGroupMatches');let matches=[],active=-1;
+ function close(){list.hidden=true;active=-1;input.setAttribute('aria-expanded','false');input.removeAttribute('aria-activedescendant')}
+ function choose(id){if(!siblingGroupIds.includes(id))siblingGroupIds.push(id);refreshSiblingGroupTags();input.focus();search()}
+ function highlight(){[...list.querySelectorAll('button')].forEach((button,i)=>{button.classList.toggle('search-active',i===active);button.setAttribute('aria-selected',String(i===active))});if(active>=0){input.setAttribute('aria-activedescendant','sibling-match-'+active);list.children[active]?.scrollIntoView({block:'nearest'})}}
+ function search(){const query=input.value.trim().toLocaleLowerCase();active=-1;input.removeAttribute('aria-activedescendant');if(!query){close();return}matches=data.people.filter(p=>!siblingGroupIds.includes(p.id)&&(p.name.toLocaleLowerCase().includes(query)||displayName(p).toLocaleLowerCase().includes(query))).sort((a,b)=>a.name.localeCompare(b.name)).slice(0,12);list.innerHTML=matches.map((p,i)=>`<button type="button" role="option" aria-selected="false" id="sibling-match-${i}">${esc(displayName(p))}</button>`).join('')||'<p>No matching people.</p>';list.hidden=false;input.setAttribute('aria-expanded','true');list.querySelectorAll('button').forEach((button,i)=>button.onclick=()=>choose(matches[i].id))}
+ input.oninput=search;input.onfocus=search;input.onkeydown=event=>{if(event.isComposing)return;if(event.key==='ArrowDown'||event.key==='ArrowUp'){event.preventDefault();if(list.hidden)search();if(matches.length&&!list.hidden){active=active<0?(event.key==='ArrowDown'?0:matches.length-1):(active+(event.key==='ArrowDown'?1:-1)+matches.length)%matches.length;highlight()}}else if(event.key==='Enter'){event.preventDefault();if(!list.hidden&&matches.length)choose(matches[Math.max(0,active)].id)}else if(event.key==='Escape'&&!list.hidden){event.preventDefault();event.stopPropagation();close()}else if(event.key==='Tab')close()};
+}
+$('#openSiblingGroup').onclick=()=>{
+ const current=$('#personId').value;
+ siblingGroupIds=person(current)?[...new Set([current,...connections(current).filter(c=>c.type==='sibling').map(c=>c.id)])]:[];
+ $('#siblingGroupSearch').value='';$('#siblingGroupMatches').hidden=true;$('#siblingGroupSearch').setAttribute('aria-expanded','false');refreshSiblingGroupTags();setupSiblingGroupSearch();$('#siblingGroupDialog').showModal();$('#siblingGroupSearch').focus();
+};
+$('#cancelSiblingGroup').onclick=()=>$('#siblingGroupDialog').close();
+$('#siblingGroupDialog').addEventListener('cancel',event=>{if(siblingGroupBusy)event.preventDefault()});
+$('#siblingGroupForm').onsubmit=async event=>{
+ event.preventDefault();if(siblingGroupBusy||siblingGroupIds.length<2)return;
+ const changes=siblingGroupChanges(siblingGroupIds);if(changes.conflicts.length){refreshSiblingGroupTags();return}
+ if(!changes.links.length){$('#siblingGroupDialog').close();notify('These sibling connections are already saved.');return}
+ siblingGroupBusy=true;$('#siblingGroupForm').inert=true;const previous=[...data.links];data.links.push(...changes.links);
+ try{
+  if(!await saveShared()){data.links=previous;$('#siblingGroupError').textContent='The sibling group was not saved. Please resolve the database notice and try again.';return}
+  const current=$('#personId').value;
+  for(const link of changes.links){const other=link.a===current?link.b:link.b===current?link.a:null;if(other&&![...document.querySelectorAll('.relation-person-id')].some(input=>input.value===other))relationRow({id:other,type:'sibling'})}
+  $('#siblingGroupDialog').close();render();notify(`${changes.links.length} sibling connections saved for everyone in the group.`);
+ }finally{siblingGroupBusy=false;$('#siblingGroupForm').inert=false}
+};
+
+$('#editSiblingGroup').onclick=()=>$('#openSiblingGroup').click();

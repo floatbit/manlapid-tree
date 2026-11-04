@@ -17,6 +17,7 @@ function respond(int $status, array $body): void {
 }
 require_once __DIR__.'/server/images.php';
 require_once __DIR__.'/server/categories.php';
+require_once __DIR__.'/server/ancestry.php';
 function snapshot(PDO $db, string $csrf): array {
     $state = $db->query('SELECT revision, request_email FROM family_state WHERE id = 1')->fetch();
     $people = $db->query("SELECT id, name, first_name AS firstName, middle_name AS middleName, last_name AS lastName, photo, bio, COALESCE(birthday, '') AS birthday, location FROM family_people ORDER BY display_order, id")->fetchAll();
@@ -56,6 +57,7 @@ function validateFamily(array $body): array {
         if (!isset($ids[$a],$ids[$b]) || $a === $b || isset($pairs[$key]) || !in_array($type,['parent','child','sibling','spouse'],true)) throw new InvalidArgumentException('Invalid or duplicate family connection.');
         $pairs[$key] = true; $cleanLinks[] = ['a'=>$a,'b'=>$b,'type'=>$type];
     }
+    validateAncestry($cleanPeople,$cleanLinks);
     $email = field($body,'email',254);
     if ($email !== '' && !filter_var($email,FILTER_VALIDATE_EMAIL)) throw new InvalidArgumentException('Invalid requests email.');
     $cleanMilestones = null;

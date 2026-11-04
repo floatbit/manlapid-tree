@@ -1,0 +1,95 @@
+# Kinfolk
+
+Open **http://staging.localhost/manlapid-tree/** through your existing MAMP/PHP host. This project needs PHP with PDO MySQL; a static Python server and direct file URLs no longer support saving.
+
+## Shared family storage
+
+The MySQL database is `manlapid_tree`. Server-only connection settings are in `server/config.local.php` (ignored by Git). Copy `server/config.example.php` to configure a different installation. This Mac uses the MAMP MySQL socket when present; other installations can use the configured host and port.
+
+Tables are created automatically:
+
+- `family_people`: names, details, and portrait file paths.
+- `family_relationships`: explicit parent, child, sibling, and spouse connections.
+- `family_state`: requests email and the revision used to detect concurrent edits.
+
+Portraits are resized to at most 320 pixels; milestone pictures to at most 1600 pixels. The server saves image files under `uploads/people/<person-id>/<upload-year>/<upload-month>/` or `uploads/milestones/<milestone-id>/<upload-year>/<upload-month>/`. MySQL stores relative file paths. Content hashes prevent duplicate files for the same record and upload month.
+
+A full manual backup needs both the MySQL database and the `uploads/` folder. **Download family backup** produces a portable JSON backup containing the image bytes, including milestone pictures. Importing it recreates organized image files. Removed/replaced pictures are retained on disk, so old references and existing backups remain recoverable; there is no automatic disk cleanup yet.
+
+Each browser keeps only its selected person and expanded tree in `kinfolk-view-v1` localStorage. The old `kinfolk-v1` browser data remains untouched as a migration backup. Clearing browser storage no longer deletes the shared family records.
+
+The explorer checks for database changes every five seconds, deferring updates while a form is being edited. A revision check rejects stale saves so another browser's changes cannot be silently overwritten.
+
+## Move data from the previous browser address
+
+Browser storage is specific to an address. Existing family data at `http://127.0.0.1:8000/` is not readable at `http://staging.localhost/manlapid-tree/`.
+
+1. In the browser where you edited the old family, open `http://127.0.0.1:8000/export.html` and download the previous family backup.
+2. Open the staging address and choose **Import family backup**.
+
+The old address needs a temporary PHP server if one is not already running:
+
+```sh
+php -S 127.0.0.1:8000 router.php
+```
+
+If the app is opened at the same origin as an existing browser backup and the database is still empty, it imports that backup automatically. A new origin with an empty database offers import, adding a first person, or using the example family. Imports add missing IDs and connections while preserving existing database records. Backups and restores are in **People & relationships**.
+
+## Tree interactions
+
+Search for a name to start a fresh canvas. Click a person to reveal only their parents, siblings, spouses, and children. Previously revealed people remain. Siblings are inferred when they share a parent. Click **Add parent/sibling/spouse/child** to add one connection at a time. Each connection works in both directions.
+
+Missing-person requests open a prefilled email draft and are never sent automatically.
+
+## Local runtime and verification
+
+The MAMP host runs the app directly. For a standalone local runtime use the PHP command above; the router blocks access to server configuration and source-only files. Apache uses `server/.htaccess` to deny direct configuration access. CSRF tokens protect database writes.
+
+Backend round-trip checks cover shared people, relationships, photos and email, cross-session updates, conflicting writes, invalid-data rollback, and deletion. Browser checks cover saving a person and persistence after reload. Tests use an isolated temporary database selected with `KINFOLK_DB_DATABASE`, never the real family database.
+
+Tree motion uses smooth camera fitting and zoom, staggered card entrances, sliding layout transitions, and drawn-in connection lines. Existing cards do not replay entrances on selection. Reduced-motion browser/OS settings disable these animations.
+
+## Exploring a large tree
+
+- Double-click a person (or use **Center person** in the sidebar) to center the view at a readable zoom. **Back to starting person** returns to the original search person without clearing the tree.
+- Select someone and use **Collapse branch** in the sidebar to hide connections revealed through that person. People still reachable through other expanded branches remain visible. Collapsing never deletes database records.
+- Card labels are relative to the selected person, including grandparents, grandchildren, aunts/uncles, nieces/nephews, cousins, and relationships by marriage. Gender is not recorded, so paired neutral labels are used. Clicking still reveals only parents, children, siblings, and spouses.
+- With no selected person, the sidebar suggests six randomly chosen people. Choose one to start their tree, or use **Show other people** to reshuffle.
+
+Run `node tests/layout.test.cjs` and `node tests/exploration.test.cjs` to check layout, connector routing, relationship descriptions, and branch-collapse behavior.
+
+## Relationship finder
+
+Use **Find relationship** in the header, choose two people, and submit. The finder describes the second person's relationship to the first and lists a shortest recorded connection chain. Blood relationships follow a blood path; spouse and in-law paths can include marriage connections. Missing connections and identical selections have dedicated messages.
+
+**Show path in tree** opens a focused view of the connecting people and highlights their route in amber. The first person becomes the starting person for that view. The × on the relationship banner clears the highlight; searching for a different person also clears it. Normal bubble expansion still reveals only immediate family. The finder reads existing records and never changes relationships.
+
+## Birth timeline
+
+The **Timeline** tab groups people by their saved birth year, oldest first, and displays the full birthday with their name and portrait. Births are generated from the existing birthday field rather than separate event records. Missing or invalid dates do not appear. **Add birthdays** opens People so missing dates can be entered; choosing an event opens that person's family tree. Date formatting uses UTC to prevent birthdays shifting by a day between time zones.
+
+## Family milestones
+
+In **Timeline**, choose **Add milestone** to record a marriage, birthday party, move, graduation, reunion, or other event. Each milestone has a title, full date, optional location/story, and optional people involved. Milestones appear beside births in chronological order. Click an event to edit or delete it. Timeline milestones do not automatically change spouse or parent connections.
+
+MySQL stores these in `family_milestones`; the table is created automatically. JSON family backups include milestones, and imports preserve existing milestone IDs. Older clients that omit milestones preserve them when saving other records. Deleting a person removes their participant link while retaining the milestone. Date and participant validation and concurrent-save checks apply to event changes.
+
+
+## Uploads and picture controls
+
+Both person portraits and milestone picture areas support drag/drop and file picking, with previews before saving. Milestones have no fixed photo-count limit. Individual selected files must be under 20 MB and each save request must fit within 160 MB; add large collections in smaller batches. Remove a thumbnail and save to detach it from the event; click a saved thumbnail to open its image. The server checks file content, dimensions, file size, record ownership, and allowed paths. Uploaded files cannot execute as PHP, and directory listings are disabled.
+
+The web-server user must be able to write to `uploads/`. Browser uploads use generated filenames; original filenames are never used in paths. Existing embedded portraits can be migrated with `php server/migrate-photos.php`; this saves original embedded image data in the protected `server/backups/` folder before changing database references. The migration can be re-run safely. Tests can isolate files using `KINFOLK_UPLOAD_ROOT` alongside `KINFOLK_DB_DATABASE`.
+
+Holiday milestones have their own category group: New Year’s Day/Eve, Valentine’s Day, Easter, Mother’s Day, Father’s Day, Memorial Day, Independence Day, Labor Day, Halloween, Thanksgiving, Hanukkah, Christmas, and Other holiday. Dates are entered manually for each event. Birthday Party is separate from a person’s automatic birth event.
+
+
+## Milestone videos
+
+Milestone attachments accept pictures, MP4, and MOV files through drag/drop or the file picker. Movies may be up to 100 MB each (decimal MB); portrait images remain image-only. MP4 files keep their original bytes. MOV files are retained in their original folder and converted with FFmpeg to browser-friendly H.264/AAC MP4, capped at 1920 pixels without upscaling. Set `KINFOLK_FFMPEG` if FFmpeg is installed outside the detected system paths. Conversion is required before MOV playback on browsers that cannot preview the original.
+
+Timeline covers and the lightbox support both media types. The lightbox uses native video controls, pauses playback when changing items or closing, and wraps next/previous navigation across pictures and movies. The standalone PHP router supports byte ranges for video seeking; Apache serves these files directly. Portable JSON backups include the playable video file. Manual filesystem backups also include original MOV files.
+
+Each save request is limited to 160 MB of JSON, including base64 overhead on new media. Add very large collections in separate saves. Image size/dimension checks and movie-content validation remain enforced.
+
+Browser JSON saves use PUT (with CSRF protection) to avoid PHP’s form-POST size cap. Small older POST clients remain supported. A 100 MB MP4 save was verified end to end in an isolated database.

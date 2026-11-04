@@ -1,0 +1,25 @@
+# Local database credentials and environment settings
+/server/config.local.php
+.env
+.env.*
+!.env.example
+
+# Uploaded family photos and videos; retain server protection rules
+/uploads/*
+!/uploads/.htaccess
+
+# Database backups and source media for bulk imports
+/server/backups/
+/imports/
+
+# Dependencies and temporary output
+/node_modules/
+*.log
+*.tmp
+*.swp
+*~
+
+# Operating system files
+.DS_Store
+._*
+Thumbs.db

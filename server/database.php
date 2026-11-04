@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__.'/names.php';
 function familyDatabase(): PDO {
     $config = require __DIR__ . '/config.local.php';
     $dsn = !empty($config['socket'])
@@ -50,5 +51,8 @@ function familyDatabase(): PDO {
     if (strtolower($type['Type']) !== 'varchar(32)') $db->exec("ALTER TABLE family_milestones MODIFY event_type VARCHAR(32) NOT NULL");
     if (!$db->query("SHOW COLUMNS FROM family_milestones LIKE 'photos'")->fetch()) $db->exec("ALTER TABLE family_milestones ADD photos MEDIUMTEXT NULL");
     $db->exec("CREATE TABLE IF NOT EXISTS family_person_aliases (old_id VARCHAR(64) PRIMARY KEY, person_id VARCHAR(64) NOT NULL) ENGINE=InnoDB");
+    foreach(['first_name','middle_name','last_name'] as $column)if(!$db->query("SHOW COLUMNS FROM family_people LIKE '$column'")->fetch())$db->exec("ALTER TABLE family_people ADD $column VARCHAR(120) NOT NULL DEFAULT ''");
+    $update=$db->prepare("UPDATE family_people SET first_name=?,middle_name=?,last_name=? WHERE id=? AND first_name=''");
+    foreach($db->query("SELECT id,name FROM family_people WHERE first_name='' ")->fetchAll() as $p){$n=splitPersonName($p['name']);$update->execute([$n['firstName'],$n['middleName'],$n['lastName'],$p['id']]);}
     return $db;
 }

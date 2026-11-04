@@ -73,3 +73,10 @@ nav #openRelationshipFinder{background:transparent;border:0;border-radius:0;padd
  .milestone-photo [data-remove-photo],.milestone-photo .set-photo-cover{opacity:0;pointer-events:none;transition:opacity .15s ease;}
  .milestone-photo:hover [data-remove-photo],.milestone-photo:hover .set-photo-cover,.milestone-photo:focus-within [data-remove-photo],.milestone-photo:focus-within .set-photo-cover{opacity:1;pointer-events:auto;}
 }
+
+.person-name-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;}@media(max-width:600px){.person-name-fields{grid-template-columns:1fr;}}
+
+#peopleList #directorySearch{width:100%;margin:8px 0 0;}#directoryMatches{margin-top:8px;max-height:420px;overflow:auto;}#peopleList #directoryMatches button{width:100%;text-align:left;margin:0 0 6px;}#directoryMatches .search-active{background:#e0ead7;color:var(--ink);}#directoryMatches p{padding:10px;}
+
+/* Keep navigation and search available while scrolling. */
+header{position:sticky;top:0;z-index:20;}

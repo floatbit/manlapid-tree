@@ -19,7 +19,7 @@ require_once __DIR__.'/server/images.php';
 require_once __DIR__.'/server/categories.php';
 function snapshot(PDO $db, string $csrf): array {
     $state = $db->query('SELECT revision, request_email FROM family_state WHERE id = 1')->fetch();
-    $people = $db->query("SELECT id, name, photo, bio, COALESCE(birthday, '') AS birthday, location FROM family_people ORDER BY display_order, id")->fetchAll();
+    $people = $db->query("SELECT id, name, first_name AS firstName, middle_name AS middleName, last_name AS lastName, photo, bio, COALESCE(birthday, '') AS birthday, location FROM family_people ORDER BY display_order, id")->fetchAll();
     $links = $db->query('SELECT person_a AS a, person_b AS b, relationship_type AS type FROM family_relationships ORDER BY person_a, person_b')->fetchAll();
     $milestones = $db->query('SELECT id,title,event_type AS type,event_date AS date,description,location,participants,photos FROM family_milestones ORDER BY event_date,id')->fetchAll();
     foreach ($milestones as &$event) { $event['participants'] = json_decode($event['participants'],true) ?: []; $event['photos'] = json_decode($event['photos'] ?? '[]',true) ?: []; }
@@ -39,12 +39,15 @@ function validateFamily(array $body): array {
         if (!is_array($row)) throw new InvalidArgumentException('Invalid person.');
         $id = field($row, 'id', 64); $name = trim(field($row, 'name', 120));
         if (!preg_match('/^[a-zA-Z0-9_-]{1,64}$/', $id) || isset($ids[$id]) || $name === '') throw new InvalidArgumentException('Each person needs a unique ID and a name.');
+        $names=array_key_exists('firstName',$row)?['firstName'=>trim(field($row,'firstName',120)),'middleName'=>trim(field($row,'middleName',120)),'lastName'=>trim(field($row,'lastName',120))]:splitPersonName($name);
+        $name=implode(' ',array_filter(array_values($names),fn($v)=>$v!==''));
+        if($names['firstName']==='' || mb_strlen($name)>120)throw new InvalidArgumentException('Enter a first name; combined names must be at most 120 characters.');
         $photo = field($row, 'photo', 3500000);
         validateStoredImage($photo,'people',$id);
         $birthday = field($row, 'birthday', 10);
         if ($birthday !== '') { $date = DateTimeImmutable::createFromFormat('!Y-m-d', $birthday); if (!$date || $date->format('Y-m-d') !== $birthday) throw new InvalidArgumentException('Invalid birthday.'); }
         $ids[$id] = true;
-        $cleanPeople[] = ['id'=>$id, 'name'=>$name, 'photo'=>$photo, 'bio'=>field($row,'bio',20000), 'birthday'=>$birthday, 'location'=>field($row,'location',255)];
+        $cleanPeople[] = $names + ['id'=>$id, 'name'=>$name, 'photo'=>$photo, 'bio'=>field($row,'bio',20000), 'birthday'=>$birthday, 'location'=>field($row,'location',255)];
     }
     foreach ($links as $link) {
         if (!is_array($link)) throw new InvalidArgumentException('Invalid connection.');
@@ -108,8 +111,8 @@ try {
     foreach ($milestones as &$event) { if ($event['photos']===null) $event['photos']=$savedPhotos[$event['id']] ?? []; $event['photos']=array_map(fn($photo)=>storeImage($photo,'milestones',$event['id']),$event['photos']); } unset($event);
     $db->exec('DELETE FROM family_relationships');
     $db->exec('DELETE FROM family_people');
-    $insert = $db->prepare('INSERT INTO family_people (id,name,photo,bio,birthday,location,display_order) VALUES (?,?,?,?,?,?,?)');
-    foreach ($people as $i=>$p) $insert->execute([$p['id'],$p['name'],$p['photo'],$p['bio'],$p['birthday'] ?: null,$p['location'],$i]);
+    $insert = $db->prepare('INSERT INTO family_people (id,name,photo,bio,birthday,location,display_order,first_name,middle_name,last_name) VALUES (?,?,?,?,?,?,?,?,?,?)');
+    foreach ($people as $i=>$p) $insert->execute([$p['id'],$p['name'],$p['photo'],$p['bio'],$p['birthday'] ?: null,$p['location'],$i,$p['firstName'],$p['middleName'],$p['lastName']]);
     $insert = $db->prepare('INSERT INTO family_relationships (person_a,person_b,relationship_type) VALUES (?,?,?)');
     foreach ($links as $link) $insert->execute([$link['a'],$link['b'],$link['type']]);
     $db->exec('DELETE FROM family_milestones');

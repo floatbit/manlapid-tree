@@ -101,3 +101,54 @@ header{position:sticky;top:0;z-index:20;}
 #siblingGroupDialog{width:min(620px,calc(100vw - 40px));max-height:calc(100dvh - 40px);overflow:auto;}#siblingGroupTags{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0;}#siblingGroupTags button{border-radius:20px;background:#edf3e7;}#siblingGroupSearch{width:100%;}#siblingGroupMatches{max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:8px;}#siblingGroupMatches button{display:block;width:100%;text-align:left;border:0;border-radius:0;}#siblingGroupMatches .search-active{background:#e0ead7;}#siblingGroupError{color:#963c2b;}
 
 .directory-missing{margin-top:28px;border-top:1px solid var(--line);padding-top:16px;}.directory-missing h3{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:14px;}.directory-missing h3 span{font-size:12px;color:var(--muted);font-weight:400;}.directory-missing-list{max-height:280px;overflow:auto;}#peopleList .directory-missing-list button{display:block;width:100%;text-align:left;margin:0 0 7px;padding:10px 12px;font-size:12px;}.directory-missing-list p{font-size:12px;}
+
+.current-location-field{margin:24px 0;}.current-location-field h3{margin-bottom:8px;}#locationFinder gmp-place-autocomplete{display:block;width:100%;color-scheme:light;}#locationPreview{width:100%;height:220px;border:1px solid var(--line);border-radius:9px;margin-top:12px;}
+
+#familyMapPage{width:100%;max-width:1500px;margin:0 auto;padding:35px 40px 40px;}.family-map-heading{display:flex;align-items:center;justify-content:space-between;gap:20px;}.family-map-workspace{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:20px;}#familyMapCanvas{height:calc(100dvh - 290px);min-height:440px;border:1px solid var(--line);border-radius:12px;background:#edf1e7;}#familyMapPeople{max-height:calc(100dvh - 290px);min-height:440px;overflow:auto;padding:0 6px;}#familyMapPeople h2{margin-top:0;font-size:18px;}#familyMapPeople button{display:block;text-align:left;width:100%;margin-bottom:8px;}#mappedPeople button span{display:block;color:var(--muted);font-size:12px;margin-top:5px;line-height:1.5;}#unmappedPeople button{font-size:12px;}.map-person-popup{max-width:300px;max-height:260px;overflow:auto;color:var(--ink);}.map-person-popup h3{font-size:14px;margin:0 0 12px;}.map-person-popup button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;margin:6px 0;}.map-person-popup .avatar{width:36px;height:36px;min-width:36px;margin:0;font-size:12px;}.map-person-popup small{display:block;color:var(--muted);margin-top:4px;}@media(max-width:850px){#familyMapPage{padding:25px 20px;}.family-map-workspace{grid-template-columns:1fr;}#familyMapCanvas{height:55dvh;min-height:340px;}#familyMapPeople{max-height:none;min-height:0;}.family-map-heading h1{font-size:30px;}}
+
+/* Map uses the same full-height canvas and persistent sidebar as the tree. */
+#familyMapPage{max-width:none;margin:0;padding:0;}
+#familyMapPage .family-map-workspace{height:calc(100dvh - 88px);min-height:360px;grid-template-columns:minmax(0,1fr) 300px;gap:0;}
+.family-map-stage{position:relative;min-width:0;min-height:0;}
+#familyMapCanvas{height:100%;min-height:0;border:0;border-radius:0;}
+#fitFamilyMap{position:absolute;left:20px;top:16px;z-index:2;box-shadow:0 4px 18px #263c3610;background:#fffefa;}
+#familyMapPeople{height:100%;max-height:none;min-height:0;padding:25px;border-left:1px solid var(--line);background:#fffefa;overflow:auto;}
+#familyMapPeople h1{font-size:25px;letter-spacing:-.6px;}#familyMapSummary,#familyMapStatus{font-size:12px;}
+@media(max-width:1000px){#familyMapPage .family-map-workspace{grid-template-columns:minmax(0,1fr) 260px;}}
+@media(max-width:850px){#familyMapPage .family-map-workspace{height:calc(100dvh - 126px);}}
+@media(max-width:600px){#familyMapPage .family-map-workspace{grid-template-columns:minmax(0,1fr) 210px;}#familyMapPeople{padding:16px 12px;}#fitFamilyMap{left:10px;top:12px;font-size:11px;}}
+
+#mapSelectedPerson>.avatar{width:90px;height:90px;font-size:30px;margin:18px 0 8px;}#mapSelectedPerson h2{margin-top:10px;font-size:22px;}#mapSelectedPerson p{font-size:13px;}.map-family-connections button small{display:block;color:var(--muted);margin-top:4px;text-transform:capitalize;}#mapSelectedPerson #mapBackToLocations{font-size:12px;background:transparent;}
+
+#personForm .profile-section{border:1px solid var(--line);border-radius:12px;padding:20px;margin:20px 0;background:#fffefa;}#personForm .profile-section>h3{margin:0 0 16px;}#personForm .profile-section label{margin-top:12px;}#personForm .profile-section .current-location-field{margin:0;}.place-lived-row{border-top:1px solid var(--line);padding:16px 0;}.place-lived-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;}.place-lived-heading button{font-size:18px;padding:4px 10px;}.lived-date-note{display:grid;grid-template-columns:1fr 1fr;gap:14px;}.lived-google-search gmp-place-autocomplete{width:100%;}.map-view-controls{position:absolute;top:16px;left:20px;z-index:2;display:flex;flex-wrap:wrap;gap:10px;max-width:calc(100% - 40px);}.map-view-controls #fitFamilyMap{position:static;}.map-view-toggle{display:flex;background:#fffefa;border:1px solid var(--line);border-radius:8px;overflow:hidden;box-shadow:0 4px 18px #263c3610;}.map-view-toggle button{border:0;border-radius:0;}.map-view-toggle button[aria-pressed=true]{background:var(--green);color:white;}.migration-stops{padding-left:22px;}.migration-stops button span,.migration-stops button small{display:block;margin-top:5px;}.migration-stops small{color:var(--muted);}#migrationPerson{width:100%;margin-bottom:18px;}@media(max-width:600px){.lived-date-note{grid-template-columns:1fr;}#personForm .profile-section{padding:14px;}.map-view-controls{left:10px;top:12px;gap:6px;max-width:calc(100% - 20px);}.map-view-controls button{font-size:11px;padding:9px;}}
+
+.birthplace-field{margin-top:18px;border-top:1px solid var(--line);padding-top:14px;}.birthplace-field h4{margin:0 0 8px;}#birthplaceFinder gmp-place-autocomplete{display:block;width:100%;}#birthplaceSelected{color:var(--ink);font-weight:600;}
+
+/* Use the light Google autocomplete appearance for every location finder. */
+gmp-place-autocomplete{color-scheme:light;}
+
+/* Match Google address widgets to the profile's standard text fields. */
+#personForm gmp-place-autocomplete{
+ display:block;width:100%;box-sizing:border-box;height:44px;min-height:44px;
+ font:400 14px 'DM Sans',sans-serif;line-height:20px;
+ color:var(--ink);background-color:white;color-scheme:light;
+ border:1px solid #dce1d5;border-radius:7px;box-shadow:none;
+}
+#personForm gmp-place-autocomplete::part(input){
+ font:400 14px 'DM Sans',sans-serif;line-height:20px;
+ color:var(--ink);padding-top:11px;padding-bottom:11px;
+}
+#personForm gmp-place-autocomplete::part(prediction-list){font:400 14px 'DM Sans',sans-serif;color:var(--ink);}
+#personForm gmp-place-autocomplete:focus-within{outline:2px solid #38634e;outline-offset:1px;}
+
+.directory-search-field{position:relative;}#peopleList .directory-search-field #directorySearch{padding-right:40px;}#peopleList #clearDirectorySearch{position:absolute;right:7px;top:50%;transform:translateY(-50%);width:28px;height:28px;padding:0;margin:0;border:0;background:transparent;font-size:22px;line-height:28px;color:var(--muted);}#peopleList #clearDirectorySearch:hover{background:#edf2e8;color:var(--ink);}#directorySearch::-webkit-search-cancel-button{-webkit-appearance:none;}
+
+#personForm .floating-save-person{position:fixed;right:25px;bottom:24px;z-index:15;padding:13px 22px;box-shadow:0 5px 24px #263c3633;}#personForm{padding-bottom:90px;}@media(max-width:600px){#personForm .floating-save-person{right:12px;bottom:16px;padding:11px 18px;}}
+
+#personForm .person-connections>h3{margin:0 0 16px;}
+
+#personForm .person-connections>summary{cursor:pointer;}#personForm .person-connections>summary h3{display:inline;margin:0;font-size:1.17em;}#personForm .person-connections[open]>summary{margin-bottom:16px;}
+
+.relationship-person-picker{position:relative;}.relationship-person-picker>[role=listbox]{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:12;max-height:240px;overflow:auto;background:white;border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 24px #263c3620;}.relationship-person-picker [role=option]{display:block;width:100%;text-align:left;border:0;border-radius:0;}.relationship-person-picker .search-active{background:#e0ead7;}.relationship-person-picker p{padding:0 12px;}
+
+#bulkLocationDialog{width:min(640px,calc(100vw - 40px));max-height:calc(100dvh - 40px);overflow:auto;}#bulkLocationFinder gmp-place-autocomplete{display:block;width:100%;color-scheme:light;font:400 14px 'DM Sans',sans-serif;height:44px;min-height:44px;border:1px solid #dce1d5;border-radius:7px;background-color:white;color:var(--ink);}#bulkLocationFinder gmp-place-autocomplete::part(input){font:400 14px 'DM Sans',sans-serif;}#bulkLocationTags{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0;}#bulkLocationTags button{border-radius:20px;background:#edf3e7;}#bulkLocationSearch{width:100%;}#bulkLocationMatches{max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:8px;}#bulkLocationMatches button{display:block;width:100%;text-align:left;border:0;border-radius:0;}#bulkLocationMatches .search-active{background:#e0ead7;}#bulkLocationError{color:#963c2b;}

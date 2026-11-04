@@ -54,5 +54,9 @@ function familyDatabase(): PDO {
     foreach(['first_name','middle_name','last_name'] as $column)if(!$db->query("SHOW COLUMNS FROM family_people LIKE '$column'")->fetch())$db->exec("ALTER TABLE family_people ADD $column VARCHAR(120) NOT NULL DEFAULT ''");
     $update=$db->prepare("UPDATE family_people SET first_name=?,middle_name=?,last_name=? WHERE id=? AND first_name=''");
     foreach($db->query("SELECT id,name FROM family_people WHERE first_name='' ")->fetchAll() as $p){$n=splitPersonName($p['name']);$update->execute([$n['firstName'],$n['middleName'],$n['lastName'],$p['id']]);}
+    if(!$db->query("SHOW COLUMNS FROM family_people LIKE 'location_place_id'")->fetch())$db->exec("ALTER TABLE family_people ADD location_place_id VARCHAR(255) NOT NULL DEFAULT ''");
+    foreach(['location_lat'=>'DECIMAL(10,7)','location_lng'=>'DECIMAL(10,7)'] as $column=>$type)if(!$db->query("SHOW COLUMNS FROM family_people LIKE '$column'")->fetch())$db->exec("ALTER TABLE family_people ADD $column $type NULL");
+    if(!$db->query("SHOW COLUMNS FROM family_people LIKE 'location_history'")->fetch())$db->exec("ALTER TABLE family_people ADD location_history MEDIUMTEXT NULL");
+    if(!$db->query("SHOW COLUMNS FROM family_people LIKE 'birthplace'")->fetch())$db->exec("ALTER TABLE family_people ADD birthplace TEXT NULL");
     return $db;
 }

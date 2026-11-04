@@ -18,14 +18,17 @@ function respond(int $status, array $body): void {
 require_once __DIR__.'/server/images.php';
 require_once __DIR__.'/server/categories.php';
 require_once __DIR__.'/server/ancestry.php';
+require_once __DIR__.'/server/location-history.php';
 function snapshot(PDO $db, string $csrf): array {
+    $mapsConfig=is_file(__DIR__.'/server/config.maps.local.php')?require __DIR__.'/server/config.maps.local.php':[];
     $state = $db->query('SELECT revision, request_email FROM family_state WHERE id = 1')->fetch();
-    $people = $db->query("SELECT id, name, first_name AS firstName, middle_name AS middleName, last_name AS lastName, photo, bio, COALESCE(birthday, '') AS birthday, location FROM family_people ORDER BY display_order, id")->fetchAll();
+    $people = $db->query("SELECT id, name, first_name AS firstName, middle_name AS middleName, last_name AS lastName, photo, bio, COALESCE(birthday, '') AS birthday, location, location_place_id AS locationPlaceId, location_lat AS locationLat, location_lng AS locationLng,location_history AS locationHistory,birthplace FROM family_people ORDER BY display_order, id")->fetchAll();
+    foreach($people as &$p){$p['locationHistory']=json_decode($p['locationHistory']??'[]',true)?:[];$p['birthplace']=json_decode($p['birthplace']??'null',true);}unset($p);
     $links = $db->query('SELECT person_a AS a, person_b AS b, relationship_type AS type FROM family_relationships ORDER BY person_a, person_b')->fetchAll();
     $milestones = $db->query('SELECT id,title,event_type AS type,event_date AS date,description,location,participants,photos FROM family_milestones ORDER BY event_date,id')->fetchAll();
     foreach ($milestones as &$event) { $event['participants'] = json_decode($event['participants'],true) ?: []; $event['photos'] = json_decode($event['photos'] ?? '[]',true) ?: []; }
     unset($event);
-    return ['personAliases' => $db->query('SELECT old_id,person_id FROM family_person_aliases')->fetchAll(), 'milestones' => $milestones, 'revision' => (int)$state['revision'], 'people' => $people, 'links' => $links, 'email' => $state['request_email'], 'csrf' => $csrf];
+    return ['mapsApiKey'=>$mapsConfig['api_key']??'', 'personAliases' => $db->query('SELECT old_id,person_id FROM family_person_aliases')->fetchAll(), 'milestones' => $milestones, 'revision' => (int)$state['revision'], 'people' => $people, 'links' => $links, 'email' => $state['request_email'], 'csrf' => $csrf];
 }
 function field(array $row, string $key, int $max): string {
     $value = $row[$key] ?? '';
@@ -47,8 +50,10 @@ function validateFamily(array $body): array {
         validateStoredImage($photo,'people',$id);
         $birthday = field($row, 'birthday', 10);
         if ($birthday !== '') { $date = DateTimeImmutable::createFromFormat('!Y-m-d', $birthday); if (!$date || $date->format('Y-m-d') !== $birthday) throw new InvalidArgumentException('Invalid birthday.'); }
+        $lat=$row['locationLat']??null;$lng=$row['locationLng']??null;
+        if(($lat===null)!==($lng===null) || ($lat!==null&&(!is_numeric($lat)||!is_numeric($lng)||!is_finite((float)$lat)||!is_finite((float)$lng)||abs((float)$lat)>90||abs((float)$lng)>180)))throw new InvalidArgumentException('Invalid current location coordinates.');
         $ids[$id] = true;
-        $cleanPeople[] = $names + ['id'=>$id, 'name'=>$name, 'photo'=>$photo, 'bio'=>field($row,'bio',20000), 'birthday'=>$birthday, 'location'=>field($row,'location',255)];
+        $cleanPeople[] = $names + ['id'=>$id, 'name'=>$name, 'photo'=>$photo, 'bio'=>field($row,'bio',20000), 'birthday'=>$birthday, 'location'=>field($row,'location',255), 'locationPlaceId'=>field($row,'locationPlaceId',255), 'locationLat'=>$lat===null?null:(float)$lat,'locationLng'=>$lng===null?null:(float)$lng,'locationHistory'=>cleanLocationHistory($row['locationHistory']??null),'birthplace'=>array_key_exists('birthplace',$row)?cleanBirthplace($row['birthplace']):false];
     }
     foreach ($links as $link) {
         if (!is_array($link)) throw new InvalidArgumentException('Invalid connection.');
@@ -101,6 +106,16 @@ try {
     if ($body['action'] === 'save' && (!isset($body['revision']) || $body['revision'] !== $revision)) {
         $db->rollBack(); respond(409,['error'=>'Another browser changed the family. Reload to get the latest data before saving.']);
     }
+    // Existing free-text locations may remain, but new or changed locations need Google selection data.
+    $savedLocations=[];foreach($db->query('SELECT id,location,location_place_id,location_lat,location_lng,location_history,birthplace FROM family_people')->fetchAll() as $old)$savedLocations[$old['id']]=$old;
+    foreach($people as &$p){
+        $old=$savedLocations[$p['id']]??null;
+        if($p['birthplace']===false)$p['birthplace']=json_decode($old['birthplace']??'null',true);
+        if($p['locationHistory']===null)$p['locationHistory']=json_decode($old['location_history']??'[]',true)?:[];
+        $unchanged=$old&&$old['location']===$p['location']&&$old['location_place_id']===$p['locationPlaceId']&&($old['location_lat']===null?null:(float)$old['location_lat'])===$p['locationLat']&&($old['location_lng']===null?null:(float)$old['location_lng'])===$p['locationLng'];
+        if($p['location']!==''&&!$unchanged&&($p['locationPlaceId']===''||$p['locationLat']===null||$p['locationLng']===null))throw new InvalidArgumentException('Choose a Google location suggestion for '.$p['name'].'. A city or country is enough.');
+    }
+    unset($p);
     // Older browser versions omit milestones: preserve them during other edits.
     if ($milestones === null) {
         $milestones = $db->query('SELECT id,title,event_type AS type,event_date AS date,description,location,participants,photos FROM family_milestones')->fetchAll();
@@ -113,8 +128,8 @@ try {
     foreach ($milestones as &$event) { if ($event['photos']===null) $event['photos']=$savedPhotos[$event['id']] ?? []; $event['photos']=array_map(fn($photo)=>storeImage($photo,'milestones',$event['id']),$event['photos']); } unset($event);
     $db->exec('DELETE FROM family_relationships');
     $db->exec('DELETE FROM family_people');
-    $insert = $db->prepare('INSERT INTO family_people (id,name,photo,bio,birthday,location,display_order,first_name,middle_name,last_name) VALUES (?,?,?,?,?,?,?,?,?,?)');
-    foreach ($people as $i=>$p) $insert->execute([$p['id'],$p['name'],$p['photo'],$p['bio'],$p['birthday'] ?: null,$p['location'],$i,$p['firstName'],$p['middleName'],$p['lastName']]);
+    $insert = $db->prepare('INSERT INTO family_people (id,name,photo,bio,birthday,location,display_order,first_name,middle_name,last_name,location_place_id,location_lat,location_lng,location_history,birthplace) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
+    foreach ($people as $i=>$p) $insert->execute([$p['id'],$p['name'],$p['photo'],$p['bio'],$p['birthday'] ?: null,$p['location'],$i,$p['firstName'],$p['middleName'],$p['lastName'],$p['locationPlaceId'],$p['locationLat'],$p['locationLng'],json_encode($p['locationHistory']),json_encode($p['birthplace'])]);
     $insert = $db->prepare('INSERT INTO family_relationships (person_a,person_b,relationship_type) VALUES (?,?,?)');
     foreach ($links as $link) $insert->execute([$link['a'],$link['b'],$link['type']]);
     $db->exec('DELETE FROM family_milestones');

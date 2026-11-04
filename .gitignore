@@ -23,3 +23,4 @@
 .DS_Store
 ._*
 Thumbs.db
+/server/config.maps.local.php

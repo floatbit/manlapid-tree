@@ -144,3 +144,28 @@ assert.equal(vm.runInContext("findRelationship('logan','logan').edges.length", c
 console.log(
   'Passed: relationship finder cousin chain, spouse and reverse lookup, disconnected records, invalid IDs, and same-person selection.',
 );
+
+ctx.data = {
+  people: ['courtney', 'roland', 'logan', 'percy', 'bella', 'father'].map((id) => ({
+    id,
+    name: id,
+  })),
+  links: [
+    parent('percy', 'courtney'),
+    parent('bella', 'courtney'),
+    parent('logan', 'courtney'),
+    parent('logan', 'roland'),
+    spouse('courtney', 'roland'),
+  ],
+};
+assert.equal(vm.runInContext("relationshipLabels('percy').get('logan')", ctx), 'Half-Sibling');
+assert.equal(vm.runInContext("relationshipLabels('logan').get('percy')", ctx), 'Half-Sibling');
+assert.equal(vm.runInContext("relationshipLabels('percy').get('bella')", ctx), 'Sibling');
+assert.equal(vm.runInContext("relationshipLabels('percy').get('roland')", ctx), 'Stepparent');
+assert.equal(vm.runInContext("relationshipLabels('roland').get('percy')", ctx), 'Stepchild');
+assert(vm.runInContext("findRelationship('percy','roland')", ctx));
+ctx.data.links.push(parent('percy', 'roland'));
+assert.equal(vm.runInContext("relationshipLabels('percy').get('logan')", ctx), 'Sibling');
+console.log(
+  'Passed: inferred half-siblings, incomplete sibling parents, stepparents, stepchildren, and step-relationship paths.',
+);

@@ -94,7 +94,14 @@ function relationshipLabels(focusId) {
     }
     if (!best) return null;
     const [up, down] = best;
-    if (up === 1 && down === 1) return 'Sibling';
+    if (up === 1 && down === 1) {
+      const aParents = parents.get(a) || new Set(),
+        bParents = parents.get(b) || new Set(),
+        shared = [...aParents].filter((id) => bParents.has(id));
+      return shared.length === 1 && [...aParents, ...bParents].some((id) => !shared.includes(id))
+        ? 'Half-Sibling'
+        : 'Sibling';
+    }
     if (down === 1) return up === 2 ? 'Aunt / uncle' : `${'Great-'.repeat(up - 2)}aunt / uncle`;
     if (up === 1)
       return down === 2 ? 'Niece / nephew' : `${'Great-'.repeat(down - 2)}niece / nephew`;
@@ -118,9 +125,12 @@ function relationshipLabels(focusId) {
       for (const partner of partners.get(focusId) || []) {
         const related = kinship(partner, p.id);
         if (related) {
-          label = ['Parent', 'Sibling', 'Child', 'Grandparent', 'Grandchild'].includes(related)
-            ? related + '-in-law'
-            : related + ' by marriage';
+          label =
+            related === 'Child'
+              ? 'Stepchild'
+              : ['Parent', 'Sibling', 'Child', 'Grandparent', 'Grandchild'].includes(related)
+              ? related + '-in-law'
+              : related + ' by marriage';
           break;
         }
       }
@@ -129,9 +139,12 @@ function relationshipLabels(focusId) {
       for (const partner of partners.get(p.id) || []) {
         const related = kinship(focusId, partner);
         if (related) {
-          label = ['Parent', 'Sibling', 'Child', 'Grandparent', 'Grandchild'].includes(related)
-            ? related + '-in-law'
-            : related + ' by marriage';
+          label =
+            related === 'Parent'
+              ? 'Stepparent'
+              : ['Parent', 'Sibling', 'Child', 'Grandparent', 'Grandchild'].includes(related)
+              ? related + '-in-law'
+              : related + ' by marriage';
           break;
         }
       }
@@ -146,7 +159,7 @@ function findRelationship(from, to) {
   if (!person(from) || !person(to)) return null;
   if (from === to) return { from, to, ids: [from], edges: [], label: 'Same person' };
   const label = relationshipLabels(from).get(to),
-    bloodOnly = !/Spouse|in-law|marriage|Extended/.test(label);
+    bloodOnly = !/Spouse|Step|in-law|marriage|Extended/.test(label);
   const previous = new Map([[from, null]]),
     queue = [from];
   for (let i = 0; i < queue.length && !previous.has(to); i++)

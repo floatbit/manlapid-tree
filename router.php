@@ -17,5 +17,31 @@ if (str_starts_with($path,'/uploads/')) {
 }
 if ($path === '/api.php') { require __DIR__ . '/api.php'; return true; }
 if ($path === '/' || $path === '/index.html') { header('Content-Type: text/html; charset=utf-8'); readfile(__DIR__ . '/index.html'); return true; }
-if (in_array($path,['/app.js','/map.js','/history.js','/bulk-location.js','/albums.js','/recipes.js','/style.css','/export.html'],true)) return false;
+// Serve only explicitly listed public assets; server source and backups stay private.
+if (in_array($path, [
+    '/app.js',
+    '/style.css',
+    '/export.html',
+    '/js/albums.js',
+    '/js/backups.js',
+    '/js/bulk-location.js',
+    '/js/core.js',
+    '/js/lightbox.js',
+    '/js/location-history.js',
+    '/js/location-picker.js',
+    '/js/map.js',
+    '/js/milestones.js',
+    '/js/navigation.js',
+    '/js/people.js',
+    '/js/person-picker.js',
+    '/js/recipes.js',
+    '/js/relationship-finder.js',
+    '/js/relationships.js',
+    '/js/sharing.js',
+    '/js/sibling-groups.js',
+    '/js/timeline-position.js',
+    '/js/tree-controls.js',
+    '/js/tree.js',
+    '/css/features.css',
+], true)) return false;
 http_response_code(404); echo 'Not found';

@@ -1,1 +1,713 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Kinfolk — Family tree</title><link rel="stylesheet" href="style.css"></head><body><header><a class="brand" href="#" aria-label="Family tree home">✳</a><nav><button class="active" id="treeTab">Family Tree</button><button id="openRelationshipFinder">Relationship</button><button id="mapTab">Map</button><button id="timelineTab">Timeline</button><button id="albumsTab">Albums</button><button id="recipesTab">Recipes</button><button id="peopleTab">People</button></nav><div class="search"><label for="search">Find someone in your family</label><div class="searchbox"><span>⌕</span><input role="combobox" aria-autocomplete="list" aria-controls="searchMatches" aria-expanded="false" id="search" placeholder="Type a name to begin…" autocomplete="off"><button id="searchGo">Search ↗</button></div><div id="results"></div></div><span class="saved" hidden aria-live="polite"></span></header><div id="databaseNotice" role="alert" hidden><span id="databaseMessage"></span><button id="databaseRetry">Reload / retry</button></div><section id="setupNotice" hidden><h2>Your shared family database is ready.</h2><p>Import your previous family data, add your first person, or start with the seven-person example family.</p><button id="setupImport">Import family backup</button> <button id="useExample">Use example family</button><p class="hint">If your saved people are at the old address, <a href="http://127.0.0.1:8000/export.html" target="_blank" rel="noopener">download that browser’s backup</a>, then import it here.</p></section><input id="familyBackup" type="file" accept="application/json,.json" hidden><main id="explore"><div class="workspace"><section class="canvas" id="canvas"><div id="empty"><div class="empty-art">✳</div><h2>A family starts with someone.</h2><p>Search for a person above to discover their connections.</p><div id="emptySuggestions"></div><button id="addFirst">Add person ↗</button></div><div id="graph"><div id="graphSpace"><div id="scene"><svg id="lines"></svg><div id="nodes"></div></div></div></div><div id="relationshipBanner" hidden><span id="relationshipSummary"></span><button id="clearRelationshipPath" aria-label="Clear highlighted relationship path">×</button></div><div class="tree-view-actions"><button id="backToStart" hidden>↩ Back to starting person</button><button id="showEntireTree">Show entire tree</button></div><div id="graphTools" hidden><button id="zoomOut" aria-label="Zoom out">−</button><span id="zoomLevel">100%</span><button id="zoomIn" aria-label="Zoom in">＋</button><button id="fitGraph">Fit</button><button id="reset">Clear</button></div><div class="canvas-bottom"><span id="count">0 people in view</span></div></section><aside id="details" aria-label="Selected person details"><p class="eyebrow">A CLOSER LOOK</p><div class="aside-empty"><span>♡</span><h2>Meet your people.</h2><p>Select a person to see their story and family connections.</p></div></aside></div></main><main id="familyMapPage" hidden><div class="family-map-workspace"><div class="family-map-stage"><div id="familyMapCanvas" aria-label="Map of family members’ current locations"></div><div class="map-view-controls"><div class="map-view-toggle" role="group" aria-label="Map view"><button id="mapCurrentView" type="button" aria-pressed="true">Current locations</button><button id="mapHistoryView" type="button" aria-pressed="false">Places lived</button></div><button id="fitFamilyMap" type="button">Fit everyone</button></div></div><aside id="familyMapPeople"><p class="eyebrow">OUR FAMILY, AROUND THE WORLD</p><h1>Family map.</h1><p id="familyMapSummary">Current locations of your people.</p><p id="familyMapStatus" role="status"></p><div id="mapSelectedPerson" hidden></div><div id="mapLocationDirectory"><h2>People on the map</h2><div id="mappedPeople"></div><h3>Location needed</h3><p class="hint">Choose a Google location in People to add someone to the map.</p><div id="unmappedPeople"></div></div></aside></div></main><main id="recipesPage" hidden><section id="recipeDirectory"><div class="recipes-heading"><div><p class="eyebrow">PASSED DOWN WITH LOVE</p><h1>Family recipes.</h1><p>Keep the dishes, handwritten notes, and stories that bring your family together.</p></div><button id="newRecipe" class="primary">＋ Add recipe</button></div><div class="recipes-filters"><label>Search recipes<input id="recipeSearch" type="search" placeholder="Search titles, ingredients, or memories…"></label><label>Category<select id="recipeCategoryFilter"></select></label><label>From whom<select id="recipePersonFilter"></select></label></div><p id="recipesCount" role="status"></p><div id="recipesGrid"></div></section><article id="recipeDetail" hidden></article></main><main id="albumsPage" hidden><div class="albums-heading"><div><p class="eyebrow">MEMORIES TO KEEP</p><h1>Family albums.</h1><p id="albumsSummary"></p></div><button id="newAlbum" class="primary">＋ Create album</button></div><div class="albums-toolbar"><label>Search albums<input id="albumSearch" type="search" placeholder="Search by title…"></label><label>Order<select id="albumOrder"><option value="newest">Newest first</option><option value="oldest">Oldest first</option></select></label></div><div id="albumsGrid"></div></main><main id="timeline" hidden><div class="timeline-heading"><div><p class="eyebrow">THE YEARS THAT CONNECT US</p><h1>Our family timeline.</h1><p>Every person has a beginning. Explore births, celebrations, and milestones through the years.</p></div><div class="timeline-actions"><button id="addBirthdays">Add birthdays ↗</button><button id="addMilestone" class="primary">＋ Add milestone</button></div></div><p id="timelineSummary" class="hint" role="status"></p><div id="timelineEvents"></div></main><main id="editor" hidden><div class="intro"><div><p class="eyebrow">THE PEOPLE BEHIND THE TREE</p><h1>Your family directory.</h1><p>Add a person, tell their story, and connect the dots.</p></div><div class="people-page-actions"><button id="openBulkLocation" type="button">Set location for multiple people</button><button id="openSiblingGroup" type="button">Group siblings</button><button class="primary" id="newPerson">＋ Add a person</button></div></div><section class="directory"><div id="peopleList"></div><form id="personForm"><h2 id="formTitle">Add a person</h2><input type="hidden" id="personId"><section class="profile-section"><h3>Personal details</h3><div class="person-name-fields"><label>First name<input id="firstName" required maxlength="120" autocomplete="given-name"></label><label>Middle name<input id="middleName" maxlength="120" autocomplete="additional-name"></label><label>Last name<input id="lastName" maxlength="120" autocomplete="family-name"></label></div><label>Birthday<input id="birthday" type="date"></label><label class="deceased-field"><input id="deceased" type="checkbox"> Deceased</label><div class="birthplace-field"><h4>Birthplace <span class="optional">Optional</span></h4><p class="hint">Choose a city or country from Google. This is the starting point of their migration path.</p><div id="birthplaceFinder"></div><p id="birthplaceStatus" class="hint" role="status"></p><p id="birthplaceSelected"></p><button type="button" id="clearBirthplace">Clear birthplace</button></div></section><section class="profile-section"><h3>Photo and story</h3><div id="personPhotoDrop" class="photo-dropzone" role="group" tabindex="0" aria-label="Portrait photo drop area"><p class="dropzone-instructions">Drop a portrait here</p><label>or choose a photo<input id="photo" type="file" accept="image/*"></label><div id="personPhotoPreview"></div></div><label>About<textarea id="bio" rows="3" placeholder="A little of their story…"></textarea></label></section><section class="profile-section current-location-field" aria-labelledby="currentLocationLabel"><h3 id="currentLocationLabel">Current Location</h3><p class="hint">Search for a city, region, country, or street address. A city and country are enough.</p><div id="locationFinder"></div><p id="locationFinderStatus" class="hint" role="status"></p><label for="location">Selected Google location</label><input id="location" maxlength="255" readonly placeholder="Choose a Google suggestion above"><button id="clearCurrentLocation" type="button">Clear location</button><input id="locationPlaceId" type="hidden"><input id="locationLat" type="hidden"><input id="locationLng" type="hidden"><iframe id="locationPreview" title="Current location preview" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" hidden></iframe></section><section class="profile-section"><h3>Places lived</h3><p class="hint">Record when they moved to a city or country. Enter a year or full date. These places form their migration path.</p><div id="placesLivedRows"></div><button type="button" id="addPlaceLived">＋ Add place lived</button><div id="placesLivedCurrent"></div><p id="placesLivedStatus" role="status" class="hint"></p></section><section class="profile-section"><details class="person-connections"><summary><h3>Manage connections</h3></summary><p class="hint">Add only the connections you know. Each relationship works both ways automatically, and siblings with a shared parent are connected for you. You can add more later.</p><div id="relations"></div><button type="button" id="addRelation">＋ Add connection</button><button type="button" id="editSiblingGroup">Manage sibling group</button></details><p class="hint">An easier way: select someone in Family tree, then choose Add parent, sibling, spouse, or child.</p></section><div class="form-actions"><button class="primary" type="submit">Save person</button><button type="button" id="cancel">Cancel</button><button type="button" id="delete">Delete person</button></div><p id="formError" role="alert"></p><button type="submit" class="primary floating-save-person" aria-label="Save person">Save person</button></form></section><section class="settings"><h3>Family backups</h3><button id="exportFamily">Download family backup</button> <button id="importFamily">Import family backup</button><p>Imports add missing people and connections while keeping existing database records.</p><label>Requests recipient email<input id="requestEmail" type="email" placeholder="family@example.com"></label><p>Missing-person requests open an email draft for review. People, relationships, photos, and the requests email are shared through MySQL. Only your expanded tree view stays in this browser.</p></section></main><div id="toast" role="status"></div><dialog id="bulkLocationDialog" aria-labelledby="bulkLocationTitle"><form id="bulkLocationForm"><h2 id="bulkLocationTitle">Set Current Location</h2><p>Choose one Google location, then select everyone who lives there. Saving replaces their Current Location and leaves their birthplace and places lived unchanged.</p><div id="bulkLocationFinder"></div><p id="bulkLocationStatus" class="hint" role="status"></p><strong id="bulkLocationSelected"></strong><h3>People at this location</h3><div id="bulkLocationTags"></div><input id="bulkLocationSearch" type="search" placeholder="Find people…" aria-label="Find people at this location" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="bulkLocationMatches" autocomplete="off"><div id="bulkLocationMatches" role="listbox" hidden></div><p id="bulkLocationSummary" aria-live="polite"></p><p id="bulkLocationError" role="alert"></p><div class="form-actions"><button id="saveBulkLocation" class="primary" type="submit" disabled>Save location for selected people</button><button id="cancelBulkLocation" type="button">Cancel</button></div></form></dialog><dialog id="siblingGroupDialog" aria-labelledby="siblingGroupTitle"><form id="siblingGroupForm"><h2 id="siblingGroupTitle">Group siblings</h2><p>The person you are editing and their existing siblings are included. Add another person to connect them to everyone in the group. You can reuse this whenever the family grows.</p><div id="siblingGroupTags"></div><label for="siblingGroupSearch">Find people</label><input id="siblingGroupSearch" type="search" placeholder="Type a name…" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="siblingGroupMatches"><div id="siblingGroupMatches" role="listbox" hidden></div><p id="siblingGroupSummary" aria-live="polite"></p><p id="siblingGroupError" role="alert"></p><p class="hint">Removing a name here only excludes them from this update; it does not delete saved relationships. Parents and other relatives are not added automatically.</p><div class="form-actions"><button id="saveSiblingGroup" type="submit" class="primary">Save sibling group</button><button id="cancelSiblingGroup" type="button">Cancel</button></div></form></dialog><dialog id="familyDialog" aria-labelledby="familyTitle"><form id="familyForm"><p class="eyebrow">ONE CONNECTION AT A TIME</p><h2 id="familyTitle">Add family</h2><p id="familyContext"></p><label>New person’s name<input id="familyName" placeholder="Enter their name" maxlength="120"></label><div class="or-divider">or</div><label>Someone already in your directory<select id="existingFamily"></select></label><p class="hint">This connection will appear for both people automatically. Photos and other details can be added later.</p><p id="familyError" role="alert"></p><div class="form-actions"><button class="primary" type="submit">Add to family</button><button id="familyCancel" type="button">Cancel</button></div></form></dialog><main id="relationships" hidden aria-labelledby="relationshipTitle"><section class="finder-page"><form id="relationshipForm"><p class="eyebrow">FOLLOW THE FAMILY CONNECTION</p><h1 id="relationshipTitle">How are they related?</h1><p>Choose two people to find their relationship and connecting path.</p><label>First person<select id="relationshipFrom" required></select></label><label>Second person<select id="relationshipTo" required></select></label><div class="form-actions"><button type="submit" class="primary">Relationship</button></div><div id="relationshipResult" aria-live="polite"></div></form></section></main><dialog id="recipeDialog" aria-labelledby="recipeHeading"><form id="recipeForm"><h2 id="recipeHeading">Add recipe</h2><input id="recipeId" type="hidden"><section class="recipe-edit-section"><h3>The recipe</h3><label>Name<input id="recipeTitle" required maxlength="200"></label><div class="recipe-field-row"><label>From whom (optional)<select id="recipePerson"></select></label><label>Category<select id="recipeCategory"></select></label></div><div class="recipe-field-row recipe-times"><label>Servings<input id="recipeServings" maxlength="100" placeholder="e.g. 6 people"></label><label>Prep time (minutes)<input id="recipePrep" type="number" min="0" max="100000" step="1"></label><label>Cooking time (minutes)<input id="recipeCook" type="number" min="0" max="100000" step="1"></label></div></section><section class="recipe-edit-section"><h3>Cooking instructions</h3><label>Ingredients<textarea id="recipeIngredients" required rows="7" maxlength="20000" placeholder="One ingredient per line, including quantities"></textarea></label><label>Instructions<textarea id="recipeInstructions" required rows="8" maxlength="50000" placeholder="One step per line"></textarea></label></section><section class="recipe-edit-section"><h3>Family memories</h3><label>Story or notes<textarea id="recipeStory" rows="4" maxlength="20000" placeholder="Who taught you this recipe? When does your family make it?"></textarea></label><div id="recipePhotoDrop" class="photo-dropzone" role="group" tabindex="0" aria-label="Recipe photos and handwritten cards drop area"><p>Drop photos or scanned recipe cards here</p><label>or choose images<input id="recipePhotos" type="file" accept="image/*" multiple></label></div><div id="recipePhotoPreview"></div><p id="recipePhotoStatus" class="hint" role="status"></p></section><p id="recipeError" role="alert"></p><div class="form-actions"><button id="recipeSave" type="submit" class="primary">Save recipe</button><button id="recipeCancel" type="button">Cancel</button><button id="recipeDelete" type="button">Delete recipe</button></div></form></dialog><dialog id="albumDialog" aria-labelledby="albumHeading"><form id="albumForm"><h2 id="albumHeading">Create album</h2><input id="albumId" type="hidden"><label>Album title<input id="albumTitle" required maxlength="200"></label><label>Date (optional)<input id="albumDate" type="date"></label><label>Story or description<textarea id="albumDescription" rows="3" maxlength="20000"></textarea></label><p id="albumMilestoneLink"></p><div id="albumDrop" class="photo-dropzone" tabindex="0" role="group" aria-label="Album photo and video drop area"><p>Drop photos, MP4 or MOV videos here</p><label>or choose files<input id="albumFiles" type="file" multiple accept="image/*,video/mp4,video/quicktime,.mp4,.mov"></label></div><p class="hint">Images are resized for sharing. Videos: up to 100 MB each.</p><div id="albumPhotoPreview"></div><p id="albumStatus" role="status" class="hint"></p><p id="albumError" role="alert"></p><div class="form-actions"><button id="saveAlbum" type="submit" class="primary">Save album</button><button id="shareAlbum" type="button">Copy link</button><button id="closeAlbum" type="button">Cancel</button><button id="deleteAlbum" type="button">Delete album</button></div></form></dialog><dialog id="milestoneDialog" aria-labelledby="milestoneHeading"><form id="milestoneForm"><p class="eyebrow">A MOMENT TO REMEMBER</p><h2 id="milestoneHeading">Add a family milestone</h2><input type="hidden" id="milestoneId"><label>Title<input id="milestoneTitle" required maxlength="200" placeholder="Name this family milestone"></label><div class="milestone-fields"><label>Event type<select id="milestoneType"><optgroup label="Family milestones"><option value="marriage">Marriage</option><option value="birthday_party">Birthday Party</option><option value="move">Move</option><option value="graduation">Graduation</option><option value="reunion">Family reunion</option><option value="other">Other milestone</option></optgroup><optgroup label="Holidays"><option value="new_year">New Year’s Day</option><option value="valentines_day">Valentine’s Day</option><option value="easter">Easter</option><option value="mothers_day">Mother’s Day</option><option value="memorial_day">Memorial Day</option><option value="fathers_day">Father’s Day</option><option value="independence_day">Independence Day</option><option value="labor_day">Labor Day</option><option value="halloween">Halloween</option><option value="thanksgiving">Thanksgiving</option><option value="hanukkah">Hanukkah</option><option value="christmas">Christmas</option><option value="new_years_eve">New Year’s Eve</option><option value="holiday">Other holiday</option></optgroup></select></label><label>Date<input id="milestoneDate" type="date" required></label></div><label>Location (optional)<input id="milestoneLocation" maxlength="255"></label><label>Story or details (optional)<textarea id="milestoneDescription" rows="3" maxlength="20000"></textarea></label><fieldset><legend>People involved (optional)</legend><div id="milestonePeople"></div></fieldset><label>Photo album<select id="milestoneAlbum"></select></label><p class="hint">Choose an existing album, or upload photos below to create one named after this milestone. Albums are also available on the Albums page.</p><div id="milestonePhotoDrop" class="photo-dropzone" role="group" tabindex="0" aria-label="Milestone photos and videos drop area"><p class="dropzone-instructions">Drag pictures, MP4 or MOV videos here</p><label>or choose pictures and videos<input id="milestonePhotos" type="file" accept="image/*,video/mp4,video/quicktime,.mp4,.mov" multiple></label></div><p class="hint">Images are resized for sharing. MP4 and MOV videos: up to 100 MB each. MOV files are converted to MP4 when saved. Add large collections in smaller batches.</p><div id="milestonePhotoPreview"></div><p id="milestonePhotoStatus" class="hint" role="status"></p><p class="hint">Milestones appear on the timeline. They don’t change family connections.</p><p id="milestoneError" role="alert"></p><div class="form-actions"><button id="shareMilestone" type="button">Copy link</button><button id="milestoneSave" type="submit" class="primary">Save milestone</button><button type="button" id="milestoneCancel">Cancel</button><button type="button" id="milestoneDelete" hidden>Delete</button></div></form></dialog><dialog id="photoLightbox" aria-labelledby="lightboxTitle"><div class="lightbox-heading"><h2 id="lightboxTitle">Family pictures</h2><button id="shareLightbox" type="button">Copy link</button><span id="lightboxCounter" aria-live="polite" aria-atomic="true"></span><button id="lightboxClose" aria-label="Close photo viewer">×</button></div><button id="lightboxPrevious" class="lightbox-arrow" aria-label="Previous picture">‹</button><figure><img id="lightboxImage" alt=""><video id="lightboxVideo" controls playsinline preload="metadata" hidden></video><p id="lightboxError" role="status" hidden>This picture could not be loaded. Try the next one.</p></figure><button id="lightboxNext" class="lightbox-arrow" aria-label="Next picture">›</button><p class="lightbox-help">← → to browse · Esc to close</p></dialog><script src="app.js"></script><script src="map.js"></script><script src="history.js"></script><script src="bulk-location.js"></script><script src="albums.js"></script><script src="recipes.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Kinfolk — Family tree</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="css/features.css" />
+  </head>
+  <body>
+    <header>
+      <a class="brand" href="#" aria-label="Family tree home">✳</a>
+      <nav>
+        <button class="active" id="treeTab">Family Tree</button
+        ><button id="openRelationshipFinder">Relationship</button><button id="mapTab">Map</button
+        ><button id="timelineTab">Timeline</button><button id="albumsTab">Albums</button
+        ><button id="recipesTab">Recipes</button><button id="peopleTab">People</button>
+      </nav>
+      <div class="search">
+        <label for="search">Find someone in your family</label>
+        <div class="searchbox">
+          <span>⌕</span
+          ><input
+            role="combobox"
+            aria-autocomplete="list"
+            aria-controls="searchMatches"
+            aria-expanded="false"
+            id="search"
+            placeholder="Type a name to begin…"
+            autocomplete="off"
+          /><button id="searchGo">Search ↗</button>
+        </div>
+        <div id="results"></div>
+      </div>
+      <span class="saved" hidden aria-live="polite"></span>
+    </header>
+    <div id="databaseNotice" role="alert" hidden>
+      <span id="databaseMessage"></span><button id="databaseRetry">Reload / retry</button>
+    </div>
+    <section id="setupNotice" hidden>
+      <h2>Your shared family database is ready.</h2>
+      <p>
+        Import your previous family data, add your first person, or start with the seven-person
+        example family.
+      </p>
+      <button id="setupImport">Import family backup</button>
+      <button id="useExample">Use example family</button>
+      <p class="hint">
+        If your saved people are at the old address,
+        <a href="http://127.0.0.1:8000/export.html" target="_blank" rel="noopener"
+          >download that browser’s backup</a
+        >, then import it here.
+      </p>
+    </section>
+    <input id="familyBackup" type="file" accept="application/json,.json" hidden />
+    <main id="explore">
+      <div class="workspace">
+        <section class="canvas" id="canvas">
+          <div id="empty">
+            <div class="empty-art">✳</div>
+            <h2>A family starts with someone.</h2>
+            <p>Search for a person above to discover their connections.</p>
+            <div id="emptySuggestions"></div>
+            <button id="addFirst">Add person ↗</button>
+          </div>
+          <div id="graph">
+            <div id="graphSpace">
+              <div id="scene">
+                <svg id="lines"></svg>
+                <div id="nodes"></div>
+              </div>
+            </div>
+          </div>
+          <div id="relationshipBanner" hidden>
+            <span id="relationshipSummary"></span
+            ><button id="clearRelationshipPath" aria-label="Clear highlighted relationship path">
+              ×
+            </button>
+          </div>
+          <div class="tree-view-actions">
+            <button id="backToStart" hidden>↩ Back to starting person</button
+            ><button id="showEntireTree">Show entire tree</button>
+          </div>
+          <div id="graphTools" hidden>
+            <button id="zoomOut" aria-label="Zoom out">−</button><span id="zoomLevel">100%</span
+            ><button id="zoomIn" aria-label="Zoom in">＋</button><button id="fitGraph">Fit</button
+            ><button id="reset">Clear</button>
+          </div>
+          <div class="canvas-bottom"><span id="count">0 people in view</span></div>
+        </section>
+        <aside id="details" aria-label="Selected person details">
+          <p class="eyebrow">A CLOSER LOOK</p>
+          <div class="aside-empty">
+            <span>♡</span>
+            <h2>Meet your people.</h2>
+            <p>Select a person to see their story and family connections.</p>
+          </div>
+        </aside>
+      </div>
+    </main>
+    <main id="familyMapPage" hidden>
+      <div class="family-map-workspace">
+        <div class="family-map-stage">
+          <div id="familyMapCanvas" aria-label="Map of family members’ current locations"></div>
+          <div class="map-view-controls">
+            <div class="map-view-toggle" role="group" aria-label="Map view">
+              <button id="mapCurrentView" type="button" aria-pressed="true">
+                Current locations</button
+              ><button id="mapHistoryView" type="button" aria-pressed="false">Places lived</button>
+            </div>
+            <button id="fitFamilyMap" type="button">Fit everyone</button>
+          </div>
+        </div>
+        <aside id="familyMapPeople">
+          <p class="eyebrow">OUR FAMILY, AROUND THE WORLD</p>
+          <h1>Family map.</h1>
+          <p id="familyMapSummary">Current locations of your people.</p>
+          <p id="familyMapStatus" role="status"></p>
+          <div id="mapSelectedPerson" hidden></div>
+          <div id="mapLocationDirectory">
+            <h2>People on the map</h2>
+            <div id="mappedPeople"></div>
+            <h3>Location needed</h3>
+            <p class="hint">Choose a Google location in People to add someone to the map.</p>
+            <div id="unmappedPeople"></div>
+          </div>
+        </aside>
+      </div>
+    </main>
+    <main id="recipesPage" hidden>
+      <section id="recipeDirectory">
+        <div class="recipes-heading">
+          <div>
+            <p class="eyebrow">PASSED DOWN WITH LOVE</p>
+            <h1>Family recipes.</h1>
+            <p>Keep the dishes, handwritten notes, and stories that bring your family together.</p>
+          </div>
+          <button id="newRecipe" class="primary">＋ Add recipe</button>
+        </div>
+        <div class="recipes-filters">
+          <label
+            >Search recipes<input
+              id="recipeSearch"
+              type="search"
+              placeholder="Search titles, ingredients, or memories…" /></label
+          ><label>Category<select id="recipeCategoryFilter"></select></label
+          ><label>From whom<select id="recipePersonFilter"></select></label>
+        </div>
+        <p id="recipesCount" role="status"></p>
+        <div id="recipesGrid"></div>
+      </section>
+      <article id="recipeDetail" hidden></article>
+    </main>
+    <main id="albumsPage" hidden>
+      <div class="albums-heading">
+        <div>
+          <p class="eyebrow">MEMORIES TO KEEP</p>
+          <h1>Family albums.</h1>
+          <p id="albumsSummary"></p>
+        </div>
+        <button id="newAlbum" class="primary">＋ Create album</button>
+      </div>
+      <div class="albums-toolbar">
+        <label
+          >Search albums<input
+            id="albumSearch"
+            type="search"
+            placeholder="Search by title…" /></label
+        ><label
+          >Order<select id="albumOrder">
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+          </select></label
+        >
+      </div>
+      <div id="albumsGrid"></div>
+    </main>
+    <main id="timeline" hidden>
+      <div class="timeline-heading">
+        <div>
+          <p class="eyebrow">THE YEARS THAT CONNECT US</p>
+          <h1>Our family timeline.</h1>
+          <p>
+            Every person has a beginning. Explore births, celebrations, and milestones through the
+            years.
+          </p>
+        </div>
+        <div class="timeline-actions">
+          <button id="addBirthdays">Add birthdays ↗</button
+          ><button id="addMilestone" class="primary">＋ Add milestone</button>
+        </div>
+      </div>
+      <p id="timelineSummary" class="hint" role="status"></p>
+      <div id="timelineEvents"></div>
+    </main>
+    <main id="editor" hidden>
+      <div class="intro">
+        <div>
+          <p class="eyebrow">THE PEOPLE BEHIND THE TREE</p>
+          <h1>Your family directory.</h1>
+          <p>Add a person, tell their story, and connect the dots.</p>
+        </div>
+        <div class="people-page-actions">
+          <button id="openBulkLocation" type="button">Set location for multiple people</button
+          ><button id="openSiblingGroup" type="button">Group siblings</button
+          ><button class="primary" id="newPerson">＋ Add a person</button>
+        </div>
+      </div>
+      <section class="directory">
+        <div id="peopleList"></div>
+        <form id="personForm">
+          <h2 id="formTitle">Add a person</h2>
+          <input type="hidden" id="personId" />
+          <section class="profile-section">
+            <h3>Personal details</h3>
+            <div class="person-name-fields">
+              <label
+                >First name<input
+                  id="firstName"
+                  required
+                  maxlength="120"
+                  autocomplete="given-name" /></label
+              ><label
+                >Middle name<input
+                  id="middleName"
+                  maxlength="120"
+                  autocomplete="additional-name" /></label
+              ><label
+                >Last name<input id="lastName" maxlength="120" autocomplete="family-name"
+              /></label>
+            </div>
+            <label>Birthday<input id="birthday" type="date" /></label
+            ><label class="deceased-field"><input id="deceased" type="checkbox" /> Deceased</label>
+            <div class="birthplace-field">
+              <h4>Birthplace <span class="optional">Optional</span></h4>
+              <p class="hint">
+                Choose a city or country from Google. This is the starting point of their migration
+                path.
+              </p>
+              <div id="birthplaceFinder"></div>
+              <p id="birthplaceStatus" class="hint" role="status"></p>
+              <p id="birthplaceSelected"></p>
+              <button type="button" id="clearBirthplace">Clear birthplace</button>
+            </div>
+          </section>
+          <section class="profile-section">
+            <h3>Photo and story</h3>
+            <div
+              id="personPhotoDrop"
+              class="photo-dropzone"
+              role="group"
+              tabindex="0"
+              aria-label="Portrait photo drop area"
+            >
+              <p class="dropzone-instructions">Drop a portrait here</p>
+              <label>or choose a photo<input id="photo" type="file" accept="image/*" /></label>
+              <div id="personPhotoPreview"></div>
+            </div>
+            <label
+              >About<textarea id="bio" rows="3" placeholder="A little of their story…"></textarea>
+            </label>
+          </section>
+          <section
+            class="profile-section current-location-field"
+            aria-labelledby="currentLocationLabel"
+          >
+            <h3 id="currentLocationLabel">Current Location</h3>
+            <p class="hint">
+              Search for a city, region, country, or street address. A city and country are enough.
+            </p>
+            <div id="locationFinder"></div>
+            <p id="locationFinderStatus" class="hint" role="status"></p>
+            <label for="location">Selected Google location</label
+            ><input
+              id="location"
+              maxlength="255"
+              readonly
+              placeholder="Choose a Google suggestion above"
+            /><button id="clearCurrentLocation" type="button">Clear location</button
+            ><input id="locationPlaceId" type="hidden" /><input
+              id="locationLat"
+              type="hidden"
+            /><input id="locationLng" type="hidden" /><iframe
+              id="locationPreview"
+              title="Current location preview"
+              loading="lazy"
+              referrerpolicy="strict-origin-when-cross-origin"
+              hidden
+            ></iframe>
+          </section>
+          <section class="profile-section">
+            <h3>Places lived</h3>
+            <p class="hint">
+              Record when they moved to a city or country. Enter a year or full date. These places
+              form their migration path.
+            </p>
+            <div id="placesLivedRows"></div>
+            <button type="button" id="addPlaceLived">＋ Add place lived</button>
+            <div id="placesLivedCurrent"></div>
+            <p id="placesLivedStatus" role="status" class="hint"></p>
+          </section>
+          <section class="profile-section">
+            <details class="person-connections">
+              <summary><h3>Manage connections</h3></summary>
+              <p class="hint">
+                Add only the connections you know. Each relationship works both ways automatically,
+                and siblings with a shared parent are connected for you. You can add more later.
+              </p>
+              <div id="relations"></div>
+              <button type="button" id="addRelation">＋ Add connection</button
+              ><button type="button" id="editSiblingGroup">Manage sibling group</button>
+            </details>
+            <p class="hint">
+              An easier way: select someone in Family tree, then choose Add parent, sibling, spouse,
+              or child.
+            </p>
+          </section>
+          <div class="form-actions">
+            <button class="primary" type="submit">Save person</button
+            ><button type="button" id="cancel">Cancel</button
+            ><button type="button" id="delete">Delete person</button>
+          </div>
+          <p id="formError" role="alert"></p>
+          <button type="submit" class="primary floating-save-person" aria-label="Save person">
+            Save person
+          </button>
+        </form>
+      </section>
+      <section class="settings">
+        <h3>Family backups</h3>
+        <button id="exportFamily">Download family backup</button>
+        <button id="importFamily">Import family backup</button>
+        <p>Imports add missing people and connections while keeping existing database records.</p>
+        <label
+          >Requests recipient email<input
+            id="requestEmail"
+            type="email"
+            placeholder="family@example.com"
+        /></label>
+        <p>
+          Missing-person requests open an email draft for review. People, relationships, photos, and
+          the requests email are shared through MySQL. Only your expanded tree view stays in this
+          browser.
+        </p>
+      </section>
+    </main>
+    <div id="toast" role="status"></div>
+    <dialog id="bulkLocationDialog" aria-labelledby="bulkLocationTitle">
+      <form id="bulkLocationForm">
+        <h2 id="bulkLocationTitle">Set Current Location</h2>
+        <p>
+          Choose one Google location, then select everyone who lives there. Saving replaces their
+          Current Location and leaves their birthplace and places lived unchanged.
+        </p>
+        <div id="bulkLocationFinder"></div>
+        <p id="bulkLocationStatus" class="hint" role="status"></p>
+        <strong id="bulkLocationSelected"></strong>
+        <h3>People at this location</h3>
+        <div id="bulkLocationTags"></div>
+        <input
+          id="bulkLocationSearch"
+          type="search"
+          placeholder="Find people…"
+          aria-label="Find people at this location"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded="false"
+          aria-controls="bulkLocationMatches"
+          autocomplete="off"
+        />
+        <div id="bulkLocationMatches" role="listbox" hidden></div>
+        <p id="bulkLocationSummary" aria-live="polite"></p>
+        <p id="bulkLocationError" role="alert"></p>
+        <div class="form-actions">
+          <button id="saveBulkLocation" class="primary" type="submit" disabled>
+            Save location for selected people</button
+          ><button id="cancelBulkLocation" type="button">Cancel</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="siblingGroupDialog" aria-labelledby="siblingGroupTitle">
+      <form id="siblingGroupForm">
+        <h2 id="siblingGroupTitle">Group siblings</h2>
+        <p>
+          The person you are editing and their existing siblings are included. Add another person to
+          connect them to everyone in the group. You can reuse this whenever the family grows.
+        </p>
+        <div id="siblingGroupTags"></div>
+        <label for="siblingGroupSearch">Find people</label
+        ><input
+          id="siblingGroupSearch"
+          type="search"
+          placeholder="Type a name…"
+          autocomplete="off"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded="false"
+          aria-controls="siblingGroupMatches"
+        />
+        <div id="siblingGroupMatches" role="listbox" hidden></div>
+        <p id="siblingGroupSummary" aria-live="polite"></p>
+        <p id="siblingGroupError" role="alert"></p>
+        <p class="hint">
+          Removing a name here only excludes them from this update; it does not delete saved
+          relationships. Parents and other relatives are not added automatically.
+        </p>
+        <div class="form-actions">
+          <button id="saveSiblingGroup" type="submit" class="primary">Save sibling group</button
+          ><button id="cancelSiblingGroup" type="button">Cancel</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="familyDialog" aria-labelledby="familyTitle">
+      <form id="familyForm">
+        <p class="eyebrow">ONE CONNECTION AT A TIME</p>
+        <h2 id="familyTitle">Add family</h2>
+        <p id="familyContext"></p>
+        <label
+          >New person’s name<input id="familyName" placeholder="Enter their name" maxlength="120"
+        /></label>
+        <div class="or-divider">or</div>
+        <label>Someone already in your directory<select id="existingFamily"></select></label>
+        <p class="hint">
+          This connection will appear for both people automatically. Photos and other details can be
+          added later.
+        </p>
+        <p id="familyError" role="alert"></p>
+        <div class="form-actions">
+          <button class="primary" type="submit">Add to family</button
+          ><button id="familyCancel" type="button">Cancel</button>
+        </div>
+      </form>
+    </dialog>
+    <main id="relationships" hidden aria-labelledby="relationshipTitle">
+      <section class="finder-page">
+        <form id="relationshipForm">
+          <p class="eyebrow">FOLLOW THE FAMILY CONNECTION</p>
+          <h1 id="relationshipTitle">How are they related?</h1>
+          <p>Choose two people to find their relationship and connecting path.</p>
+          <label>First person<select id="relationshipFrom" required></select></label
+          ><label>Second person<select id="relationshipTo" required></select></label>
+          <div class="form-actions">
+            <button type="submit" class="primary">Relationship</button>
+          </div>
+          <div id="relationshipResult" aria-live="polite"></div>
+        </form>
+      </section>
+    </main>
+    <dialog id="recipeDialog" aria-labelledby="recipeHeading">
+      <form id="recipeForm">
+        <h2 id="recipeHeading">Add recipe</h2>
+        <input id="recipeId" type="hidden" />
+        <section class="recipe-edit-section">
+          <h3>The recipe</h3>
+          <label>Name<input id="recipeTitle" required maxlength="200" /></label>
+          <div class="recipe-field-row">
+            <label>From whom (optional)<select id="recipePerson"></select></label
+            ><label>Category<select id="recipeCategory"></select></label>
+          </div>
+          <div class="recipe-field-row recipe-times">
+            <label
+              >Servings<input
+                id="recipeServings"
+                maxlength="100"
+                placeholder="e.g. 6 people" /></label
+            ><label
+              >Prep time (minutes)<input
+                id="recipePrep"
+                type="number"
+                min="0"
+                max="100000"
+                step="1" /></label
+            ><label
+              >Cooking time (minutes)<input
+                id="recipeCook"
+                type="number"
+                min="0"
+                max="100000"
+                step="1"
+            /></label>
+          </div>
+        </section>
+        <section class="recipe-edit-section">
+          <h3>Cooking instructions</h3>
+          <label
+            >Ingredients<textarea
+              id="recipeIngredients"
+              required
+              rows="7"
+              maxlength="20000"
+              placeholder="One ingredient per line, including quantities"
+            ></textarea></label
+          ><label
+            >Instructions<textarea
+              id="recipeInstructions"
+              required
+              rows="8"
+              maxlength="50000"
+              placeholder="One step per line"
+            ></textarea>
+          </label>
+        </section>
+        <section class="recipe-edit-section">
+          <h3>Family memories</h3>
+          <label
+            >Story or notes<textarea
+              id="recipeStory"
+              rows="4"
+              maxlength="20000"
+              placeholder="Who taught you this recipe? When does your family make it?"
+            ></textarea>
+          </label>
+          <div
+            id="recipePhotoDrop"
+            class="photo-dropzone"
+            role="group"
+            tabindex="0"
+            aria-label="Recipe photos and handwritten cards drop area"
+          >
+            <p>Drop photos or scanned recipe cards here</p>
+            <label
+              >or choose images<input id="recipePhotos" type="file" accept="image/*" multiple
+            /></label>
+          </div>
+          <div id="recipePhotoPreview"></div>
+          <p id="recipePhotoStatus" class="hint" role="status"></p>
+        </section>
+        <p id="recipeError" role="alert"></p>
+        <div class="form-actions">
+          <button id="recipeSave" type="submit" class="primary">Save recipe</button
+          ><button id="recipeCancel" type="button">Cancel</button
+          ><button id="recipeDelete" type="button">Delete recipe</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="albumDialog" aria-labelledby="albumHeading">
+      <form id="albumForm">
+        <h2 id="albumHeading">Create album</h2>
+        <input id="albumId" type="hidden" /><label
+          >Album title<input id="albumTitle" required maxlength="200" /></label
+        ><label>Date (optional)<input id="albumDate" type="date" /></label
+        ><label
+          >Story or description<textarea
+            id="albumDescription"
+            rows="3"
+            maxlength="20000"
+          ></textarea>
+        </label>
+        <p id="albumMilestoneLink"></p>
+        <div
+          id="albumDrop"
+          class="photo-dropzone"
+          tabindex="0"
+          role="group"
+          aria-label="Album photo and video drop area"
+        >
+          <p>Drop photos, MP4 or MOV videos here</p>
+          <label
+            >or choose files<input
+              id="albumFiles"
+              type="file"
+              multiple
+              accept="image/*,video/mp4,video/quicktime,.mp4,.mov"
+          /></label>
+        </div>
+        <p class="hint">Images are resized for sharing. Videos: up to 100 MB each.</p>
+        <div id="albumPhotoPreview"></div>
+        <p id="albumStatus" role="status" class="hint"></p>
+        <p id="albumError" role="alert"></p>
+        <div class="form-actions">
+          <button id="saveAlbum" type="submit" class="primary">Save album</button
+          ><button id="shareAlbum" type="button">Copy link</button
+          ><button id="closeAlbum" type="button">Cancel</button
+          ><button id="deleteAlbum" type="button">Delete album</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="milestoneDialog" aria-labelledby="milestoneHeading">
+      <form id="milestoneForm">
+        <p class="eyebrow">A MOMENT TO REMEMBER</p>
+        <h2 id="milestoneHeading">Add a family milestone</h2>
+        <input type="hidden" id="milestoneId" /><label
+          >Title<input
+            id="milestoneTitle"
+            required
+            maxlength="200"
+            placeholder="Name this family milestone"
+        /></label>
+        <div class="milestone-fields">
+          <label
+            >Event type<select id="milestoneType">
+              <optgroup label="Family milestones">
+                <option value="marriage">Marriage</option>
+                <option value="birthday_party">Birthday Party</option>
+                <option value="move">Move</option>
+                <option value="graduation">Graduation</option>
+                <option value="reunion">Family reunion</option>
+                <option value="other">Other milestone</option>
+              </optgroup>
+              <optgroup label="Holidays">
+                <option value="new_year">New Year’s Day</option>
+                <option value="valentines_day">Valentine’s Day</option>
+                <option value="easter">Easter</option>
+                <option value="mothers_day">Mother’s Day</option>
+                <option value="memorial_day">Memorial Day</option>
+                <option value="fathers_day">Father’s Day</option>
+                <option value="independence_day">Independence Day</option>
+                <option value="labor_day">Labor Day</option>
+                <option value="halloween">Halloween</option>
+                <option value="thanksgiving">Thanksgiving</option>
+                <option value="hanukkah">Hanukkah</option>
+                <option value="christmas">Christmas</option>
+                <option value="new_years_eve">New Year’s Eve</option>
+                <option value="holiday">Other holiday</option>
+              </optgroup>
+            </select></label
+          ><label>Date<input id="milestoneDate" type="date" required /></label>
+        </div>
+        <label>Location (optional)<input id="milestoneLocation" maxlength="255" /></label
+        ><label
+          >Story or details (optional)<textarea
+            id="milestoneDescription"
+            rows="3"
+            maxlength="20000"
+          ></textarea>
+        </label>
+        <fieldset>
+          <legend>People involved (optional)</legend>
+          <div id="milestonePeople"></div>
+        </fieldset>
+        <label>Photo album<select id="milestoneAlbum"></select></label>
+        <p class="hint">
+          Choose an existing album, or upload photos below to create one named after this milestone.
+          Albums are also available on the Albums page.
+        </p>
+        <div
+          id="milestonePhotoDrop"
+          class="photo-dropzone"
+          role="group"
+          tabindex="0"
+          aria-label="Milestone photos and videos drop area"
+        >
+          <p class="dropzone-instructions">Drag pictures, MP4 or MOV videos here</p>
+          <label
+            >or choose pictures and videos<input
+              id="milestonePhotos"
+              type="file"
+              accept="image/*,video/mp4,video/quicktime,.mp4,.mov"
+              multiple
+          /></label>
+        </div>
+        <p class="hint">
+          Images are resized for sharing. MP4 and MOV videos: up to 100 MB each. MOV files are
+          converted to MP4 when saved. Add large collections in smaller batches.
+        </p>
+        <div id="milestonePhotoPreview"></div>
+        <p id="milestonePhotoStatus" class="hint" role="status"></p>
+        <p class="hint">Milestones appear on the timeline. They don’t change family connections.</p>
+        <p id="milestoneError" role="alert"></p>
+        <div class="form-actions">
+          <button id="shareMilestone" type="button">Copy link</button
+          ><button id="milestoneSave" type="submit" class="primary">Save milestone</button
+          ><button type="button" id="milestoneCancel">Cancel</button
+          ><button type="button" id="milestoneDelete" hidden>Delete</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="photoLightbox" aria-labelledby="lightboxTitle">
+      <div class="lightbox-heading">
+        <h2 id="lightboxTitle">Family pictures</h2>
+        <button id="shareLightbox" type="button">Copy link</button
+        ><span id="lightboxCounter" aria-live="polite" aria-atomic="true"></span
+        ><button id="lightboxClose" aria-label="Close photo viewer">×</button>
+      </div>
+      <button id="lightboxPrevious" class="lightbox-arrow" aria-label="Previous picture">‹</button>
+      <figure>
+        <img id="lightboxImage" alt="" /><video
+          id="lightboxVideo"
+          controls
+          playsinline
+          preload="metadata"
+          hidden
+        ></video>
+        <p id="lightboxError" role="status" hidden>
+          This picture could not be loaded. Try the next one.
+        </p>
+      </figure>
+      <button id="lightboxNext" class="lightbox-arrow" aria-label="Next picture">›</button>
+      <p class="lightbox-help">← → to browse · Esc to close</p>
+    </dialog>
+    <script src="js/core.js"></script>
+    <script src="js/relationships.js"></script>
+    <script src="js/tree.js"></script>
+    <script src="js/navigation.js"></script>
+    <script src="js/milestones.js"></script>
+    <script src="js/people.js"></script>
+    <script src="js/tree-controls.js"></script>
+    <script src="app.js"></script>
+    <script src="js/backups.js"></script>
+    <script src="js/relationship-finder.js"></script>
+    <script src="js/lightbox.js"></script>
+    <script src="js/sharing.js"></script>
+    <script src="js/timeline-position.js"></script>
+    <script src="js/sibling-groups.js"></script>
+    <script src="js/location-picker.js"></script>
+    <script src="js/person-picker.js"></script>
+    <script src="js/map.js"></script>
+    <script src="js/location-history.js"></script>
+    <script src="js/bulk-location.js"></script>
+    <script src="js/albums.js"></script>
+    <script src="js/recipes.js"></script>
+  </body>
+</html>

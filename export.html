@@ -1,3 +1,22 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Move your Kinfolk data</title><link rel="stylesheet" href="style.css"><main style="max-width:650px;margin:60px auto"><p class="eyebrow">MOVE TO YOUR SHARED DATABASE</p><h1>Keep your family data.</h1><p>Download the family saved in this browser at the old address, then import the backup at your new address.</p><button class="primary" id="download">Download previous family data</button><p id="message" role="status"></p><p><a href="http://staging.localhost/manlapid-tree/">Open your shared family tree ↗</a></p></main><script>
-document.querySelector('#download').onclick=()=>{try{const saved=JSON.parse(localStorage.getItem('kinfolk-v1'));if(!saved||!Array.isArray(saved.people)||!saved.people.length)throw new Error('No previous family data was found in this browser at this address. Use the browser where you originally edited your family.');const blob=new Blob([JSON.stringify({format:'kinfolk-v1',people:saved.people,links:saved.links,email:saved.email||''},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='kinfolk-family-backup.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);document.querySelector('#message').textContent='Backup downloaded. Open the shared tree and choose Import family backup.'}catch(e){document.querySelector('#message').textContent=e.message}};
-</script></html>
+<!DOCTYPE html>
+<html lang="en">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  /><title>Move your Kinfolk data</title
+  ><link rel="stylesheet" href="style.css" />
+  <main style="max-width:650px;margin:60px auto">
+    <p class="eyebrow">MOVE TO YOUR SHARED DATABASE</p>
+    <h1>Keep your family data.</h1>
+    <p>
+      Download the family saved in this browser at the old address, then import the backup at your
+      new address.
+    </p>
+    <button class="primary" id="download">Download previous family data</button>
+    <p id="message" role="status"></p>
+    <p><a href="http://staging.localhost/manlapid-tree/">Open your shared family tree ↗</a></p>
+  </main>
+  <script>
+    document.querySelector('#download').onclick=()=>{try{const saved=JSON.parse(localStorage.getItem('kinfolk-v1'));if(!saved||!Array.isArray(saved.people)||!saved.people.length)throw new Error('No previous family data was found in this browser at this address. Use the browser where you originally edited your family.');const blob=new Blob([JSON.stringify({format:'kinfolk-v1',people:saved.people,links:saved.links,email:saved.email||''},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='kinfolk-family-backup.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);document.querySelector('#message').textContent='Backup downloaded. Open the shared tree and choose Import family backup.'}catch(e){document.querySelector('#message').textContent=e.message}};
+  </script>
+</html>

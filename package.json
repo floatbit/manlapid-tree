@@ -1,0 +1,13 @@
+{
+  "name": "manlapid-family-tree",
+  "private": true,
+  "scripts": {
+    "format": "prettier --write index.html export.html app.js js css style.css tests/*.cjs .prettierrc.json package.json",
+    "format:check": "prettier --check index.html export.html app.js js css style.css tests/*.cjs .prettierrc.json package.json",
+    "test": "node tests/assets.test.cjs && node tests/layout.test.cjs && node tests/exploration.test.cjs && php tests/ancestry.test.php && php tests/location-history.test.php",
+    "test:database": "php tests/media.test.php && php tests/albums.test.php && php tests/recipes.test.php"
+  },
+  "devDependencies": {
+    "prettier": "2.8.8"
+  }
+}

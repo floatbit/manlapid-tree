@@ -121,3 +121,8 @@ Recipes has its own page, searchable cards, category/person filters, a cooking v
 `family_recipes` stores the recipe fields; photos use `family_media` with `owner_type='recipe'` and files under `uploads/recipes/<recipe-id>/<upload-year>/<month>/`. Recipe attribution is cleared when its person is deleted; the recipe remains. Recipe deletion retains uploaded files. Family backups include recipes and embedded recipe photos; imports add missing recipe IDs. Recipe writes use the shared revision lock and CSRF checks. Regular family and album saves preserve recipe media.
 
 Run `php tests/recipes.test.php` for isolated MySQL storage tests. Timeline, Albums, and Recipes share a centered 1440px maximum content width; albums use five columns at 1400px and six at 1800px viewport widths.
+
+
+### Frontend organization and rollback
+
+The frontend has been formatted and split into feature files under `js/`, with additional feature styles under `css/`. The PHP/MAMP runtime and family database are unchanged. See [CODE_STRUCTURE.md](CODE_STRUCTURE.md) for file responsibilities, formatting/test commands, and the pre-cleanup rollback archive.

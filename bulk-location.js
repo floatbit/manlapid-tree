@@ -32,7 +32,7 @@ $('#bulkLocationForm').onsubmit=async event=>{
   if(!await saveShared()){data.people=previous;$('#bulkLocationError').textContent='Locations were not saved. Resolve the database notice and try again.';return}
   // Keep the open form in sync without discarding unrelated unsaved profile edits.
   if(selected.has($('#personId').value)){
-   $('#location').value=bulkLocation.location;$('#locationPlaceId').value=bulkLocation.locationPlaceId;$('#locationLat').value=bulkLocation.locationLat;$('#locationLng').value=bulkLocation.locationLng;resetLocationFinder();
+   $('#location').value=bulkLocation.location;$('#locationPlaceId').value=bulkLocation.locationPlaceId;$('#locationLat').value=bulkLocation.locationLat;$('#locationLng').value=bulkLocation.locationLng;resetLocationFinder();updatePlacesLivedCurrent();
   }
   $('#bulkLocationDialog').close();render();notify(`Current Location saved for ${selected.size} ${selected.size===1?'person':'people'}.`);
  }finally{bulkLocationSaving=false;$('#bulkLocationForm').inert=false;updateBulkLocationSelection()}

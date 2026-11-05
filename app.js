@@ -784,7 +784,7 @@ async function resetLocationFinder(){
    const selectionVersion=++locationFinderVersion;locationLookupPending=true;$('#locationFinderStatus').textContent='Looking up this location…';
    try{
     const place=placePrediction.toPlace();await place.fetchFields({fields:['formattedAddress','displayName','location']});if(selectionVersion!==locationFinderVersion)return;
-    $('#location').value=place.formattedAddress||place.displayName||'';$('#locationPlaceId').value=place.id||'';$('#locationLat').value=place.location?.lat()??'';$('#locationLng').value=place.location?.lng()??'';updateLocationPreview();$('#locationFinderStatus').textContent='Location selected. Save person to keep this change.';
+    $('#location').value=place.formattedAddress||place.displayName||'';$('#locationPlaceId').value=place.id||'';$('#locationLat').value=place.location?.lat()??'';$('#locationLng').value=place.location?.lng()??'';updateLocationPreview();updatePlacesLivedCurrent();$('#locationFinderStatus').textContent='Location selected. Save person to keep this change.';
    }catch(error){if(selectionVersion===locationFinderVersion)$('#locationFinderStatus').textContent='Could not look up this place. Please choose another Google suggestion.'}
    finally{if(selectionVersion===locationFinderVersion)locationLookupPending=false}
   });
@@ -794,7 +794,7 @@ async function resetLocationFinder(){
 $('#location').addEventListener('input',()=>{locationFinderVersion++;locationLookupPending=false;$('#locationPlaceId').value='';$('#locationLat').value='';$('#locationLng').value='';$('#locationPreview').hidden=true;$('#locationPreview').removeAttribute('src')});
 $('#location').addEventListener('change',updateLocationPreview);
 
-$('#clearCurrentLocation').onclick=()=>{locationFinderVersion++;locationLookupPending=false;for(const id of ['location','locationPlaceId','locationLat','locationLng'])$('#'+id).value='';resetLocationFinder()};
+$('#clearCurrentLocation').onclick=()=>{locationFinderVersion++;locationLookupPending=false;for(const id of ['location','locationPlaceId','locationLat','locationLng'])$('#'+id).value='';updatePlacesLivedCurrent();resetLocationFinder()};
 
 function setupRelationshipSearch(id){
  const select=$('#'+id);select.hidden=true;select.required=false;

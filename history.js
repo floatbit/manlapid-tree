@@ -2,7 +2,7 @@ let livedDraft=[],livedPending=new Set(),livedSession=0;
 function placesLivedPending(){return livedPending.size>0}
 function renderPlacesLived(entries){
  livedSession++;livedPending.clear();livedDraft=entries.map(entry=>({...entry}));$('#placesLivedRows').replaceChildren();$('#placesLivedStatus').textContent='';
- livedDraft.forEach(entry=>appendPlaceLivedRow(entry));
+ livedDraft.forEach(entry=>appendPlaceLivedRow(entry));updatePlacesLivedCurrent();
 }
 function appendPlaceLivedRow(entry){
  const session=livedSession,row=document.createElement('div');row.className='place-lived-row';
@@ -49,3 +49,8 @@ async function setupBirthplaceFinder(){
  }catch{if(session===birthplaceSession)$('#birthplaceStatus').textContent='Google location search could not load.'}
 }
 $('#clearBirthplace').onclick=()=>renderBirthplace(null);
+
+function updatePlacesLivedCurrent(){
+ const location=$('#location').value.trim(),container=$('#placesLivedCurrent');
+ container.innerHTML=location?`<div class="place-lived-row"><strong>Current Location</strong><p>${esc(location)}</p><p class="hint">Shown automatically as the final migration stop. Update it in Current Location above.</p></div>`:'';
+}

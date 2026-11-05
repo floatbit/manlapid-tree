@@ -105,11 +105,20 @@ function setFamilyMapMode(mode){
 }
 function migrationStopsForPerson(p){
  const homes=[...(p?.locationHistory||[])].sort((a,b)=>a.date.localeCompare(b.date));
- if(!p?.birthplace)return homes;
- const birth={...p.birthplace,id:'birthplace',date:p.birthday||'Birth date unknown',note:'Birthplace'};
- const first=homes[0];
- if(first&&(first.placeId===birth.placeId||(Math.abs(first.lat-birth.lat)<.00001&&Math.abs(first.lng-birth.lng)<.00001))){birth.note='Birthplace'+(first.note?' · '+first.note:'');birth.note+=' · First home recorded '+first.date;homes.shift()}
- return [birth,...homes];
+ const same=(a,b)=>(a.placeId&&a.placeId===b.placeId)||(Math.abs(Number(a.lat)-Number(b.lat))<.00001&&Math.abs(Number(a.lng)-Number(b.lng))<.00001);
+ let stops=homes;
+ if(p?.birthplace){
+  const birth={...p.birthplace,id:'birthplace',date:p.birthday||'Birth date unknown',note:'Birthplace'};
+  if(homes[0]&&same(homes[0],birth)){birth.note+=' · First home recorded '+homes[0].date+(homes[0].note?' · '+homes[0].note:'');homes.shift()}
+  stops=[birth,...homes];
+ }
+ if(p?.location&&p.locationLat!==null&&p.locationLat!==undefined&&p.locationLng!==null&&p.locationLng!==undefined&&Number.isFinite(Number(p.locationLat))&&Number.isFinite(Number(p.locationLng))){
+  const current={id:'current-location',location:p.location,placeId:p.locationPlaceId,lat:Number(p.locationLat),lng:Number(p.locationLng),date:'Current',note:'Current Location'};
+  const last=stops.at(-1);
+  if(last&&same(last,current))stops=[...stops.slice(0,-1),{...last,note:last.note?last.note+' · Current Location':'Current Location',current:true}];
+  else stops=[...stops,current];
+ }
+ return stops;
 }
 function migrationStops(){return migrationStopsForPerson(person(migrationPersonId))}
 function fitMigrationPath(){
@@ -120,7 +129,7 @@ function fitMigrationPath(){
 async function renderMigrationView(){
  $('#mapLocationDirectory').hidden=true;const details=$('#mapSelectedPerson');details.hidden=false;
  const p=person(migrationPersonId),stops=migrationStops();
- details.innerHTML=`<h2>Places lived</h2><label for="migrationPerson">Choose a person</label><select id="migrationPerson"><option value="">Choose someone…</option>${[...data.people].sort((a,b)=>a.name.localeCompare(b.name)).map(item=>`<option value="${esc(item.id)}" ${p?.id===item.id?'selected':''}>${esc(displayName(item))}${migrationStopsForPerson(item).length?' · '+migrationStopsForPerson(item).length+' places':''}</option>`).join('')}</select>${p?`${avatar(p)}<h3>${esc(p.name)}</h3><ol class="migration-stops">${stops.map((stop,i)=>`<li><button type="button" data-migration-stop="${i}"><strong>${i===0&&p.birthplace?'Born · ':''}${esc(stop.date)}</strong><span>${esc(stop.location)}</span>${stop.note?`<small>${esc(stop.note)}</small>`:''}</button></li>`).join('')}</ol>${!stops.length?'<p>No places lived recorded yet.</p>':''}<button type="button" id="editMigrationPerson">Edit places lived ↗</button>`:'<p>Choose a person to explore their moves.</p>'}`;
+ details.innerHTML=`<h2>Places lived</h2><label for="migrationPerson">Choose a person</label><select id="migrationPerson"><option value="">Choose someone…</option>${[...data.people].sort((a,b)=>a.name.localeCompare(b.name)).map(item=>`<option value="${esc(item.id)}" ${p?.id===item.id?'selected':''}>${esc(displayName(item))}${migrationStopsForPerson(item).length?' · '+migrationStopsForPerson(item).length+' places':''}</option>`).join('')}</select>${p?`${avatar(p)}<h3>${esc(p.name)}</h3><ol class="migration-stops">${stops.map((stop,i)=>`<li><button type="button" data-migration-stop="${i}"><strong>${i===0&&p.birthplace?'Born · ':''}${esc(stop.date)}${stop.current?' · Current':''}</strong><span>${esc(stop.location)}</span>${stop.note?`<small>${esc(stop.note)}</small>`:''}</button></li>`).join('')}</ol>${!stops.length?'<p>No places lived recorded yet.</p>':''}<button type="button" id="editMigrationPerson">Edit places lived ↗</button>`:'<p>Choose a person to explore their moves.</p>'}`;
  $('#migrationPerson').onchange=e=>{migrationPersonId=e.target.value;renderMigrationView()};if(p)$('#editMigrationPerson').onclick=()=>{showSection('people');edit(p.id);$('#placesLivedRows').parentElement.scrollIntoView({block:'center',behavior:'smooth'})};
  $('#familyMapStatus').textContent='Numbered stops show moves in date order. Lines connect places; they do not show an actual travel route.';$('#fitFamilyMap').disabled=!stops.length;$('#fitFamilyMap').textContent='Fit path';
  if(!familyMap||!familyMapMarkerLibrary)return;

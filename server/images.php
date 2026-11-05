@@ -1,12 +1,12 @@
 <?php
 function uploadRoot(): string { return getenv('KINFOLK_UPLOAD_ROOT') ?: dirname(__DIR__).'/uploads'; }
 function imageFilePath(string $path): ?string {
-    if (!preg_match('~^uploads/(people|milestones)/[a-zA-Z0-9_-]{1,64}/[0-9]{4}/[0-9]{2}/[a-f0-9]{64}\.(jpg|png|webp|mp4|mov)$~D',$path)) return null;
+    if (!preg_match('~^uploads/(people|milestones|albums|recipes)/[a-zA-Z0-9_-]{1,64}/[0-9]{4}/[0-9]{2}/[a-f0-9]{64}\.(jpg|png|webp|mp4|mov)$~D',$path)) return null;
     return uploadRoot().'/'.substr($path,8);
 }
 function validateStoredImage(string $photo,string $kind,string $id): string {
     if ($photo === '') return '';
-    if ($kind !== 'milestones' && (str_starts_with($photo,'data:video/') || preg_match('/\.(mp4|mov)$/',$photo))) throw new InvalidArgumentException('Portraits must be images.');
+    if (!in_array($kind,['milestones','albums'],true) && (str_starts_with($photo,'data:video/') || preg_match('/\.(mp4|mov)$/',$photo))) throw new InvalidArgumentException('Portraits must be images.');
     if (str_starts_with($photo,'uploads/')) {
         $file=imageFilePath($photo);
         if (!$file || !str_starts_with($photo,"uploads/$kind/$id/") || !is_file($file)) throw new InvalidArgumentException('Photo file is missing or belongs to a different record.');

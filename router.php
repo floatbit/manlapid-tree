@@ -17,5 +17,5 @@ if (str_starts_with($path,'/uploads/')) {
 }
 if ($path === '/api.php') { require __DIR__ . '/api.php'; return true; }
 if ($path === '/' || $path === '/index.html') { header('Content-Type: text/html; charset=utf-8'); readfile(__DIR__ . '/index.html'); return true; }
-if (in_array($path,['/app.js','/map.js','/history.js','/bulk-location.js','/style.css','/export.html'],true)) return false;
+if (in_array($path,['/app.js','/map.js','/history.js','/bulk-location.js','/albums.js','/recipes.js','/style.css','/export.html'],true)) return false;
 http_response_code(404); echo 'Not found';

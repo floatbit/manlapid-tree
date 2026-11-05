@@ -93,3 +93,31 @@ Timeline covers and the lightbox support both media types. The lightbox uses nat
 Each save request is limited to 160 MB of JSON, including base64 overhead on new media. Add very large collections in separate saves. Image size/dimension checks and movie-content validation remain enforced.
 
 Browser JSON saves use PUT (with CSRF protection) to avoid PHP’s form-POST size cap. Small older POST clients remain supported. A 100 MB MP4 save was verified end to end in an isolated database.
+
+### Media database records
+
+`family_media` is the source of truth for portrait and milestone attachment references. Each attachment has a stable UUID, owner type/ID, file path, image/video type, MIME type, byte size, dimensions when available, and display order. Caption and captured-date columns are reserved for future editing features. The first milestone attachment is its cover.
+
+The API still returns `person.photo` and `milestone.photos` for compatibility, hydrated from `family_media`. Existing columns on the owner tables are maintained as compatibility mirrors; do not edit them directly. Saves reconcile media records within the family transaction, preserving IDs and metadata when attachments are reordered. Detached references are removed from the table without deleting files.
+
+The one-time `media-table-v1` migration saves the previous owner/media records under the protected `server/backups/` folder and verifies reference counts and exact album ordering before committing. `family_migrations` prevents repeated imports. Uploaded files remain in their existing folders. Back up both MySQL and `uploads/`.
+
+Run `php tests/media.test.php` for isolated MySQL integration checks (creates and drops a separate test database).
+
+### Albums
+
+`family_albums` stores title, optional date, and description. `family_milestones.album_id` optionally links one milestone to an album. Album photos/videos are `family_media` rows with `owner_type='album'`; portraits remain `owner_type='person'`. The first ordered attachment is the cover. APIs expose `albums` and retain the milestone `photos` compatibility view, hydrated from its linked album.
+
+The `milestone-albums-v1` migration creates one album per milestone with media, copies the milestone title/date/story, and changes the existing media owner without moving files or changing media IDs, captions, ordering, or covers. Protected backups are written before migration. Milestones without media are unchanged. Deleting a milestone keeps its album; deleting an album unlinks its milestone and retains the files.
+
+Albums supports chronological year groups (newest/oldest), title search, independent albums with optional dates, photo/video uploads and drag/drop, immediate cover selection, lightboxes, and direct album/media links. Milestone editors may select an unlinked album or create a new linked album by uploading media. Portable family backups include independent and linked albums, embedding each album's media once.
+
+Additional checks: `php tests/albums.test.php` (disposable MySQL database).
+
+### Family recipes
+
+Recipes has its own page, searchable cards, category/person filters, a cooking view with ingredient lists and numbered instructions, sharing links (`#recipe=<id>`), and a print action. The editor stores title, family attribution, category, ingredients, instructions, servings, prep/cooking minutes, a family story, and image attachments (including handwritten recipe scans). Images support drag/drop, lightboxes, cover selection, and per-photo links.
+
+`family_recipes` stores the recipe fields; photos use `family_media` with `owner_type='recipe'` and files under `uploads/recipes/<recipe-id>/<upload-year>/<month>/`. Recipe attribution is cleared when its person is deleted; the recipe remains. Recipe deletion retains uploaded files. Family backups include recipes and embedded recipe photos; imports add missing recipe IDs. Recipe writes use the shared revision lock and CSRF checks. Regular family and album saves preserve recipe media.
+
+Run `php tests/recipes.test.php` for isolated MySQL storage tests. Timeline, Albums, and Recipes share a centered 1440px maximum content width; albums use five columns at 1400px and six at 1800px viewport widths.

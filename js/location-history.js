@@ -4,6 +4,9 @@ let livedDraft = [],
 function placesLivedPending() {
   return livedPending.size > 0;
 }
+function updatePlacesLivedCount() {
+  $('#placesLivedCount').textContent = livedDraft.filter((entry) => entry.location?.trim()).length;
+}
 function renderPlacesLived(entries) {
   livedSession++;
   livedPending.clear();
@@ -11,6 +14,7 @@ function renderPlacesLived(entries) {
   $('#placesLivedRows').replaceChildren();
   $('#placesLivedStatus').textContent = '';
   livedDraft.forEach((entry) => appendPlaceLivedRow(entry));
+  updatePlacesLivedCount();
   updatePlacesLivedCurrent();
 }
 function appendPlaceLivedRow(entry) {
@@ -28,6 +32,8 @@ function appendPlaceLivedRow(entry) {
     livedDraft = livedDraft.filter((item) => item !== entry);
     livedPending.delete(entry.id);
     row.remove();
+    updatePlacesLivedCount();
+    updatePersonUnsaved();
   };
   row.querySelector('.lived-date').oninput = (e) => (entry.date = e.target.value.trim());
   row.querySelector('.lived-note').oninput = (e) => (entry.note = e.target.value);
@@ -38,6 +44,7 @@ function appendPlaceLivedRow(entry) {
     .then(({ PlaceAutocompleteElement }) => {
       if (session !== livedSession || !row.isConnected) return;
       const widget = new PlaceAutocompleteElement();
+      widget.setAttribute('placeholder', 'Search for a city, country, or address');
       widget.setAttribute('aria-label', 'Find a city or country lived in');
       row.querySelector('.lived-google-search').append(widget);
       status.textContent = entry.location
@@ -59,6 +66,8 @@ function appendPlaceLivedRow(entry) {
             lng: place.location?.lng(),
           });
           row.querySelector('strong').textContent = entry.location;
+          updatePlacesLivedCount();
+          updatePersonUnsaved();
           status.textContent = 'Selected. Save person to keep this place.';
         } catch {
           status.textContent =
@@ -108,17 +117,40 @@ $('#addPlaceLived').onclick = () => {
   };
   livedDraft.push(entry);
   appendPlaceLivedRow(entry);
+  updatePersonUnsaved();
 };
 
 let draftBirthplace = null,
   birthplacePending = false,
   birthplaceSession = 0;
+function updateBirthplacePreview(showMap = false) {
+  const address = draftBirthplace?.location || '',
+    preview = $('#birthplacePreview');
+  $('#birthplaceSelected').value = address;
+  $('#selectedBirthplace').hidden = !address;
+  $('#showBirthplaceMap').hidden = !mapsApiKey;
+  $('#showBirthplaceMap').setAttribute(
+    'aria-expanded',
+    String(showMap && !!address && !!mapsApiKey),
+  );
+  preview.hidden = true;
+  preview.removeAttribute('src');
+  if (!showMap || !address || !mapsApiKey) return;
+  const url = new URL('https://www.google.com/maps/embed/v1/place');
+  url.search = new URLSearchParams({
+    key: mapsApiKey,
+    q: draftBirthplace.placeId ? 'place_id:' + draftBirthplace.placeId : address,
+  }).toString();
+  preview.src = url.href;
+  preview.hidden = false;
+}
+$('#showBirthplaceMap').onclick = () => updateBirthplacePreview(true);
 function renderBirthplace(place) {
   draftBirthplace = place ? { ...place } : null;
   birthplaceSession++;
   birthplacePending = false;
-  $('#birthplaceSelected').textContent = draftBirthplace?.location || 'No birthplace selected.';
-  $('#clearBirthplace').hidden = !draftBirthplace;
+  updateBirthplacePreview();
+  updatePlacesLivedCurrent();
   $('#birthplaceStatus').textContent = '';
   $('#birthplaceFinder').replaceChildren();
   if (!$('#editor').hidden) setupBirthplaceFinder();
@@ -132,6 +164,7 @@ async function setupBirthplaceFinder() {
     const { PlaceAutocompleteElement } = await loadPlacesLibrary();
     if (session !== birthplaceSession) return;
     const finder = new PlaceAutocompleteElement();
+    finder.setAttribute('placeholder', 'Search for a city, country, or address');
     finder.setAttribute('aria-label', 'Search birthplace city or country');
     $('#birthplaceFinder').append(finder);
     $('#birthplaceStatus').textContent = 'Select a Google suggestion. A city or country is enough.';
@@ -154,8 +187,9 @@ async function setupBirthplaceFinder() {
           lat: place.location?.lat(),
           lng: place.location?.lng(),
         };
-        $('#birthplaceSelected').textContent = draftBirthplace.location;
-        $('#clearBirthplace').hidden = false;
+        updateBirthplacePreview();
+        updatePlacesLivedCurrent();
+        updatePersonUnsaved();
         $('#birthplaceStatus').textContent = 'Selected. Save person to keep this birthplace.';
       } catch {
         if (session === birthplaceSession)
@@ -170,9 +204,17 @@ async function setupBirthplaceFinder() {
       $('#birthplaceStatus').textContent = 'Google location search could not load.';
   }
 }
-$('#clearBirthplace').onclick = () => renderBirthplace(null);
+$('#clearBirthplace').onclick = () => {
+  renderBirthplace(null);
+  updatePersonUnsaved();
+};
 
 function updatePlacesLivedCurrent() {
+  $('#placesLivedBirthplace').innerHTML = draftBirthplace?.location
+    ? `<div class="place-lived-row"><strong>Birthplace</strong><p>${esc(
+        draftBirthplace.location,
+      )}</p><p class="hint">Shown automatically as the first migration stop. Update it in Birthplace.</p></div>`
+    : '';
   const location = $('#location').value.trim(),
     container = $('#placesLivedCurrent');
   container.innerHTML = location

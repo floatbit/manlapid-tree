@@ -36,7 +36,7 @@ function renderDetailsContent() {
     p.name.split(/\s+/)[0],
   )}’s family</h3><div class="quick-add">${['parent', 'sibling', 'spouse', 'child']
     .map((type) => `<button data-add-family="${type}">＋ Add ${type}</button>`)
-    .join('')}</div><h3>Family connections</h3>${
+    .join('')}</div><h3>Family Connections</h3>${
     connections(p.id)
       .map(
         (c) =>
@@ -70,7 +70,7 @@ function renderSuggestions(reshuffle = false) {
     suggestedPeople = ids.slice(0, 14);
   }
   $('#details').innerHTML =
-    '<p class="eyebrow">A CLOSER LOOK</p><div class="sidebar-welcome"><div class="welcome-heart" aria-hidden="true">♡</div><h2>Meet your people.</h2><p>Select a person to see their story and family connections.</p></div>';
+    '<p class="eyebrow">A CLOSER LOOK</p><div class="sidebar-welcome"><div class="welcome-heart" aria-hidden="true">♡</div><h2>Meet Your People.</h2><p>Select a person to see their story and family connections.</p></div>';
   $('#emptySuggestions').innerHTML = `<div class="suggested-people">${
     suggestedPeople
       .map((id) => {

@@ -652,6 +652,7 @@ function render({ expanding = false, centerId = null, fit = false } = {}) {
   const labels = relationshipLabels(focus),
     sameTree = oldRoot === root && !!oldLayout;
   const fragment = document.createDocumentFragment();
+  const visiblePeople = new Set(ids);
   let entering = 0;
   for (const id of ids) {
     const p = person(id),
@@ -680,14 +681,32 @@ function render({ expanding = false, centerId = null, fit = false } = {}) {
     node.style.left = pos.x + 'px';
     node.style.top = pos.y + 'px';
     node.style.setProperty('--bubble', familyColors[kind]);
-    node.setAttribute('aria-label', `${displayName(p)}, ${relation}. Reveal connections`);
+    const hiddenConnections = new Set(
+      connections(id)
+        .filter((relative) => !visiblePeople.has(relative.id))
+        .map((relative) => relative.id),
+    ).size;
+    node.setAttribute(
+      'aria-label',
+      `${displayName(p)}, ${relation}. ${
+        hiddenConnections ? `${hiddenConnections} more immediate family members. ` : ''
+      }Reveal connections`,
+    );
     const contents = `${avatar(p)}${
       p.deceased ? '<span class="node-deceased" aria-label="Deceased">Deceased</span>' : ''
+    }${
+      hiddenConnections
+        ? `<span class="node-more-connections" aria-hidden="true">+${hiddenConnections}</span>`
+        : ''
     }<strong>${esc(displayName(p))}</strong><small>${relation}</small>`;
     if (node.innerHTML !== contents) node.innerHTML = contents;
     node.onclick = () => expand(id);
     node.ondblclick = () => centerPerson(id);
-    node.title = 'Click to reveal immediate family and center';
+    node.title = hiddenConnections
+      ? `Click to reveal ${hiddenConnections} more immediate family ${
+          hiddenConnections === 1 ? 'member' : 'members'
+        }`
+      : 'Click to reveal immediate family and center';
     fragment.append(node);
     for (const animation of node.getAnimations()) animation.cancel();
     if (before && (before.x !== pos.x || before.y !== pos.y))

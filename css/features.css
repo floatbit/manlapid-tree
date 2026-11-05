@@ -208,7 +208,10 @@
   margin-top: 12px;
 }
 #personForm .profile-section .current-location-field {
-  margin: 0;
+  margin: 0 0 20px 8px;
+}
+#placesLivedCurrent:not(:empty) {
+  margin-top: 24px;
 }
 .place-lived-row {
   border-top: 1px solid var(--line);
@@ -379,23 +382,30 @@ gmp-place-autocomplete {
   -webkit-appearance: none;
 }
 
-#personForm .floating-save-person {
+#personForm .person-floating-actions {
   position: fixed;
-  right: 25px;
+  right: var(--person-actions-right, 30px);
   bottom: 24px;
   z-index: 15;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+  pointer-events: none;
+}
+#personForm .person-floating-actions button {
+  pointer-events: auto;
   padding: 13px 22px;
-  box-shadow: 0 5px 24px #263c3633;
+  box-shadow: 0 5px 24px #263c3622;
+}
+.person-editor-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
 }
 #personForm {
-  padding-bottom: 90px;
-}
-@media (max-width: 600px) {
-  #personForm .floating-save-person {
-    right: 12px;
-    bottom: 16px;
-    padding: 11px 18px;
-  }
+  padding-bottom: 100px;
 }
 
 #personForm .person-connections > h3 {
@@ -1024,4 +1034,261 @@ gmp-place-autocomplete {
   max-width: 1440px;
   margin-left: auto;
   margin-right: auto;
+}
+
+/* Edit profiles in two independent columns on roomy desktop screens. */
+.person-form-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.person-form-column {
+  min-width: 0;
+}
+#personForm .person-form-column > .profile-section {
+  margin: 0 0 20px;
+}
+#personForm .person-form-columns {
+  margin-top: 24px;
+}
+@media (max-width: 1200px) {
+  .person-form-columns {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+}
+#personForm {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+}
+
+.selected-location-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+#personForm .selected-location-row input {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+.selected-location-row button {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+#showLocationMap,
+#showBirthplaceMap {
+  margin-top: 12px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--green);
+  box-shadow: none;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+#showLocationMap:hover,
+#showBirthplaceMap:hover {
+  background: transparent;
+  color: var(--ink);
+}
+
+#placesLivedSummary {
+  margin-bottom: 20px;
+}
+
+#personForm.has-unsaved-changes button[type='submit'] {
+  background: #c93636;
+  border-color: #c93636;
+  color: white;
+  box-shadow: 0 0 0 3px #ef666680;
+}
+#personForm.save-person-pulse button[type='submit'] {
+  animation: person-save-pulse 600ms ease-in-out infinite;
+}
+@keyframes person-save-pulse {
+  50% {
+    background: #e04444;
+    border-color: #e04444;
+    box-shadow: 0 0 0 8px #f05a5a66, 0 0 22px #e0444466;
+    transform: scale(1.025);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #personForm.save-person-pulse button[type='submit'] {
+    animation: none;
+  }
+}
+
+#birthplacePreview {
+  width: 100%;
+  height: 230px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  margin-top: 12px;
+}
+#personForm #birthplaceSelected {
+  font-weight: 400;
+}
+
+/* Timeline markers for location stops in the editor and map sidebar. */
+#placesLivedBirthplace .place-lived-row,
+#placesLivedRows .place-lived-row,
+#placesLivedCurrent .place-lived-row,
+.migration-stops > li {
+  position: relative;
+  margin-left: 8px;
+  padding-left: 26px;
+}
+#placesLivedBirthplace .place-lived-row::before,
+#placesLivedRows .place-lived-row::before,
+#placesLivedCurrent .place-lived-row::before,
+.migration-stops > li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 20px;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--paper);
+  background: #7d9a68;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px #d9e2d1;
+}
+.migration-stops {
+  list-style: none;
+  padding-left: 0;
+}
+.migration-stops > li {
+  margin-bottom: 12px;
+}
+
+.places-lived-timeline,
+.migration-stops {
+  position: relative;
+  isolation: isolate;
+}
+.places-lived-timeline::before,
+.migration-stops::before {
+  content: '';
+  position: absolute;
+  left: 15px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #d9e2d1;
+  z-index: -1;
+}
+.places-lived-timeline:not(:has(.place-lived-row))::before,
+.migration-stops:empty::before {
+  display: none;
+}
+.places-lived-timeline #addPlaceLived {
+  margin-left: 34px;
+}
+.places-lived-timeline .place-lived-row {
+  border-top: 0;
+}
+.places-lived-timeline .place-lived-row::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 26px;
+  right: 0;
+  height: 1px;
+  background: var(--line);
+}
+
+/* Rails are measured from marker centers, including across timeline year groups. */
+#timelineEvents {
+  position: relative;
+  isolation: isolate;
+}
+.places-lived-timeline::before,
+.migration-stops::before {
+  display: none;
+}
+.dot-connector {
+  position: absolute;
+  width: 2px;
+  background: #d9e2d1;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.location-life-timeline {
+  position: relative;
+  isolation: isolate;
+}
+.location-life-timeline .location-timeline-stop,
+.location-life-timeline #placesLivedRows .place-lived-row {
+  position: relative;
+  margin: 0 0 20px 8px;
+  padding: 16px 0 16px 26px;
+  border: 0;
+}
+.location-life-timeline .location-timeline-stop::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 20px;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--paper);
+  background: #7d9a68;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px #d9e2d1;
+}
+.location-life-timeline .location-timeline-stop h3,
+.location-life-timeline .location-timeline-stop h4 {
+  font-size: 16px;
+  margin: 0 0 12px;
+}
+.locations-history #placesLivedSummary,
+.locations-history #placesLivedDetails > .hint,
+.locations-history #addPlaceLived {
+  margin-left: 34px;
+}
+.locations-history #placesLivedSummary h3 {
+  font-size: 16px;
+}
+.locations-history {
+  margin-bottom: 24px;
+}
+.location-life-timeline #placesLivedRows .place-lived-row::after,
+.location-life-timeline .current-location-field::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 26px;
+  right: 0;
+  height: 1px;
+  background: var(--line);
+}
+
+.node .node-more-connections {
+  position: absolute;
+  top: 48px;
+  right: 39px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 5px;
+  border: 2px solid var(--paper);
+  border-radius: 20px;
+  background: var(--green);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 2px 5px #263c3620;
+}
+.node:hover .node-more-connections {
+  background: #274b39;
 }

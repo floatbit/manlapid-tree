@@ -1,3 +1,42 @@
+let personEditBaseline = '',
+  personPulseTimer;
+function personEditSnapshot() {
+  return JSON.stringify({
+    fields: [...$('#personForm').querySelectorAll('input, textarea, select')]
+      .filter((field) => !field.classList.contains('relation-person-search'))
+      .map((field) => [
+        field.id || field.className,
+        field.type === 'checkbox' ? field.checked : field.value,
+      ]),
+    photo: droppedPortraitFile
+      ? [droppedPortraitFile.name, droppedPortraitFile.size, droppedPortraitFile.lastModified]
+      : draftPhoto,
+    birthplace: draftBirthplace,
+    places: livedDraft,
+  });
+}
+function updatePersonUnsaved() {
+  if (!personEditBaseline) return;
+  const dirty = personEditSnapshot() !== personEditBaseline;
+  const form = $('#personForm');
+  form.classList.toggle('has-unsaved-changes', dirty);
+  form.classList.remove('save-person-pulse');
+  clearTimeout(personPulseTimer);
+  if (dirty)
+    personPulseTimer = setTimeout(() => {
+      form.classList.add('save-person-pulse');
+    }, 180);
+}
+$('#personForm').addEventListener('input', updatePersonUnsaved);
+$('#personForm').addEventListener('change', updatePersonUnsaved);
+function selectPersonFromDirectory(id) {
+  const selected = person(id);
+  if (!selected) return;
+  edit(id);
+  window.scrollTo({ top: 0, behavior: reducedMotion.matches ? 'instant' : 'smooth' });
+  notify(`Editing ${displayName(selected)}`);
+}
+
 function directory() {
   const connected = new Set(data.links.flatMap((link) => [link.a, link.b]));
   const noConnections = data.people
@@ -5,6 +44,12 @@ function directory() {
     .sort((a, b) => a.name.localeCompare(b.name));
   const noBirthdays = data.people
     .filter((p) => !p.birthday)
+    .sort((a, b) => a.name.localeCompare(b.name));
+  const noBirthplaces = data.people
+    .filter((p) => !p.birthplace?.location?.trim())
+    .sort((a, b) => a.name.localeCompare(b.name));
+  const noCurrentLocations = data.people
+    .filter((p) => !p.location?.trim())
     .sort((a, b) => a.name.localeCompare(b.name));
   const missingSection = (title, people, kind) =>
     `<section class="directory-missing"><h3>${title} <span>${
@@ -22,16 +67,20 @@ function directory() {
   $('#peopleList').innerHTML = `<h3>${
     data.people.length
   } people</h3><label for="directorySearch">Find a person to edit</label><div class="directory-search-field"><input id="directorySearch" type="search" placeholder="Search by name…" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="directoryMatches"><button id="clearDirectorySearch" type="button" aria-label="Clear people search" hidden>×</button></div><div id="directoryMatches" role="listbox" hidden></div>${missingSection(
-    'No connections',
+    'No Connections',
     noConnections,
     'connections',
-  )}${missingSection('No birthday', noBirthdays, 'birthday')}`;
+  )}${missingSection('No Birthday', noBirthdays, 'birthday')}${missingSection(
+    'No Birthplace',
+    noBirthplaces,
+    'birthplace',
+  )}${missingSection('No Current Location', noCurrentLocations, 'location')}`;
   $('#peopleList')
     .querySelectorAll('[data-missing-person]')
     .forEach(
       (button) =>
         (button.onclick = () => {
-          edit(button.dataset.missingPerson);
+          selectPersonFromDirectory(button.dataset.missingPerson);
           if (button.dataset.missingKind === 'birthday')
             $('#birthday').focus({ preventScroll: true });
         }),
@@ -47,7 +96,7 @@ function directory() {
     active = -1;
   }
   function select(p) {
-    edit(p.id);
+    selectPersonFromDirectory(p.id);
   }
   function highlight() {
     [...list.children].forEach((button, i) => {
@@ -122,6 +171,13 @@ function directory() {
   if (input.value.trim()) search();
 }
 
+function updateConnectionsCount() {
+  $('#connectionsCount').textContent = new Set(
+    [...document.querySelectorAll('#relations .relation-person-id')]
+      .map((input) => input.value)
+      .filter(Boolean),
+  ).size;
+}
 let relationPickerSerial = 0;
 function relationRow(value = {}) {
   const row = document.createElement('div');
@@ -154,6 +210,8 @@ function relationRow(value = {}) {
   }
   function choose(p) {
     hidden.value = p.id;
+    updateConnectionsCount();
+    updatePersonUnsaved();
     input.value = displayName(p);
     input.setCustomValidity('');
     close();
@@ -203,6 +261,8 @@ function relationRow(value = {}) {
   }
   input.oninput = () => {
     hidden.value = '';
+    updateConnectionsCount();
+    updatePersonUnsaved();
     input.setCustomValidity(input.value.trim() ? 'Select a person from the matches.' : '');
     search();
   };
@@ -235,20 +295,28 @@ function relationRow(value = {}) {
   row.querySelector('.relation-person-picker').onfocusout = (event) => {
     if (!event.currentTarget.contains(event.relatedTarget)) close();
   };
-  row.querySelector('.remove-relation').onclick = () => row.remove();
+  row.querySelector('.remove-relation').onclick = () => {
+    row.remove();
+    updateConnectionsCount();
+    updatePersonUnsaved();
+  };
   $('#relations').append(row);
+  updateConnectionsCount();
 }
 
 let droppedPortraitFile = null,
   portraitPreviewVersion = 0;
 function edit(id, { updateUrl = true } = {}) {
+  personEditBaseline = '';
+  clearTimeout(personPulseTimer);
+  $('#personForm').classList.remove('has-unsaved-changes', 'save-person-pulse');
   droppedPortraitFile = null;
   portraitPreviewVersion++;
   const p = person(id);
   $('#personForm').reset();
   $('#personId').value = p?.id || '';
   $('#deceased').checked = !!p?.deceased;
-  $('#formTitle').textContent = p ? 'Edit ' + displayName(p) : 'Add a person';
+  $('#formTitle').textContent = p ? 'Edit ' + displayName(p) : 'Add a Person';
   for (const field of ['firstName', 'middleName', 'lastName', 'bio', 'birthday', 'location'])
     $('#' + field).value = (field.endsWith('Name') ? nameParts(p)[field] : p?.[field]) || '';
   $('#locationPlaceId').value = p?.locationPlaceId || '';
@@ -261,10 +329,12 @@ function edit(id, { updateUrl = true } = {}) {
     : '';
   $('#relations').innerHTML = '';
   if (p) connectionsDirect(id).forEach(relationRow);
+  updateConnectionsCount();
   $('#delete').hidden = !p;
   $('#formError').textContent = '';
   renderPlacesLived(p?.locationHistory || []);
   renderBirthplace(p?.birthplace || null);
+  personEditBaseline = personEditSnapshot();
   if (updateUrl && !$('#editor').hidden) {
     const url = new URL(location.href);
     url.hash = p ? new URLSearchParams({ editPerson: p.id }).toString() : 'people';
@@ -427,6 +497,7 @@ setupPhotoDropZone($('#personPhotoDrop'), $('#photo'), (files) => {
   $('#photo').value = '';
   $('#formError').textContent = '';
   previewPortrait(files[0]);
+  updatePersonUnsaved();
 });
 $('#delete').onclick = async () => {
   const id = $('#personId').value;
@@ -492,3 +563,17 @@ window.addEventListener('resize', () => {
 document.addEventListener('click', (e) => {
   if (!e.target.closest('.search')) $('#results').innerHTML = '';
 });
+
+function alignPersonActions() {
+  const form = $('#personForm');
+  if (!form.getClientRects().length) return;
+  const box = form.querySelector('.locations-section');
+  const edge = box.getBoundingClientRect().right;
+  form.style.setProperty(
+    '--person-actions-right',
+    `${Math.max(12, document.documentElement.clientWidth - edge)}px`,
+  );
+}
+new ResizeObserver(alignPersonActions).observe($('#personForm'));
+new ResizeObserver(alignPersonActions).observe($('#personForm .locations-section'));
+window.addEventListener('resize', alignPersonActions);

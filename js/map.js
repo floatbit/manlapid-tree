@@ -150,7 +150,7 @@ function showMapPerson(id) {
     p.location ? `<p>⌖ ${esc(p.location)}</p>` : ''
   }${p.birthday ? `<p>Birthday · ${esc(p.birthday)}</p>` : ''}<p>${esc(
     p.bio || 'Their story is waiting to be told.',
-  )}</p><button type="button" id="mapPersonTree">Open family tree ↗</button><button type="button" id="mapPersonEdit">Edit person ↗</button><h3>Family connections</h3><div class="map-family-connections">${
+  )}</p><button type="button" id="mapPersonTree">Open family tree ↗</button><button type="button" id="mapPersonEdit">Edit person ↗</button><h3>Family Connections</h3><div class="map-family-connections">${
     connections(id)
       .map(
         (c) =>
@@ -366,7 +366,7 @@ async function renderMigrationView() {
   details.hidden = false;
   const p = person(migrationPersonId),
     stops = migrationStops();
-  details.innerHTML = `<h2>Places lived</h2><label for="migrationPerson">Choose a person</label><select id="migrationPerson"><option value="">Choose someone…</option>${[
+  details.innerHTML = `<h2>Places Lived</h2><label for="migrationPerson">Choose a person</label><select id="migrationPerson"><option value="">Choose someone…</option>${[
     ...data.people,
   ]
     .sort((a, b) => a.name.localeCompare(b.name))

@@ -8,12 +8,12 @@ $('#relationshipForm').onsubmit = (event) => {
   lastRelationshipResult = result;
   if (!result) {
     $('#relationshipResult').innerHTML =
-      '<h3>No connection recorded</h3><p>These people do not have a connecting path in the saved family records.</p>';
+      '<h3>No Connection Recorded</h3><p>These people do not have a connecting path in the saved family records.</p>';
     return;
   }
   if (from === to) {
     $('#relationshipResult').innerHTML =
-      '<h3>That’s the same person.</h3><p>Choose two different people to find a relationship.</p>';
+      '<h3>That’s the Same Person.</h3><p>Choose two different people to find a relationship.</p>';
     return;
   }
   const label = result.label.toLowerCase();

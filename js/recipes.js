@@ -66,7 +66,7 @@ function renderRecipes() {
             .join(' · ')}</span></span></button>`,
       )
       .join('') ||
-    '<div class="recipes-empty"><h2>Every family has a dish worth keeping.</h2><p>Add a recipe, its story, and a photo or handwritten card.</p></div>';
+    '<div class="recipes-empty"><h2>Every Family Has a Dish Worth Keeping.</h2><p>Add a recipe, its story, and a photo or handwritten card.</p></div>';
   $('#recipesGrid')
     .querySelectorAll('[data-recipe]')
     .forEach((b) => (b.onclick = () => openRecipe(b.dataset.recipe)));
@@ -86,7 +86,7 @@ function openRecipe(id, { updateUrl = true } = {}) {
   $('#recipeDirectory').hidden = true;
   const detail = $('#recipeDetail');
   detail.hidden = false;
-  detail.innerHTML = `<div class="recipe-detail-actions"><button type="button" id="recipeBack">← All recipes</button><div><button type="button" id="recipePrint">Print recipe</button><button type="button" id="recipeShare">Copy link</button><button type="button" id="recipeEdit" class="primary">Edit recipe</button></div></div><p class="eyebrow">${
+  detail.innerHTML = `<div class="recipe-detail-actions"><button type="button" id="recipeBack">← All recipes</button><div><button type="button" id="recipePrint">Print recipe</button><button type="button" id="recipeShare">Copy link</button><button type="button" id="recipeEdit" class="primary">Edit Recipe</button></div></div><p class="eyebrow">${
     recipeCategories[r.category] || 'Family recipe'
   }</p><h1>${esc(r.title)}</h1>${
     person(r.personId)
@@ -114,13 +114,13 @@ function openRecipe(id, { updateUrl = true } = {}) {
     .map((line) => `<li>${esc(line)}</li>`)
     .join('')}</ol></section></div>${
     r.story
-      ? `<section class="recipe-family-story"><h2>The family story</h2><p>${esc(
+      ? `<section class="recipe-family-story"><h2>The Family Story</h2><p>${esc(
           r.story,
         )}</p></section>`
       : ''
   }${
     r.photos.length > 1
-      ? `<section class="recipe-more-photos"><h2>Photos and recipe cards</h2><div>${r.photos
+      ? `<section class="recipe-more-photos"><h2>Photos and Recipe Cards</h2><div>${r.photos
           .slice(1)
           .map(
             (photo, i) =>
@@ -166,7 +166,7 @@ function editRecipe(id) {
   recipePhotoProcessing = false;
   $('#recipeForm').reset();
   $('#recipeId').value = r?.id || '';
-  $('#recipeHeading').textContent = r ? 'Edit recipe' : 'Add recipe';
+  $('#recipeHeading').textContent = r ? 'Edit Recipe' : 'Add Recipe';
   $('#recipeTitle').value = r?.title || '';
   $('#recipePerson').innerHTML =
     '<option value="">No attribution yet</option>' + recipePersonOptions();

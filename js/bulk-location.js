@@ -135,6 +135,7 @@ $('#openBulkLocation').onclick = async () => {
     const { PlaceAutocompleteElement } = await loadPlacesLibrary();
     if (session !== bulkLocationSession || !$('#bulkLocationDialog').open) return;
     const finder = new PlaceAutocompleteElement();
+    finder.setAttribute('placeholder', 'Search for a city, country, or address');
     finder.setAttribute('aria-label', 'Find a shared current location');
     $('#bulkLocationFinder').append(finder);
     $('#bulkLocationStatus').textContent = 'Choose a city, region, country, or address.';

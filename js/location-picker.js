@@ -29,11 +29,14 @@ function loadPlacesLibrary() {
   });
   return mapsPlacesPromise;
 }
-function updateLocationPreview() {
+function updateLocationPreview(showMap = false) {
   const preview = $('#locationPreview'),
     placeId = $('#locationPlaceId').value,
     address = $('#location').value.trim();
-  if (!mapsApiKey || !address) {
+  $('#selectedCurrentLocation').hidden = !address;
+  $('#showLocationMap').hidden = !mapsApiKey;
+  $('#showLocationMap').setAttribute('aria-expanded', String(showMap && !!address && !!mapsApiKey));
+  if (!showMap || !mapsApiKey || !address) {
     preview.hidden = true;
     preview.removeAttribute('src');
     return;
@@ -51,8 +54,7 @@ async function resetLocationFinder() {
   locationLookupPending = false;
   $('#locationFinder').replaceChildren();
   $('#locationFinderStatus').textContent = '';
-  $('#locationPreview').hidden = true;
-  $('#locationPreview').removeAttribute('src');
+  updateLocationPreview();
   // Load Google only when People is visible, rather than on every tree visit.
   if ($('#editor').hidden) return;
   $('#locationFinderStatus').textContent = 'Loading location search…';
@@ -83,6 +85,7 @@ async function resetLocationFinder() {
         $('#locationLng').value = place.location?.lng() ?? '';
         updateLocationPreview();
         updatePlacesLivedCurrent();
+        updatePersonUnsaved();
         $('#locationFinderStatus').textContent =
           'Location selected. Save person to keep this change.';
       } catch (error) {
@@ -107,7 +110,8 @@ $('#location').addEventListener('input', () => {
   $('#locationPreview').hidden = true;
   $('#locationPreview').removeAttribute('src');
 });
-$('#location').addEventListener('change', updateLocationPreview);
+$('#location').addEventListener('change', () => updateLocationPreview());
+$('#showLocationMap').onclick = () => updateLocationPreview(true);
 
 $('#clearCurrentLocation').onclick = () => {
   locationFinderVersion++;
@@ -116,4 +120,5 @@ $('#clearCurrentLocation').onclick = () => {
     $('#' + id).value = '';
   updatePlacesLivedCurrent();
   resetLocationFinder();
+  updatePersonUnsaved();
 };

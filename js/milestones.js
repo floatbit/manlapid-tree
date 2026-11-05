@@ -169,7 +169,7 @@ function renderTimeline() {
               .join('')}</div></section>`,
         )
         .join('')
-    : '<div class="timeline-empty"><span>✳</span><h2>A lifetime of stories starts here.</h2><p>Add birthdays in People or record your first family milestone.</p></div>';
+    : '<div class="timeline-empty"><span>✳</span><h2>A Lifetime of Stories Starts Here.</h2><p>Add birthdays in People or record your first family milestone.</p></div>';
   document
     .querySelectorAll('[data-birth-person]')
     .forEach((button) => (button.onclick = () => start(button.dataset.birthPerson)));
@@ -312,7 +312,7 @@ function openMilestone(id) {
   const event = (data.milestones || []).find((event) => event.id === id);
   $('#milestoneForm').reset();
   $('#milestoneId').value = event?.id || '';
-  $('#milestoneHeading').textContent = event ? 'Edit milestone' : 'Add a family milestone';
+  $('#milestoneHeading').textContent = event ? 'Edit Milestone' : 'Add a Family Milestone';
   for (const field of ['title', 'type', 'date', 'location', 'description'])
     $('#milestone' + field[0].toUpperCase() + field.slice(1)).value =
       event?.[field] || (field === 'type' ? 'marriage' : '');

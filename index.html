@@ -38,7 +38,7 @@
       <span id="databaseMessage"></span><button id="databaseRetry">Reload / retry</button>
     </div>
     <section id="setupNotice" hidden>
-      <h2>Your shared family database is ready.</h2>
+      <h2>Your Shared Family Database Is Ready.</h2>
       <p>
         Import your previous family data, add your first person, or start with the seven-person
         example family.
@@ -58,7 +58,7 @@
         <section class="canvas" id="canvas">
           <div id="empty">
             <div class="empty-art">✳</div>
-            <h2>A family starts with someone.</h2>
+            <h2>A Family Starts with Someone.</h2>
             <p>Search for a person above to discover their connections.</p>
             <div id="emptySuggestions"></div>
             <button id="addFirst">Add person ↗</button>
@@ -92,7 +92,7 @@
           <p class="eyebrow">A CLOSER LOOK</p>
           <div class="aside-empty">
             <span>♡</span>
-            <h2>Meet your people.</h2>
+            <h2>Meet Your People.</h2>
             <p>Select a person to see their story and family connections.</p>
           </div>
         </aside>
@@ -113,14 +113,14 @@
         </div>
         <aside id="familyMapPeople">
           <p class="eyebrow">OUR FAMILY, AROUND THE WORLD</p>
-          <h1>Family map.</h1>
+          <h1>Family Map.</h1>
           <p id="familyMapSummary">Current locations of your people.</p>
           <p id="familyMapStatus" role="status"></p>
           <div id="mapSelectedPerson" hidden></div>
           <div id="mapLocationDirectory">
-            <h2>People on the map</h2>
+            <h2>People on the Map</h2>
             <div id="mappedPeople"></div>
-            <h3>Location needed</h3>
+            <h3>Location Needed</h3>
             <p class="hint">Choose a Google location in People to add someone to the map.</p>
             <div id="unmappedPeople"></div>
           </div>
@@ -132,7 +132,7 @@
         <div class="recipes-heading">
           <div>
             <p class="eyebrow">PASSED DOWN WITH LOVE</p>
-            <h1>Family recipes.</h1>
+            <h1>Family Recipes.</h1>
             <p>Keep the dishes, handwritten notes, and stories that bring your family together.</p>
           </div>
           <button id="newRecipe" class="primary">＋ Add recipe</button>
@@ -155,7 +155,7 @@
       <div class="albums-heading">
         <div>
           <p class="eyebrow">MEMORIES TO KEEP</p>
-          <h1>Family albums.</h1>
+          <h1>Family Albums.</h1>
           <p id="albumsSummary"></p>
         </div>
         <button id="newAlbum" class="primary">＋ Create album</button>
@@ -179,7 +179,7 @@
       <div class="timeline-heading">
         <div>
           <p class="eyebrow">THE YEARS THAT CONNECT US</p>
-          <h1>Our family timeline.</h1>
+          <h1>Our Family Timeline.</h1>
           <p>
             Every person has a beginning. Explore births, celebrations, and milestones through the
             years.
@@ -197,7 +197,7 @@
       <div class="intro">
         <div>
           <p class="eyebrow">THE PEOPLE BEHIND THE TREE</p>
-          <h1>Your family directory.</h1>
+          <h1>Your Family Directory.</h1>
           <p>Add a person, tell their story, and connect the dots.</p>
         </div>
         <div class="people-page-actions">
@@ -209,125 +209,185 @@
       <section class="directory">
         <div id="peopleList"></div>
         <form id="personForm">
-          <h2 id="formTitle">Add a person</h2>
+          <div class="person-editor-heading">
+            <h2 id="formTitle">Add a Person</h2>
+            <button type="button" id="delete">Delete Person</button>
+          </div>
           <input type="hidden" id="personId" />
-          <section class="profile-section">
-            <h3>Personal details</h3>
-            <div class="person-name-fields">
-              <label
-                >First name<input
-                  id="firstName"
-                  required
-                  maxlength="120"
-                  autocomplete="given-name" /></label
-              ><label
-                >Middle name<input
-                  id="middleName"
-                  maxlength="120"
-                  autocomplete="additional-name" /></label
-              ><label
-                >Last name<input id="lastName" maxlength="120" autocomplete="family-name"
-              /></label>
+          <div class="person-form-columns">
+            <div class="person-form-column person-form-main">
+              <section class="profile-section">
+                <h3>Personal Details</h3>
+                <div class="person-name-fields">
+                  <label
+                    >First name<input
+                      id="firstName"
+                      required
+                      maxlength="120"
+                      autocomplete="given-name" /></label
+                  ><label
+                    >Middle name<input
+                      id="middleName"
+                      maxlength="120"
+                      autocomplete="additional-name" /></label
+                  ><label
+                    >Last name<input id="lastName" maxlength="120" autocomplete="family-name"
+                  /></label>
+                </div>
+                <label>Birthday<input id="birthday" type="date" /></label
+                ><label class="deceased-field"
+                  ><input id="deceased" type="checkbox" /> Deceased</label
+                >
+              </section>
+              <section class="profile-section">
+                <h3>Photo and Story</h3>
+                <div
+                  id="personPhotoDrop"
+                  class="photo-dropzone"
+                  role="group"
+                  tabindex="0"
+                  aria-label="Portrait photo drop area"
+                >
+                  <p class="dropzone-instructions">Drop a portrait here</p>
+                  <label>or choose a photo<input id="photo" type="file" accept="image/*" /></label>
+                  <div id="personPhotoPreview"></div>
+                </div>
+                <label
+                  >About<textarea
+                    id="bio"
+                    rows="3"
+                    placeholder="A little of their story…"
+                  ></textarea>
+                </label>
+              </section>
+              <section class="profile-section">
+                <details class="person-connections">
+                  <summary>
+                    <h3>Manage Connections (<span id="connectionsCount">0</span>)</h3>
+                  </summary>
+                  <p class="hint">
+                    Add only the connections you know. Each relationship works both ways
+                    automatically, and siblings with a shared parent are connected for you. You can
+                    add more later.
+                  </p>
+                  <div id="relations"></div>
+                  <button type="button" id="addRelation">＋ Add connection</button
+                  ><button type="button" id="editSiblingGroup">Manage sibling group</button>
+                </details>
+                <p class="hint">
+                  An easier way: select someone in Family tree, then choose Add parent, sibling,
+                  spouse, or child.
+                </p>
+              </section>
             </div>
-            <label>Birthday<input id="birthday" type="date" /></label
-            ><label class="deceased-field"><input id="deceased" type="checkbox" /> Deceased</label>
-            <div class="birthplace-field">
-              <h4>Birthplace <span class="optional">Optional</span></h4>
-              <p class="hint">
-                Choose a city or country from Google. This is the starting point of their migration
-                path.
-              </p>
-              <div id="birthplaceFinder"></div>
-              <p id="birthplaceStatus" class="hint" role="status"></p>
-              <p id="birthplaceSelected"></p>
-              <button type="button" id="clearBirthplace">Clear birthplace</button>
+            <div class="person-form-column person-form-locations">
+              <section class="profile-section locations-section" aria-labelledby="locationsTitle">
+                <h3 id="locationsTitle">Locations</h3>
+                <p class="hint">
+                  Follow their journey from birthplace, through past homes, to where they live now.
+                </p>
+                <div class="location-life-timeline">
+                  <div class="birthplace-field location-timeline-stop">
+                    <h4>Birthplace <span class="optional">Optional</span></h4>
+                    <p class="hint">
+                      Choose a city or country from Google. This is the starting point of their
+                      migration path.
+                    </p>
+                    <div id="birthplaceFinder"></div>
+                    <p id="birthplaceStatus" class="hint" role="status"></p>
+                    <div id="selectedBirthplace" hidden>
+                      <label for="birthplaceSelected">Selected Google Location</label>
+                      <div class="selected-location-row">
+                        <input id="birthplaceSelected" readonly />
+                        <button type="button" id="clearBirthplace">Clear Location</button>
+                      </div>
+                      <button
+                        id="showBirthplaceMap"
+                        type="button"
+                        aria-expanded="false"
+                        aria-controls="birthplacePreview"
+                      >
+                        View Map
+                      </button>
+                    </div>
+                    <iframe
+                      id="birthplacePreview"
+                      title="Birthplace preview"
+                      loading="lazy"
+                      referrerpolicy="strict-origin-when-cross-origin"
+                      hidden
+                    ></iframe>
+                  </div>
+                  <div class="locations-history">
+                    <div id="placesLivedDetails">
+                      <div id="placesLivedSummary">
+                        <h3>Places Lived (<span id="placesLivedCount">0</span>)</h3>
+                      </div>
+                      <p class="hint">
+                        Record when they moved to a city or country. Enter a year or full date.
+                        These places form their migration path.
+                      </p>
+                      <div class="places-lived-entries">
+                        <div id="placesLivedBirthplace" hidden></div>
+                        <div id="placesLivedRows"></div>
+                        <button type="button" id="addPlaceLived">＋ Add place lived</button>
+                        <div id="placesLivedCurrent" hidden></div>
+                      </div>
+                      <p id="placesLivedStatus" role="status" class="hint"></p>
+                    </div>
+                  </div>
+                  <div
+                    class="current-location-field location-timeline-stop"
+                    aria-labelledby="currentLocationLabel"
+                  >
+                    <h3 id="currentLocationLabel">Current Location</h3>
+                    <p class="hint">
+                      Search for a city, region, country, or street address. A city and country are
+                      enough.
+                    </p>
+                    <div id="locationFinder"></div>
+                    <p id="locationFinderStatus" class="hint" role="status"></p>
+                    <div id="selectedCurrentLocation" hidden>
+                      <label for="location">Selected Google Location</label>
+                      <div class="selected-location-row">
+                        <input id="location" maxlength="255" readonly />
+                        <button id="clearCurrentLocation" type="button">Clear Location</button>
+                      </div>
+                      <button
+                        id="showLocationMap"
+                        type="button"
+                        aria-expanded="false"
+                        aria-controls="locationPreview"
+                      >
+                        View Map
+                      </button>
+                    </div>
+                    <input id="locationPlaceId" type="hidden" /><input
+                      id="locationLat"
+                      type="hidden"
+                    /><input id="locationLng" type="hidden" /><iframe
+                      id="locationPreview"
+                      title="Current location preview"
+                      loading="lazy"
+                      referrerpolicy="strict-origin-when-cross-origin"
+                      hidden
+                    ></iframe>
+                  </div>
+                </div>
+              </section>
             </div>
-          </section>
-          <section class="profile-section">
-            <h3>Photo and story</h3>
-            <div
-              id="personPhotoDrop"
-              class="photo-dropzone"
-              role="group"
-              tabindex="0"
-              aria-label="Portrait photo drop area"
-            >
-              <p class="dropzone-instructions">Drop a portrait here</p>
-              <label>or choose a photo<input id="photo" type="file" accept="image/*" /></label>
-              <div id="personPhotoPreview"></div>
-            </div>
-            <label
-              >About<textarea id="bio" rows="3" placeholder="A little of their story…"></textarea>
-            </label>
-          </section>
-          <section
-            class="profile-section current-location-field"
-            aria-labelledby="currentLocationLabel"
-          >
-            <h3 id="currentLocationLabel">Current Location</h3>
-            <p class="hint">
-              Search for a city, region, country, or street address. A city and country are enough.
-            </p>
-            <div id="locationFinder"></div>
-            <p id="locationFinderStatus" class="hint" role="status"></p>
-            <label for="location">Selected Google location</label
-            ><input
-              id="location"
-              maxlength="255"
-              readonly
-              placeholder="Choose a Google suggestion above"
-            /><button id="clearCurrentLocation" type="button">Clear location</button
-            ><input id="locationPlaceId" type="hidden" /><input
-              id="locationLat"
-              type="hidden"
-            /><input id="locationLng" type="hidden" /><iframe
-              id="locationPreview"
-              title="Current location preview"
-              loading="lazy"
-              referrerpolicy="strict-origin-when-cross-origin"
-              hidden
-            ></iframe>
-          </section>
-          <section class="profile-section">
-            <h3>Places lived</h3>
-            <p class="hint">
-              Record when they moved to a city or country. Enter a year or full date. These places
-              form their migration path.
-            </p>
-            <div id="placesLivedRows"></div>
-            <button type="button" id="addPlaceLived">＋ Add place lived</button>
-            <div id="placesLivedCurrent"></div>
-            <p id="placesLivedStatus" role="status" class="hint"></p>
-          </section>
-          <section class="profile-section">
-            <details class="person-connections">
-              <summary><h3>Manage connections</h3></summary>
-              <p class="hint">
-                Add only the connections you know. Each relationship works both ways automatically,
-                and siblings with a shared parent are connected for you. You can add more later.
-              </p>
-              <div id="relations"></div>
-              <button type="button" id="addRelation">＋ Add connection</button
-              ><button type="button" id="editSiblingGroup">Manage sibling group</button>
-            </details>
-            <p class="hint">
-              An easier way: select someone in Family tree, then choose Add parent, sibling, spouse,
-              or child.
-            </p>
-          </section>
-          <div class="form-actions">
-            <button class="primary" type="submit">Save person</button
-            ><button type="button" id="cancel">Cancel</button
-            ><button type="button" id="delete">Delete person</button>
           </div>
           <p id="formError" role="alert"></p>
-          <button type="submit" class="primary floating-save-person" aria-label="Save person">
-            Save person
-          </button>
+          <div class="person-floating-actions">
+            <button id="cancel" type="button">Cancel</button>
+            <button type="submit" class="primary floating-save-person" aria-label="Save person">
+              Save Person
+            </button>
+          </div>
         </form>
       </section>
       <section class="settings">
-        <h3>Family backups</h3>
+        <h3>Family Backups</h3>
         <button id="exportFamily">Download family backup</button>
         <button id="importFamily">Import family backup</button>
         <p>Imports add missing people and connections while keeping existing database records.</p>
@@ -355,7 +415,7 @@
         <div id="bulkLocationFinder"></div>
         <p id="bulkLocationStatus" class="hint" role="status"></p>
         <strong id="bulkLocationSelected"></strong>
-        <h3>People at this location</h3>
+        <h3>People at This Location</h3>
         <div id="bulkLocationTags"></div>
         <input
           id="bulkLocationSearch"
@@ -380,7 +440,7 @@
     </dialog>
     <dialog id="siblingGroupDialog" aria-labelledby="siblingGroupTitle">
       <form id="siblingGroupForm">
-        <h2 id="siblingGroupTitle">Group siblings</h2>
+        <h2 id="siblingGroupTitle">Group Siblings</h2>
         <p>
           The person you are editing and their existing siblings are included. Add another person to
           connect them to everyone in the group. You can reuse this whenever the family grows.
@@ -413,7 +473,7 @@
     <dialog id="familyDialog" aria-labelledby="familyTitle">
       <form id="familyForm">
         <p class="eyebrow">ONE CONNECTION AT A TIME</p>
-        <h2 id="familyTitle">Add family</h2>
+        <h2 id="familyTitle">Add Family</h2>
         <p id="familyContext"></p>
         <label
           >New person’s name<input id="familyName" placeholder="Enter their name" maxlength="120"
@@ -435,7 +495,7 @@
       <section class="finder-page">
         <form id="relationshipForm">
           <p class="eyebrow">FOLLOW THE FAMILY CONNECTION</p>
-          <h1 id="relationshipTitle">How are they related?</h1>
+          <h1 id="relationshipTitle">How Are They Related?</h1>
           <p>Choose two people to find their relationship and connecting path.</p>
           <label>First person<select id="relationshipFrom" required></select></label
           ><label>Second person<select id="relationshipTo" required></select></label>
@@ -448,10 +508,10 @@
     </main>
     <dialog id="recipeDialog" aria-labelledby="recipeHeading">
       <form id="recipeForm">
-        <h2 id="recipeHeading">Add recipe</h2>
+        <h2 id="recipeHeading">Add Recipe</h2>
         <input id="recipeId" type="hidden" />
         <section class="recipe-edit-section">
-          <h3>The recipe</h3>
+          <h3>The Recipe</h3>
           <label>Name<input id="recipeTitle" required maxlength="200" /></label>
           <div class="recipe-field-row">
             <label>From whom (optional)<select id="recipePerson"></select></label
@@ -481,7 +541,7 @@
           </div>
         </section>
         <section class="recipe-edit-section">
-          <h3>Cooking instructions</h3>
+          <h3>Cooking Instructions</h3>
           <label
             >Ingredients<textarea
               id="recipeIngredients"
@@ -501,7 +561,7 @@
           </label>
         </section>
         <section class="recipe-edit-section">
-          <h3>Family memories</h3>
+          <h3>Family Memories</h3>
           <label
             >Story or notes<textarea
               id="recipeStory"
@@ -535,7 +595,7 @@
     </dialog>
     <dialog id="albumDialog" aria-labelledby="albumHeading">
       <form id="albumForm">
-        <h2 id="albumHeading">Create album</h2>
+        <h2 id="albumHeading">Create Album</h2>
         <input id="albumId" type="hidden" /><label
           >Album title<input id="albumTitle" required maxlength="200" /></label
         ><label>Date (optional)<input id="albumDate" type="date" /></label
@@ -578,7 +638,7 @@
     <dialog id="milestoneDialog" aria-labelledby="milestoneHeading">
       <form id="milestoneForm">
         <p class="eyebrow">A MOMENT TO REMEMBER</p>
-        <h2 id="milestoneHeading">Add a family milestone</h2>
+        <h2 id="milestoneHeading">Add a Family Milestone</h2>
         <input type="hidden" id="milestoneId" /><label
           >Title<input
             id="milestoneTitle"
@@ -625,7 +685,7 @@
           ></textarea>
         </label>
         <fieldset>
-          <legend>People involved (optional)</legend>
+          <legend>People Involved (Optional)</legend>
           <div id="milestonePeople"></div>
         </fieldset>
         <label>Photo album<select id="milestoneAlbum"></select></label>
@@ -667,7 +727,7 @@
     </dialog>
     <dialog id="photoLightbox" aria-labelledby="lightboxTitle">
       <div class="lightbox-heading">
-        <h2 id="lightboxTitle">Family pictures</h2>
+        <h2 id="lightboxTitle">Family Pictures</h2>
         <button id="shareLightbox" type="button">Copy link</button
         ><span id="lightboxCounter" aria-live="polite" aria-atomic="true"></span
         ><button id="lightboxClose" aria-label="Close photo viewer">×</button>

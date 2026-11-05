@@ -50,7 +50,7 @@ function renderAlbums() {
                     : '<small>Independent album</small>'
                 }<button type="button" data-album-edit="${esc(
                   a.id,
-                )}">Edit album ↗</button></div></article>`,
+                )}">Edit Album ↗</button></div></article>`,
             )
             .join('')}</div></section>`,
       )
@@ -76,7 +76,7 @@ function openAlbum(id) {
   albumUploading = false;
   $('#albumForm').reset();
   $('#albumId').value = album?.id || '';
-  $('#albumHeading').textContent = album ? 'Edit album' : 'Create album';
+  $('#albumHeading').textContent = album ? 'Edit Album' : 'Create Album';
   $('#albumTitle').value = album?.title || '';
   $('#albumDate').value = album?.date || '';
   $('#albumDescription').value = album?.description || '';

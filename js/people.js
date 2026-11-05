@@ -27,6 +27,9 @@ function updatePersonUnsaved() {
       form.classList.add('save-person-pulse');
     }, 180);
 }
+$('#deathDate').addEventListener('input', () => {
+  if ($('#deathDate').value.trim()) $('#deceased').checked = true;
+});
 $('#personForm').addEventListener('input', updatePersonUnsaved);
 $('#personForm').addEventListener('change', updatePersonUnsaved);
 function selectPersonFromDirectory(id) {
@@ -43,7 +46,7 @@ function directory() {
     .filter((p) => !connected.has(p.id))
     .sort((a, b) => a.name.localeCompare(b.name));
   const noBirthdays = data.people
-    .filter((p) => !p.birthday)
+    .filter((p) => !(p.dateDetails?.birth || p.birthday) || p.dateDetails?.birth === 'Date unknown')
     .sort((a, b) => a.name.localeCompare(b.name));
   const noBirthplaces = data.people
     .filter((p) => !p.birthplace?.location?.trim())
@@ -322,6 +325,9 @@ function edit(id, { updateUrl = true } = {}) {
   $('#locationPlaceId').value = p?.locationPlaceId || '';
   $('#locationLat').value = p?.locationLat ?? '';
   $('#locationLng').value = p?.locationLng ?? '';
+  $('#birthday').value = p?.dateDetails?.birth || p?.birthday || '';
+  $('#deathDate').value = p?.dateDetails?.death || '';
+  $('#currentLocationSince').value = p?.dateDetails?.currentSince || '';
   resetLocationFinder();
   draftPhoto = p?.photo || '';
   $('#personPhotoPreview').innerHTML = draftPhoto
@@ -359,6 +365,15 @@ $('#personForm').onsubmit = async (event) => {
     $('#formError').textContent = 'Please enter a name.';
     return;
   }
+  const dateDetails = {
+    birth: $('#birthday').value.trim(),
+    death: $('#deathDate').value.trim(),
+    currentSince: $('#currentLocationSince').value.trim(),
+  };
+  if (!Object.values(dateDetails).every(validFamilyDate)) {
+    $('#formError').textContent = 'Use YYYY-MM-DD, 1940, About 1940, or Date unknown.';
+    return;
+  }
   const id = $('#personId').value || crypto.randomUUID();
   let photo = draftPhoto;
   const file = droppedPortraitFile || $('#photo').files[0];
@@ -379,7 +394,8 @@ $('#personForm').onsubmit = async (event) => {
     photo,
     deceased: $('#deceased').checked,
     bio: $('#bio').value.trim(),
-    birthday: $('#birthday').value,
+    birthday: /^\d{4}-\d{2}-\d{2}$/.test(dateDetails.birth) ? dateDetails.birth : '',
+    dateDetails,
     location: $('#location').value.trim(),
     locationPlaceId: $('#locationPlaceId').value,
     locationLat: $('#locationLat').value === '' ? null : Number($('#locationLat').value),

@@ -7,3 +7,10 @@ $later=$entry;$later['id']='home2';$later['date']='2014-12-14';$result=cleanLoca
 foreach(['2014-02-30','0000','14','2014-13-01'] as $date){$bad=$entry;$bad['date']=$date;expectInvalid([$bad]);}
 $bad=$entry;$bad['placeId']='';expectInvalid([$bad]);$bad=$entry;$bad['lat']=91;expectInvalid([$bad]);expectInvalid([$entry,$entry]);
 echo "Passed: chronological dates, year-only entries, invalid calendar dates, Google place selection, coordinates, duplicate IDs, and legacy omission.\n";
+
+foreach(['1940','About 1940','Date unknown','1940-02-29'] as $date){if(!validFamilyDate($date))throw new Exception('Valid approximate date rejected');}
+foreach(['About 0000','1940-02-30','sometime'] as $date){if(validFamilyDate($date))throw new Exception('Invalid approximate date accepted');}
+$approx=$entry;$approx['date']='About 1940';$unknown=$entry;$unknown['id']='undated';$unknown['date']='Date unknown';
+if(count(cleanLocationHistory([$approx,$unknown]))!==2)throw new Exception('Approximate history lost');
+if(cleanDateDetails(['birth'=>'About 1940','death'=>'Date unknown'])['birth']!=='About 1940')throw new Exception('Date details lost');
+echo "Passed: approximate dates and unknown dates survive validation.\n";

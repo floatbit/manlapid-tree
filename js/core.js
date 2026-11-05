@@ -341,3 +341,26 @@ async function connectDatabase() {
     for (const el of document.querySelectorAll('main')) el.inert = !sharedReady;
   }
 }
+
+function familyDateYear(value) {
+  const match = /^(?:About )?(\d{4})(?:-\d{2}-\d{2})?$/.exec(value || '');
+  return match ? Number(match[1]) : null;
+}
+function validFamilyDate(value) {
+  if (!value || value === 'Date unknown') return true;
+  const raw = value.replace(/^About /, '');
+  if (/^\d{4}$/.test(raw)) return Number(raw) > 0;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw) || Number(raw.slice(0, 4)) < 1) return false;
+  const parsed = new Date(raw + 'T12:00:00Z');
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === raw;
+}
+function familyDateLabel(value) {
+  if (!value) return 'Date unknown';
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(value + 'T12:00:00Z'));
+}

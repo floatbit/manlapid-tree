@@ -1292,3 +1292,59 @@ gmp-place-autocomplete {
 .node:hover .node-more-connections {
   background: #274b39;
 }
+
+.timeline-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 36px;
+  align-items: start;
+}
+.upcoming-anniversaries {
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fffefa;
+  position: sticky;
+  top: 108px;
+}
+.upcoming-anniversaries h2 {
+  font-size: 20px;
+  margin: 0 0 12px;
+}
+.upcoming-anniversaries button {
+  display: grid;
+  gap: 7px;
+  width: 100%;
+  text-align: left;
+  margin-top: 12px;
+}
+.upcoming-anniversaries small,
+.upcoming-anniversaries span {
+  color: var(--muted);
+}
+#mapYearControls {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  right: 24px;
+  z-index: 5;
+  max-width: 600px;
+  padding: 16px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px #263c3615;
+}
+#mapYear {
+  width: 100%;
+  accent-color: var(--green);
+}
+@media (max-width: 900px) {
+  .timeline-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .upcoming-anniversaries {
+    position: static;
+    grid-row: 1;
+  }
+}

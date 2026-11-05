@@ -126,3 +126,13 @@ Run `php tests/recipes.test.php` for isolated MySQL storage tests. Timeline, Alb
 ### Frontend organization and rollback
 
 The frontend has been formatted and split into feature files under `js/`, with additional feature styles under `css/`. The PHP/MAMP runtime and family database are unchanged. See [CODE_STRUCTURE.md](CODE_STRUCTURE.md) for file responsibilities, formatting/test commands, and the pre-cleanup rollback archive.
+
+### Approximate Dates, Anniversaries, and Historical Map
+
+Birth Date, Death Date, moved-here dates, and Living Here Since accept `YYYY-MM-DD`, `1940`, `About 1940`, or `Date unknown`. Existing full birthdays remain compatible; new person date details are stored in `family_people.date_details` (an additive automatic migration). Location-history dates retain their precision as text. Blank person dates mean unrecorded; Date unknown explicitly records uncertainty. Entering a death date checks Deceased.
+
+Timeline displays approximate births and deaths without inventing month/day values, with unknown dates grouped separately. Upcoming Anniversaries appears in the right sidebar and lists the next 90 days of living people's birthdays, Marriage milestones, and deceased people's death-date anniversaries. Only exact dates recur. February 29 is observed on February 28 outside leap years.
+
+Map → Through Time exposes a year slider. Each person appears at their latest dated stop on or before the selected year; birthplace uses their birth date. The present year always uses a valid Current Location when available, even without Living Here Since. Past years use Current Location only when Living Here Since is dated. Approximate years are estimates. Undated stops are excluded, and a recorded location is carried forward until the next dated stop. People before their birth year or after a known death year are excluded. This is a record of known locations, not proof of continuous residence.
+
+`npm test` includes date, anniversary, and historical-map logic checks. `php tests/date-storage.test.php` verifies API validation and SQL persistence in an automatically removed temporary MySQL database.

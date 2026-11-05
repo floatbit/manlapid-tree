@@ -31,10 +31,17 @@ function renderDetailsContent() {
   }>Show path from starting person</button><button id="centerSelected">◎ Center person</button><button id="collapseSelected" ${
     data.expanded.includes(p.id) ? '' : 'disabled'
   }>− Collapse branch</button></div><p>${esc(p.bio || 'Their story is waiting to be told.')}</p>${
-    p.birthday ? `<p>Birthday · ${esc(p.birthday)}</p>` : ''
-  }${p.location ? `<p>⌖ ${esc(p.location)}</p>` : ''}<h3>Add to ${esc(
-    p.name.split(/\s+/)[0],
-  )}’s family</h3><div class="quick-add">${['parent', 'sibling', 'spouse', 'child']
+    p.dateDetails?.birth || p.birthday
+      ? `<p>Born · ${esc(familyDateLabel(p.dateDetails?.birth || p.birthday))}</p>`
+      : ''
+  }${p.dateDetails?.death ? `<p>Died · ${esc(familyDateLabel(p.dateDetails.death))}</p>` : ''}${
+    p.location ? `<p>⌖ ${esc(p.location)}</p>` : ''
+  }<h3>Add to ${esc(p.name.split(/\s+/)[0])}’s family</h3><div class="quick-add">${[
+    'parent',
+    'sibling',
+    'spouse',
+    'child',
+  ]
     .map((type) => `<button data-add-family="${type}">＋ Add ${type}</button>`)
     .join('')}</div><h3>Family Connections</h3>${
     connections(p.id)

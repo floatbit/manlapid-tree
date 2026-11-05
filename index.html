@@ -11,10 +11,13 @@
     <header>
       <a class="brand" href="#" aria-label="Family tree home">✳</a>
       <nav>
-        <button class="active" id="treeTab">Family Tree</button
-        ><button id="openRelationshipFinder">Relationship</button><button id="mapTab">Map</button
-        ><button id="timelineTab">Timeline</button><button id="albumsTab">Albums</button
-        ><button id="recipesTab">Recipes</button><button id="peopleTab">People</button>
+        <button class="active" id="treeTab">Family Tree</button>
+        <button id="timelineTab">Timeline</button>
+        <button id="mapTab">Map</button>
+        <button id="peopleTab">People</button>
+        <button id="albumsTab">Album</button>
+        <button id="recipesTab">Recipes</button>
+        <button id="openRelationshipFinder">Relationships</button>
       </nav>
       <div class="search">
         <label for="search">Find someone in your family</label>
@@ -101,6 +104,14 @@
     <main id="familyMapPage" hidden>
       <div class="family-map-workspace">
         <div class="family-map-stage">
+          <div id="mapYearControls" hidden>
+            <label for="mapYear">Year <output id="mapYearValue"></output></label
+            ><input id="mapYear" type="range" />
+            <p class="hint">
+              The present year uses Current Location. Past years use dated locations only;
+              approximate years are estimates.
+            </p>
+          </div>
           <div id="familyMapCanvas" aria-label="Map of family members’ current locations"></div>
           <div class="map-view-controls">
             <div class="map-view-toggle" role="group" aria-label="Map view">
@@ -108,7 +119,8 @@
                 Current locations</button
               ><button id="mapHistoryView" type="button" aria-pressed="false">Places lived</button>
             </div>
-            <button id="fitFamilyMap" type="button">Fit everyone</button>
+            <button id="mapTimeView" type="button" aria-pressed="false">Through Time</button
+            ><button id="fitFamilyMap" type="button">Fit everyone</button>
           </div>
         </div>
         <aside id="familyMapPeople">
@@ -191,7 +203,10 @@
         </div>
       </div>
       <p id="timelineSummary" class="hint" role="status"></p>
-      <div id="timelineEvents"></div>
+      <div class="timeline-columns">
+        <div id="timelineEvents"></div>
+        <aside id="upcomingAnniversaries" class="upcoming-anniversaries"></aside>
+      </div>
     </main>
     <main id="editor" hidden>
       <div class="intro">
@@ -234,10 +249,19 @@
                     >Last name<input id="lastName" maxlength="120" autocomplete="family-name"
                   /></label>
                 </div>
-                <label>Birthday<input id="birthday" type="date" /></label
+                <label
+                  >Birth Date<input
+                    id="birthday"
+                    placeholder="1940, About 1940, YYYY-MM-DD, or Date unknown" /></label
                 ><label class="deceased-field"
                   ><input id="deceased" type="checkbox" /> Deceased</label
                 >
+                <label
+                  >Death Date (Optional)<input
+                    id="deathDate"
+                    placeholder="1940, About 1940, YYYY-MM-DD, or Date unknown"
+                /></label>
+                <p class="hint">Dates accept an exact date, a year, About 1940, or Date unknown.</p>
               </section>
               <section class="profile-section">
                 <h3>Photo and Story</h3>
@@ -345,6 +369,12 @@
                       Search for a city, region, country, or street address. A city and country are
                       enough.
                     </p>
+                    <label
+                      >Living Here Since (Optional)<input
+                        id="currentLocationSince"
+                        placeholder="Year, date, About 1940, or Date unknown"
+                    /></label>
+                    <p class="hint">Used to place this location on the map through time.</p>
                     <div id="locationFinder"></div>
                     <p id="locationFinderStatus" class="hint" role="status"></p>
                     <div id="selectedCurrentLocation" hidden>

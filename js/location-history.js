@@ -25,7 +25,7 @@ function appendPlaceLivedRow(entry) {
     entry.location || 'New place',
   )}</strong><button type="button" aria-label="Remove place lived">×</button></div><div class="lived-google-search"></div><p class="lived-lookup-status hint" role="status"></p><div class="lived-date-note"><label>Moved here (year or date)<input class="lived-date" value="${esc(
     entry.date || '',
-  )}" placeholder="1980 or 1980-06-15" required pattern="[0-9]{4}(-[0-9]{2}-[0-9]{2})?"></label><label>Memory or note (optional)<textarea class="lived-note" maxlength="2000" rows="2">${esc(
+  )}" placeholder="1980, About 1980, YYYY-MM-DD, or Date unknown" required></label><label>Memory or note (optional)<textarea class="lived-note" maxlength="2000" rows="2">${esc(
     entry.note || '',
   )}</textarea></label></div>`;
   row.querySelector('button').onclick = () => {
@@ -98,12 +98,19 @@ function readPlacesLived() {
         'Choose a Google suggestion for each place lived, or remove the unfinished entry.';
       return null;
     }
-    if (!/^\d{4}(-\d{2}-\d{2})?$/.test(entry.date) || entry.date < '0001') {
-      $('#formError').textContent = 'Enter a year or full date for each place lived.';
+    if (!entry.date || !validFamilyDate(entry.date)) {
+      $('#formError').textContent =
+        'Enter a date, year, About 1940, or Date unknown for each move.';
       return null;
     }
   }
-  return livedDraft.map((entry) => ({ ...entry })).sort((a, b) => a.date.localeCompare(b.date));
+  return livedDraft
+    .map((entry) => ({ ...entry }))
+    .sort(
+      (a, b) =>
+        (familyDateYear(a.date) ?? 9999) - (familyDateYear(b.date) ?? 9999) ||
+        a.date.localeCompare(b.date),
+    );
 }
 $('#addPlaceLived').onclick = () => {
   const entry = {

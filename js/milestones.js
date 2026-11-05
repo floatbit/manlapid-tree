@@ -1,11 +1,15 @@
 function birthEvents(people) {
   return people
     .filter((p) => {
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(p.birthday || '')) return false;
-      const date = new Date(p.birthday + 'T12:00:00Z');
-      return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === p.birthday;
+      const value = p.dateDetails?.birth || p.birthday;
+      return !!value && validFamilyDate(value);
     })
-    .sort((a, b) => a.birthday.localeCompare(b.birthday) || a.name.localeCompare(b.name));
+    .sort(
+      (a, b) =>
+        (familyDateYear(a.dateDetails?.birth || a.birthday) ?? 9999) -
+          (familyDateYear(b.dateDetails?.birth || b.birthday) ?? 9999) ||
+        a.name.localeCompare(b.name),
+    );
 }
 function isMilestoneVideo(media) {
   return /^data:video\/(mp4|quicktime)[;,]/i.test(media) || /\.(mp4|mov)$/i.test(media);
@@ -88,19 +92,28 @@ function timelineItems() {
     ...birthEvents(data.people).map((p) => ({
       kind: 'birth',
       id: p.id,
-      date: p.birthday,
+      date: p.dateDetails?.birth || p.birthday,
       person: p,
     })),
+    ...data.people
+      .filter((p) => p.deceased && p.dateDetails?.death)
+      .map((p) => ({ kind: 'death', id: p.id + '-death', person: p, date: p.dateDetails.death })),
     ...(data.milestones || []).map((event) => ({ ...event, kind: 'milestone' })),
-  ].sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
+  ].sort(
+    (a, b) =>
+      (familyDateYear(a.date) ?? 9999) - (familyDateYear(b.date) ?? 9999) ||
+      a.date.localeCompare(b.date) ||
+      a.id.localeCompare(b.id),
+  );
 }
 function renderTimeline() {
+  renderUpcomingAnniversaries();
   const births = birthEvents(data.people),
     events = timelineItems(),
     missing = data.people.length - births.length,
     years = new Map();
   for (const event of events) {
-    const year = event.date.slice(0, 4);
+    const year = familyDateYear(event.date) || 'Date Unknown';
     if (!years.has(year)) years.set(year, []);
     years.get(year).push(event);
   }
@@ -121,14 +134,16 @@ function renderTimeline() {
           ([year, items]) =>
             `<section class="birth-year" aria-label="Family events in ${year}"><h2>${year}</h2><div class="birth-cards">${items
               .map((event) => {
-                if (event.kind === 'birth') {
+                if (event.kind === 'birth' || event.kind === 'death') {
                   const p = event.person;
                   return `<button class="birth-event" data-birth-person="${p.id}">${avatar(
                     p,
-                  )}<span><small>WELCOME TO THE FAMILY</small><strong>${esc(
-                    displayName(p),
-                  )} was born</strong><time datetime="${p.birthday}">${dateFormat.format(
-                    new Date(p.birthday + 'T12:00:00Z'),
+                  )}<span><small>${
+                    event.kind === 'death' ? 'IN REMEMBRANCE' : 'WELCOME TO THE FAMILY'
+                  }</small><strong>${esc(displayName(p))} ${
+                    event.kind === 'death' ? 'passed away' : 'was born'
+                  }</strong><time>${esc(
+                    familyDateLabel(event.date),
                   )}</time></span><span class="birth-arrow" aria-hidden="true">↗</span></button>`;
                 }
                 const names = (event.participants || [])
@@ -493,7 +508,78 @@ $('#milestoneDelete').onclick = async () => {
 $('#timelineTab').onclick = () => showSection('timeline');
 $('#addBirthdays').onclick = () => {
   tab(true);
-  const missing = data.people.find((p) => !p.birthday);
+  const missing = data.people.find(
+    (p) => !(p.dateDetails?.birth || p.birthday) || p.dateDetails?.birth === 'Date unknown',
+  );
   edit(missing?.id);
   $('#birthday').focus();
 };
+
+function upcomingAnniversaries(people, milestones, today = new Date()) {
+  const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const candidates = [];
+  for (const p of people) {
+    if (!p.deceased)
+      candidates.push({
+        date: p.dateDetails?.birth || p.birthday,
+        title: displayName(p),
+        kind: 'Birthday',
+        personId: p.id,
+      });
+    if (p.deceased)
+      candidates.push({
+        date: p.dateDetails?.death,
+        title: displayName(p),
+        kind: 'Remembrance',
+        personId: p.id,
+      });
+  }
+  for (const event of milestones)
+    if (event.type === 'marriage')
+      candidates.push({
+        date: event.date,
+        title: event.title,
+        kind: 'Wedding Anniversary',
+        milestoneId: event.id,
+      });
+  return candidates
+    .flatMap((event) => {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(event.date || '') || !validFamilyDate(event.date)) return [];
+      const [year, month, day] = event.date.split('-').map(Number);
+      const occurrence = (y) =>
+        new Date(y, month - 1, Math.min(day, new Date(y, month, 0).getDate()));
+      let next = occurrence(start.getFullYear());
+      if (next < start) next = occurrence(start.getFullYear() + 1);
+      const days = Math.round((next - start) / 86400000);
+      if (days > 90 || next.getFullYear() < year) return [];
+      return [{ ...event, next, days, years: next.getFullYear() - year }];
+    })
+    .sort((a, b) => a.next - b.next || a.title.localeCompare(b.title));
+}
+function renderUpcomingAnniversaries() {
+  const events = upcomingAnniversaries(data.people, data.milestones || []);
+  $('#upcomingAnniversaries').innerHTML =
+    '<h2>Upcoming Anniversaries</h2><p class="hint">Next 90 days · February 29 is observed on February 28 in non-leap years.</p>' +
+    (events
+      .map(
+        (event, i) =>
+          `<button type="button" data-upcoming="${i}"><small>${esc(event.kind)} · ${
+            event.days === 0 ? 'Today' : 'In ' + event.days + ' days'
+          }</small><strong>${esc(event.title)}</strong><span>${esc(
+            event.next.toLocaleDateString('en-US', { month: 'long', day: 'numeric' }),
+          )}${event.years ? ' · ' + event.years + ' years' : ''}</span></button>`,
+      )
+      .join('') || '<p>No anniversaries with a known month and day in the next 90 days.</p>');
+  $('#upcomingAnniversaries')
+    .querySelectorAll('[data-upcoming]')
+    .forEach(
+      (button) =>
+        (button.onclick = () => {
+          const event = events[Number(button.dataset.upcoming)];
+          if (event.personId) {
+            showSection('people');
+            edit(event.personId);
+          } else openMilestone(event.milestoneId);
+        }),
+    );
+}

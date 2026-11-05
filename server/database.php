@@ -58,6 +58,7 @@ function familyDatabase(): PDO {
     foreach(['location_lat'=>'DECIMAL(10,7)','location_lng'=>'DECIMAL(10,7)'] as $column=>$type)if(!$db->query("SHOW COLUMNS FROM family_people LIKE '$column'")->fetch())$db->exec("ALTER TABLE family_people ADD $column $type NULL");
     if(!$db->query("SHOW COLUMNS FROM family_people LIKE 'location_history'")->fetch())$db->exec("ALTER TABLE family_people ADD location_history MEDIUMTEXT NULL");
     if(!$db->query("SHOW COLUMNS FROM family_people LIKE 'birthplace'")->fetch())$db->exec("ALTER TABLE family_people ADD birthplace TEXT NULL");
+    if(!$db->query("SHOW COLUMNS FROM family_people LIKE 'date_details'")->fetch())$db->exec("ALTER TABLE family_people ADD date_details TEXT NULL");
     if(!$db->query("SHOW COLUMNS FROM family_people LIKE 'deceased'")->fetch())$db->exec("ALTER TABLE family_people ADD deceased TINYINT(1) NOT NULL DEFAULT 0");
     require_once __DIR__.'/media.php';
     initializeFamilyMedia($db);

@@ -65,10 +65,40 @@ const familyColors = {
   spouse: '#e7794e',
   self: '#8b78c5',
 };
-let graphScale = 1,
+const TREE_ZOOM_KEY = 'kinfolk-tree-zoom-v1';
+function readSavedTreeZoom(storage) {
+  try {
+    const value = JSON.parse(storage.getItem(TREE_ZOOM_KEY));
+    if (
+      typeof value?.locked === 'boolean' &&
+      Number.isFinite(value.scale) &&
+      value.scale >= 0.2 &&
+      value.scale <= 2
+    )
+      return value;
+  } catch {}
+  return { locked: false, scale: 1 };
+}
+const savedTreeZoom = readSavedTreeZoom(localStorage);
+let zoomLocked = savedTreeZoom.locked;
+let graphScale = zoomLocked ? savedTreeZoom.scale : 1,
   graphLayout = null,
   renderedRoot = null,
   cameraPadded = false;
+function syncZoomLockControl() {
+  const button = $('#lockZoom');
+  $('#lockZoomLabel').textContent = zoomLocked ? 'Unlock' : 'Lock';
+  button.title = zoomLocked ? 'Unlock zoom level' : 'Lock zoom level';
+  button.setAttribute('aria-pressed', String(zoomLocked));
+  button.setAttribute('aria-label', zoomLocked ? 'Unlock zoom level' : 'Lock zoom level');
+}
+function setGraphZoomLocked(locked) {
+  zoomLocked = locked;
+  try {
+    localStorage.setItem(TREE_ZOOM_KEY, JSON.stringify({ locked, scale: graphScale }));
+  } catch {}
+  syncZoomLockControl();
+}
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const treeAnimations = new Set();
 let treeCenterRequest = 0;
@@ -631,7 +661,7 @@ function setGraphScale(scale, { animate = true, fromTransform = null } = {}) {
     scene = $('#scene');
   const before = fromTransform || getComputedStyle(scene).transform;
   for (const motion of scene.getAnimations()) motion.cancel();
-  graphScale = Math.max(0.2, Math.min(2, scale));
+  graphScale = zoomLocked ? graphScale : Math.max(0.2, Math.min(2, scale));
   const w = graphLayout.width * graphScale,
     h = graphLayout.height * graphScale;
   $('#graphSpace').style.width =
@@ -647,6 +677,9 @@ function setGraphScale(scale, { animate = true, fromTransform = null } = {}) {
   }px) scale(${graphScale})`;
   scene.style.transform = target;
   $('#zoomLevel').textContent = Math.round(graphScale * 100) + '%';
+  $('#zoomSlider').value = String(Math.round(graphScale * 100));
+  $('#zoomSlider').setAttribute('aria-valuetext', Math.round(graphScale * 100) + '%');
+  syncZoomLockControl();
   if (animate && before !== 'none')
     animateTree(scene, [{ transform: before }, { transform: target }], {
       duration: 700,

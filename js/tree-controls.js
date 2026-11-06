@@ -110,6 +110,10 @@ for (const type of ['pointerup', 'pointercancel', 'lostpointercapture'])
   $('#graph').addEventListener(type, endTreeDrag);
 function handleTreeWheel(event) {
   if (!(event.metaKey || event.shiftKey) || !graphLayout || $('#graph').hidden) return;
+  if (zoomLocked) {
+    event.preventDefault();
+    return;
+  }
   const graph = $('#graph'),
     scene = $('#scene');
   const delta = Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
@@ -152,7 +156,29 @@ function showEntireTree() {
   fitGraph();
 }
 $('#showEntireTree').onclick = showEntireTree;
-$('#zoomIn').onclick = () => setGraphScale(graphScale * 1.2);
-$('#zoomOut').onclick = () => setGraphScale(graphScale / 1.2);
-$('#fitGraph').onclick = () => fitGraph();
+$('#zoomSlider').oninput = (event) => {
+  if (!graphLayout) return;
+  setGraphZoomLocked(false);
+  treeCenterRequest++;
+  const graph = $('#graph'),
+    scene = $('#scene');
+  const before = new DOMMatrixReadOnly(getComputedStyle(scene).transform);
+  const x = graph.clientWidth / 2,
+    y = graph.clientHeight / 2;
+  const worldX = (graph.scrollLeft + x - before.e) / graphScale;
+  const worldY = (graph.scrollTop + y - before.f) / graphScale;
+  const next = Number(event.target.value) / 100;
+  setGraphScale(next, { animate: false });
+  const after = new DOMMatrixReadOnly(getComputedStyle(scene).transform);
+  graph.scrollTo({
+    left: worldX * next + after.e - x,
+    top: worldY * next + after.f - y,
+    behavior: 'instant',
+  });
+};
+$('#lockZoom').onclick = () => setGraphZoomLocked(!zoomLocked);
+$('#fitGraph').onclick = () => {
+  setGraphZoomLocked(false);
+  fitGraph();
+};
 $('#backToStart').onclick = () => centerPerson(data.root);

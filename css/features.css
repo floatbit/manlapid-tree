@@ -1531,3 +1531,79 @@ gmp-place-autocomplete {
 #milestonePeople .inline-person-picker > div:first-child {
   display: contents;
 }
+
+#graphTools #zoomSlider {
+  width: 130px;
+  min-width: 0;
+  height: 24px;
+  margin: 0 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  accent-color: #38634e;
+  cursor: pointer;
+}
+@media (max-width: 600px) {
+  #graphTools #zoomSlider {
+    width: 110px;
+  }
+}
+
+#graphTools #lockZoom[aria-pressed='true'] {
+  background: #38634e;
+  color: #fff;
+}
+
+.tree-view-actions {
+  align-items: center;
+  gap: 3px;
+  width: max-content;
+  padding: 4px;
+  background: #fffefa;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  box-shadow: 0 4px 22px #263c3612;
+}
+.tree-view-actions #graphTools {
+  position: static;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--ink);
+}
+.tree-view-actions button,
+.tree-view-actions #graphTools button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 8px 10px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  box-shadow: none;
+}
+.tree-view-actions button:hover,
+.tree-view-actions #graphTools button:hover {
+  background: #edf3e7;
+}
+#lockZoom .zoom-locked-icon,
+#lockZoom[aria-pressed='true'] .zoom-unlocked-icon {
+  display: none;
+}
+#lockZoom[aria-pressed='true'] .zoom-locked-icon {
+  display: block;
+}
+#graphTools #lockZoom,
+#graphTools #fitGraph {
+  width: auto;
+  padding: 8px;
+}
+.tree-view-actions button {
+  gap: 6px;
+}
+.tree-view-actions button span {
+  min-width: 0;
+}

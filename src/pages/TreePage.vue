@@ -1,3 +1,6 @@
+<script setup lang="js">
+import { LockKeyhole, LockKeyholeOpen, Scan, Eraser, Network } from '@lucide/vue';
+</script>
 <template>
   <main id="explore">
     <div class="workspace">
@@ -24,13 +27,55 @@
           </button>
         </div>
         <div class="tree-view-actions">
-          <button id="backToStart" hidden>↩ Back to starting person</button
-          ><button id="showEntireTree">Show entire tree</button
-          ><button id="reset" hidden>Clear</button>
-        </div>
-        <div id="graphTools" hidden>
-          <button id="zoomOut" aria-label="Zoom out">−</button><span id="zoomLevel">100%</span
-          ><button id="zoomIn" aria-label="Zoom in">＋</button><button id="fitGraph">Fit</button>
+          <button
+            id="backToStart"
+            title="Back to starting person"
+            aria-label="Back to starting person"
+            hidden
+          >
+            ↩ Start
+          </button>
+          <button id="showEntireTree" title="Show entire tree" aria-label="Show entire tree">
+            <Network :size="18" aria-hidden="true" />
+            <span>Tree</span>
+          </button>
+          <button id="reset" title="Clear tree" aria-label="Clear tree" hidden>
+            <Eraser :size="18" aria-hidden="true" />
+            <span>Clear</span>
+          </button>
+          <div id="graphTools" hidden>
+            <input
+              id="zoomSlider"
+              type="range"
+              min="20"
+              max="200"
+              step="1"
+              value="100"
+              aria-label="Tree zoom"
+              aria-valuetext="100%"
+            />
+            <span id="zoomLevel">100%</span>
+            <button
+              id="lockZoom"
+              type="button"
+              aria-label="Lock zoom level"
+              title="Lock zoom level"
+              aria-pressed="false"
+            >
+              <LockKeyholeOpen class="zoom-unlocked-icon" :size="18" aria-hidden="true" />
+              <LockKeyhole class="zoom-locked-icon" :size="18" aria-hidden="true" />
+              <span id="lockZoomLabel">Lock</span>
+            </button>
+            <button
+              id="fitGraph"
+              type="button"
+              aria-label="Fit tree to view"
+              title="Fit tree to view"
+            >
+              <Scan :size="18" aria-hidden="true" />
+              <span>Fit</span>
+            </button>
+          </div>
         </div>
         <div class="canvas-bottom"><span id="count">0 people in view</span></div>
       </section>

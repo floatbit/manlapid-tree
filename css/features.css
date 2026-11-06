@@ -1322,23 +1322,6 @@ gmp-place-autocomplete {
 .upcoming-anniversaries span {
   color: var(--muted);
 }
-#mapYearControls {
-  position: absolute;
-  bottom: 24px;
-  left: 24px;
-  right: 24px;
-  z-index: 5;
-  max-width: 600px;
-  padding: 16px;
-  background: var(--paper);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  box-shadow: 0 4px 20px #263c3615;
-}
-#mapYear {
-  width: 100%;
-  accent-color: var(--green);
-}
 @media (max-width: 900px) {
   .timeline-columns {
     grid-template-columns: minmax(0, 1fr);
@@ -1347,4 +1330,42 @@ gmp-place-autocomplete {
     position: static;
     grid-row: 1;
   }
+}
+
+#childrenGroupDialog {
+  width: min(620px, calc(100vw - 40px));
+  max-height: calc(100dvh - 40px);
+  overflow: auto;
+}
+#childrenGroupTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 18px 0;
+}
+#childrenGroupTags button {
+  border-radius: 20px;
+  background: #edf3e7;
+}
+#childrenGroupSearch {
+  width: 100%;
+}
+#childrenGroupMatches {
+  max-height: 240px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+#childrenGroupMatches button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  border-radius: 0;
+}
+#childrenGroupMatches .search-active {
+  background: #e0ead7;
+}
+#childrenGroupError {
+  color: #963c2b;
 }

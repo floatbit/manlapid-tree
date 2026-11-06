@@ -67,6 +67,19 @@ let graphScale = 1,
   cameraPadded = false;
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const treeAnimations = new Set();
+let treeCenterRequest = 0;
+async function centerAfterTreeSettles(id, request) {
+  const nodeAnimations = [...treeAnimations].filter((animation) =>
+    animation.effect?.target?.classList.contains('node'),
+  );
+  await Promise.race([
+    Promise.allSettled(nodeAnimations.map((animation) => animation.finished)),
+    new Promise((resolve) => setTimeout(resolve, reducedMotion.matches ? 0 : 180)),
+  ]);
+  if (request !== treeCenterRequest || data.selected !== id || !graphLayout?.positions.has(id))
+    return;
+  centerGraphOnPerson(id, graphScale, getComputedStyle($('#scene')).transform);
+}
 function animateTree(element, frames, options) {
   if (reducedMotion.matches) return;
   const animation = element.animate(frames, options);
@@ -77,7 +90,7 @@ function animateTree(element, frames, options) {
 reducedMotion.addEventListener('change', () => {
   if (reducedMotion.matches) for (const animation of treeAnimations) animation.cancel();
 });
-function layoutFamily(ids) {
+function layoutFamily(ids, previous = null) {
   const root = ids.includes(data.root) ? data.root : ids[0],
     visible = new Set(ids),
     levels = new Map([[root, 0]]),
@@ -93,6 +106,8 @@ function layoutFamily(ids) {
     }
   }
   for (const id of ids) if (!levels.has(id)) levels.set(id, 0);
+  if (previous?.root === root)
+    for (const id of ids) if (previous.levels.has(id)) levels.set(id, previous.levels.get(id));
   const families = new Map();
   for (const child of ids) {
     const parents = connectionsDirect(child)
@@ -223,7 +238,7 @@ function layoutFamily(ids) {
         ];
         if (parents.length) {
           const center = parents.reduce((sum, id) => sum + positions.get(id).x, 0) / parents.length;
-          const desired = center - (group.length - 1) * 105;
+          let desired = center - (group.length - 1) * 105;
           x = Math.max(desired, x);
         }
       }
@@ -256,14 +271,134 @@ function layoutFamily(ids) {
   // Remove unused leading space left behind by parent-aligned rows before fitting.
   const leftEdge = Math.min(...[...positions.values()].map((p) => p.x)) - 110;
   for (const position of positions.values()) position.x -= leftEdge;
+  // Keep established rows in their visual order. New cards make room only to the right.
+  if (previous?.root === root) {
+    const offset = previous.positions.get(root).x - positions.get(root).x;
+    const oldGap = previous.generationGap || generationGap;
+    const gap = Math.max(oldGap, generationGap);
+    const rootY = previous.positions.get(root).y;
+    const siblingInsertions = new Map();
+    for (const id of ids) {
+      if (!previous.positions.has(id)) continue;
+      const partner = connectionsDirect(id).find(
+        (c) => c.type === 'spouse' && previous.positions.has(c.id),
+      );
+      if (!partner) continue;
+      const anchorX = previous.positions.get(id).x;
+      const direction = previous.positions.get(partner.id).x > anchorX ? -1 : 1;
+      const added = connections(id).filter(
+        (c) => c.type === 'sibling' && visible.has(c.id) && !previous.positions.has(c.id),
+      );
+      added.forEach((c, index) => {
+        if (!siblingInsertions.has(c.id))
+          siblingInsertions.set(c.id, anchorX + direction * 210 * (index + 1));
+      });
+    }
+    for (const [, row] of [...rows].sort((a, b) => a[0] - b[0])) {
+      const units = row.map((id) => [id]);
+      const joinPartners = (a, b) => {
+        const first = units.find((unit) => unit.includes(a));
+        const second = units.find((unit) => unit.includes(b));
+        if (first && second && first !== second) {
+          first.push(...second);
+          units.splice(units.indexOf(second), 1);
+        }
+      };
+      for (const id of row)
+        for (const c of connectionsDirect(id)) if (c.type === 'spouse') joinPartners(id, c.id);
+      for (const family of families.values())
+        if (
+          family.parents.length === 2 &&
+          family.parents.every((id) => row.includes(id)) &&
+          family.parents.every(
+            (id) => !connectionsDirect(id).some((c) => c.type === 'spouse' && row.includes(c.id)),
+          )
+        )
+          joinPartners(...family.parents);
+      const partnerUnits = units.map((unit) => [...unit]);
+      // Reserve one continuous span for children of the same recorded parents.
+      // Otherwise a newly revealed cousin can land in the middle of this family.
+      for (const family of families.values())
+        for (const child of family.children.slice(1)) joinPartners(family.children[0], child);
+      const ordered = units
+        .map((unit) => {
+          const anchor = (id) => previous.positions.get(id)?.x ?? positions.get(id).x + offset;
+          const couples = partnerUnits.filter((pair) => pair.some((id) => unit.includes(id)));
+          for (const pair of couples)
+            pair.sort(
+              (a, b) =>
+                Number(previous.positions.has(b)) - Number(previous.positions.has(a)) ||
+                anchor(a) - anchor(b),
+            );
+          couples.sort((a, b) => anchor(a[0]) - anchor(b[0]));
+          const members = couples.flat();
+          const established = members.filter((id) => previous.positions.has(id));
+          const parents = [
+            ...new Set(
+              members.flatMap((id) =>
+                connectionsDirect(id)
+                  .filter(
+                    (c) =>
+                      c.type === 'parent' &&
+                      positions.has(c.id) &&
+                      levels.get(c.id) < levels.get(id),
+                  )
+                  .map((c) => c.id),
+              ),
+            ),
+          ];
+          const parentCenter = parents.length
+            ? parents.reduce((sum, id) => sum + positions.get(id).x, 0) / parents.length
+            : null;
+          let desired =
+            parentCenter === null
+              ? established.length
+                ? anchor(established[0])
+                : Math.max(110, anchor(members[0]))
+              : Math.max(110, parentCenter - (members.length - 1) * 105);
+          const insertion = members.find((id) => siblingInsertions.has(id));
+          if (!established.length && insertion) desired = siblingInsertions.get(insertion);
+          return {
+            members,
+            x: desired,
+            order: parentCenter ?? desired + (members.length - 1) * 105,
+            old: established.length > 0,
+          };
+        })
+        .sort((a, b) => a.order - b.order || Number(b.old) - Number(a.old));
+      let nextX = Math.min(110, ...ordered.map((entry) => entry.x));
+      for (const entry of ordered) {
+        const startX = Math.max(
+          entry.x,
+          nextX,
+          ...entry.members
+            .filter((id) => previous.positions.has(id))
+            .map((id) => previous.positions.get(id).x - entry.members.indexOf(id) * 210),
+        );
+        for (const [index, id] of entry.members.entries()) {
+          const p = positions.get(id);
+          p.x = startX + index * 210;
+          p.y = rootY + levels.get(id) * gap;
+        }
+        nextX = startX + entry.members.length * 210;
+      }
+    }
+    const topShift = Math.max(0, 110 - Math.min(...[...positions.values()].map((p) => p.y)));
+    const leftShift = Math.max(0, 110 - Math.min(...[...positions.values()].map((p) => p.x)));
+    for (const p of positions.values()) {
+      p.y += topShift;
+      p.x += leftShift;
+    }
+  }
   return {
     positions,
     branches,
     root,
     families: [...families.values()],
     levels,
+    generationGap: Math.max(previous?.generationGap || 0, generationGap),
     width: Math.max(...[...positions.values()].map((p) => p.x + 110)),
-    height: (max - min) * generationGap + 230,
+    height: Math.max(...[...positions.values()].map((p) => p.y)) + 120,
   };
 }
 function familyRoutes(layout) {
@@ -604,6 +739,7 @@ function animateFamilyLines(previousLines) {
 }
 animateFamilyLines.serial = 0;
 function render({ expanding = false, centerId = null, fit = false } = {}) {
+  const centerRequest = ++treeCenterRequest;
   if (relationshipTrace?.ids.some((id) => !person(id))) relationshipTrace = null;
   $('#canvas').classList.toggle(
     'showing-relationship',
@@ -636,6 +772,7 @@ function render({ expanding = false, centerId = null, fit = false } = {}) {
   $('#graph').hidden = !ids.length;
   $('#graphTools').hidden = !ids.length;
   $('#backToStart').hidden = !ids.length;
+  $('#reset').hidden = !ids.length;
   $('#count').textContent = `${ids.length} ${ids.length === 1 ? 'person' : 'people'} in view`;
   if (!ids.length) {
     graphLayout = null;
@@ -646,7 +783,7 @@ function render({ expanding = false, centerId = null, fit = false } = {}) {
     renderDetails();
     return;
   }
-  graphLayout = layoutFamily(ids);
+  graphLayout = layoutFamily(ids, !fit && oldRoot === data.root ? oldLayout : null);
   const { positions, branches, root, width, height } = graphLayout;
   const focus = person(data.selected) ? data.selected : root;
   const labels = relationshipLabels(focus),
@@ -754,6 +891,23 @@ function render({ expanding = false, centerId = null, fit = false } = {}) {
     ids.length !== oldNodes.size;
   if (fit) {
     fitGraph({ fromTransform: oldTransform });
+  } else if (expanding && sameTree) {
+    const graph = $('#graph');
+    const before = new DOMMatrixReadOnly(oldTransform);
+    const oldLeft = graph.scrollLeft,
+      oldTop = graph.scrollTop;
+    setGraphScale(graphScale, { animate: false });
+    const after = new DOMMatrixReadOnly(getComputedStyle($('#scene')).transform);
+    graph.scrollLeft =
+      oldLeft +
+      (positions.get(root).x - oldLayout.positions.get(root).x) * graphScale +
+      after.e -
+      before.e;
+    graph.scrollTop =
+      oldTop +
+      (positions.get(root).y - oldLayout.positions.get(root).y) * graphScale +
+      after.f -
+      before.f;
   } else if (centerId) {
     const fitted = Math.max(
       0.2,
@@ -777,4 +931,5 @@ function render({ expanding = false, centerId = null, fit = false } = {}) {
   }
   renderedRoot = root;
   renderDetails();
+  if (expanding && sameTree && centerId) centerAfterTreeSettles(centerId, centerRequest);
 }

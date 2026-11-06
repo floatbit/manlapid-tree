@@ -169,3 +169,39 @@ assert.equal(vm.runInContext("relationshipLabels('percy').get('logan')", ctx), '
 console.log(
   'Passed: inferred half-siblings, incomplete sibling parents, stepparents, stepchildren, and step-relationship paths.',
 );
+
+// Bulk children adds only missing parent links and rejects conflicts and ancestry cycles.
+{
+  vm.runInContext(source.slice(source.indexOf('function ancestryCyclePerson('), source.indexOf('async function saveShared(')), ctx);
+  const bulk = fs.readFileSync(
+    require('node:path').join(__dirname, '../js/children-groups.js'),
+    'utf8',
+  );
+  vm.runInContext(
+    bulk.slice(
+      bulk.indexOf('function childrenGroupChanges('),
+      bulk.indexOf('function refreshChildrenGroupTags('),
+    ),
+    ctx,
+  );
+  vm.runInContext('function displayName(p) { return p.name; }', ctx);
+  ctx.data = {
+    people: ['parent', 'child1', 'child2', 'ancestor', 'spouse'].map((id) => ({ id, name: id })),
+    links: [parent('child1', 'parent'), parent('parent', 'ancestor'), spouse('parent', 'spouse')],
+  };
+  const changes = vm.runInContext(
+    "childrenGroupChanges('parent', ['child1', 'child2', 'child2'])",
+    ctx,
+  );
+  assert.equal(changes.links.length, 1);
+  assert.equal(changes.links[0].a, 'child2');
+  assert.equal(changes.links[0].b, 'parent');
+  assert.equal(changes.conflicts.length, 0);
+  for (const child of ['parent', 'ancestor', 'spouse'])
+    assert(
+      vm.runInContext(`childrenGroupChanges('parent', ['${child}']).conflicts.length`, ctx) > 0,
+    );
+}
+console.log(
+  'Passed: bulk children skips existing links and duplicates, and rejects self, cycle, and relationship conflicts.',
+);

@@ -139,6 +139,9 @@ function setupSiblingGroupSearch() {
 }
 $('#openSiblingGroup').onclick = () => {
   const current = $('#personId').value;
+  $('#siblingGroupDescription').textContent = person(current)
+    ? 'The person you are editing and their existing siblings are included. Add another person to connect them to everyone in the group. You can reuse this whenever the family grows.'
+    : 'Select the people who are siblings. Everyone selected will be connected to everyone else in the group. No starting person is required, and the unsaved person in Add Person will not be included.';
   siblingGroupIds = person(current)
     ? [
         ...new Set([

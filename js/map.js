@@ -135,10 +135,7 @@ function showMapPerson(id) {
     renderMigrationView();
     return;
   }
-  const p =
-    familyMapMode === 'time'
-      ? peopleAtMapYear(Number($('#mapYear').value)).find((item) => item.id === id)
-      : person(id);
+  const p = person(id);
   if (!p) {
     closeMapPerson();
     return;
@@ -195,21 +192,13 @@ function closeMapPerson() {
 }
 async function renderFamilyMap({ fit = true } = {}) {
   const version = ++familyMapRenderVersion,
-    { groups, missing } = mapLocationGroups(
-      familyMapMode === 'time' ? peopleAtMapYear(Number($('#mapYear').value)) : data.people,
-    ),
+    { groups, missing } = mapLocationGroups(data.people),
     mapped = groups.reduce((n, g) => n + g.people.length, 0);
-  $('#familyMapSummary').textContent = `${
-    familyMapMode === 'time' ? $('#mapYear').value + ' · ' : ''
-  }${mapped} ${mapped === 1 ? 'person' : 'people'} · ${groups.length} ${
-    groups.length === 1 ? 'location' : 'locations'
-  } · ${missing.length} without a mapped location${
-    familyMapMode === 'time'
-      ? ' · ' +
-        (data.people.length - mapped) +
-        ' people without a known location in this year (including not yet born or already deceased)'
-      : ''
-  }`;
+  $('#familyMapSummary').textContent = `${mapped} ${mapped === 1 ? 'person' : 'people'} · ${
+    groups.length
+  } ${groups.length === 1 ? 'location' : 'locations'} · ${
+    missing.length
+  } without a mapped location`;
   $('#fitFamilyMap').disabled = !groups.length;
   $('#mappedPeople').innerHTML =
     groups
@@ -227,10 +216,7 @@ async function renderFamilyMap({ fit = true } = {}) {
         (p) =>
           `<button type="button" data-map-edit="${esc(p.id)}">${esc(displayName(p))} ↗</button>`,
       )
-      .join('') ||
-    (familyMapMode === 'time'
-      ? '<p>Use dated Birthplace, Places Lived, or Living Here Since entries to include more people.</p>'
-      : '<p>Everyone has a mapped location.</p>');
+      .join('') || '<p>Everyone has a mapped location.</p>';
   document.querySelectorAll('[data-map-edit]').forEach(
     (button) =>
       (button.onclick = () => {
@@ -283,8 +269,6 @@ async function renderFamilyMap({ fit = true } = {}) {
     });
     $('#familyMapStatus').textContent = groups.length
       ? 'Click a numbered cluster to zoom in, or a location to see who lives there.'
-      : familyMapMode === 'time'
-      ? 'No dated locations are known for this year. Add dates in People → Locations.'
       : 'Add Current Locations in People to place your family on the map.';
     if (fit) fitFamilyMap();
   } catch (error) {
@@ -298,9 +282,6 @@ $('#fitFamilyMap').onclick = fitFamilyMap;
 
 function setFamilyMapMode(mode) {
   familyMapMode = mode;
-  $('#mapTimeView').setAttribute('aria-pressed', String(mode === 'time'));
-  $('#mapYearControls').hidden = mode !== 'time';
-  if (mode === 'time') setupMapYear();
   $('#mapCurrentView').setAttribute('aria-pressed', String(mode === 'current'));
   $('#mapHistoryView').setAttribute('aria-pressed', String(mode === 'history'));
   for (const line of migrationLines) line.setMap(null);
@@ -475,7 +456,7 @@ async function renderMigrationView() {
       new Polyline({
         map: familyMap,
         path: stops.map((stop) => ({ lat: stop.lat, lng: stop.lng })),
-      geodesic: false,
+        geodesic: false,
         strokeColor: '#b47528',
         strokeOpacity: 0.9,
         strokeWeight: 3,
@@ -504,67 +485,3 @@ $('#mapCurrentView').onclick = () => {
   setFamilyMapMode('current');
 };
 $('#mapHistoryView').onclick = () => setFamilyMapMode('history');
-
-function peopleAtMapYear(year, presentYear = new Date().getFullYear()) {
-  return data.people.flatMap((p) => {
-    const born = familyDateYear(p.dateDetails?.birth || p.birthday),
-      died = familyDateYear(p.dateDetails?.death);
-    if ((born && born > year) || (p.deceased && died && died < year)) return [];
-    if (
-      year === presentYear &&
-      p.location &&
-      p.locationLat !== null &&
-      p.locationLat !== undefined &&
-      p.locationLat !== '' &&
-      p.locationLng !== null &&
-      p.locationLng !== undefined &&
-      p.locationLng !== '' &&
-      Number.isFinite(Number(p.locationLat)) &&
-      Math.abs(Number(p.locationLat)) <= 90 &&
-      Number.isFinite(Number(p.locationLng)) &&
-      Math.abs(Number(p.locationLng)) <= 180
-    )
-      return [{ ...p }];
-    const stops = (p.locationHistory || []).filter((stop) => familyDateYear(stop.date) !== null);
-    if (p.birthplace && born)
-      stops.push({ ...p.birthplace, date: p.dateDetails?.birth || p.birthday });
-    if (p.location && familyDateYear(p.dateDetails?.currentSince))
-      stops.push({
-        location: p.location,
-        lat: p.locationLat,
-        lng: p.locationLng,
-        date: p.dateDetails.currentSince,
-      });
-    const stop = stops
-      .filter((item) => familyDateYear(item.date) <= year)
-      .sort(
-        (a, b) => familyDateYear(b.date) - familyDateYear(a.date) || b.date.localeCompare(a.date),
-      )[0];
-    if (!stop) return [];
-    return [{ ...p, location: stop.location, locationLat: stop.lat, locationLng: stop.lng }];
-  });
-}
-function setupMapYear() {
-  const now = new Date().getFullYear();
-  const years = data.people
-    .flatMap((p) => [
-      p.dateDetails?.birth || p.birthday,
-      p.dateDetails?.currentSince,
-      ...(p.locationHistory || []).map((stop) => stop.date),
-    ])
-    .map(familyDateYear)
-    .filter((year) => year !== null && year <= now);
-  const slider = $('#mapYear');
-  slider.min = Math.min(now, ...years);
-  slider.max = now;
-  if (!slider.dataset.initialized) {
-    slider.value = now;
-    slider.dataset.initialized = 'true';
-  }
-  $('#mapYearValue').textContent = slider.value;
-}
-$('#mapTimeView').onclick = () => setFamilyMapMode('time');
-$('#mapYear').oninput = () => {
-  $('#mapYearValue').textContent = $('#mapYear').value;
-  renderFamilyMap({ fit: false });
-};

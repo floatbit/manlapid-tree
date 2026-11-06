@@ -13,6 +13,10 @@ function openFamilyDialog(id, type) {
       .filter((p) => p.id !== id && !current.has(p.id))
       .map((p) => `<option value="${p.id}">${esc(displayName(p))}</option>`)
       .join('');
+  setupRelationshipSearch('existingFamily', {
+    required: false,
+    label: 'Someone already in your directory',
+  });
   $('#familyDialog').showModal();
   $('#familyName').focus();
 }

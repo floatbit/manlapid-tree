@@ -1,4 +1,4 @@
-function setupRelationshipSearch(id) {
+function setupRelationshipSearch(id, { required = true, label = null } = {}) {
   const select = $('#' + id);
   select.hidden = true;
   select.required = false;
@@ -7,9 +7,9 @@ function setupRelationshipSearch(id) {
   const wrapper = document.createElement('div');
   wrapper.className = 'relationship-person-picker';
   wrapper.id = id + 'Picker';
-  wrapper.innerHTML = `<input type="search" required aria-label="${
-    id === 'relationshipFrom' ? 'First' : 'Second'
-  } person" placeholder="Search for a person…" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="${id}Matches"><div id="${id}Matches" role="listbox" hidden></div>`;
+  wrapper.innerHTML = `<input type="search" ${required ? 'required' : ''} aria-label="${
+    label || (id === 'relationshipFrom' ? 'First person' : 'Second person')
+  }" placeholder="Search for a person…" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="${id}Matches"><div id="${id}Matches" role="listbox" hidden></div>`;
   select.after(wrapper);
   const input = wrapper.querySelector('input'),
     list = wrapper.querySelector('[role="listbox"]');
@@ -50,6 +50,7 @@ function setupRelationshipSearch(id) {
       return;
     }
     results = data.people
+      .filter((p) => [...select.options].some((option) => option.value === p.id))
       .filter(
         (p) =>
           p.name.toLocaleLowerCase().includes(query) ||

@@ -239,3 +239,147 @@ for (let i = 0; i < siblingRoutes.length; i++)
 console.log(
   'Passed: sibling rails and drops render once, preserving dashed lines across overlapping connections.',
 );
+
+// Incremental expansion keeps existing row order and never shifts cards left.
+{
+  const links = [sibling('a', 'b'), sibling('b', 'c'), spouse('b', 'partner')];
+  const before = layout(['a', 'b'], links, 'a');
+  context.previousLayout = before;
+  context.data.visible = ['a', 'b', 'c', 'partner'];
+  context.data.people = context.data.visible.map((id) => ({ id, name: id }));
+  const after = vm.runInContext('layoutFamily(data.visible, previousLayout)', context);
+  const existing = ['a', 'b'].sort((a, b) => before.positions.get(a).x - before.positions.get(b).x);
+  assert(after.positions.get(existing[0]).x < after.positions.get(existing[1]).x);
+  for (const id of existing) assert(after.positions.get(id).x >= before.positions.get(id).x);
+  const row = [...after.positions.values()].sort((a, b) => a.x - b.x);
+  for (let i = 1; i < row.length; i++) assert(row[i].x - row[i - 1].x >= 210);
+  context.previousLayout = after;
+  const repeated = vm.runInContext('layoutFamily(data.visible, previousLayout)', context);
+  for (const [id, position] of after.positions)
+    assert.deepEqual(
+      repeated.positions.get(id),
+      position,
+      'Repeated rendering must not move cards',
+    );
+}
+console.log(
+  'Passed: incremental expansion preserves row order, right-only spacing, and stable rerenders.',
+);
+
+// Revealing a spouse in the middle of an existing sibling row opens a slot beside their partner.
+{
+  const siblings = [
+    'amang',
+    'dionicio',
+    'evelyn',
+    'feliciano',
+    'amanda',
+    'luis',
+    'leopoldo',
+    'amelia',
+    'corazon',
+  ];
+  const links = siblings.slice(1).map((id) => sibling(siblings[0], id));
+  links.push(spouse('luis', 'mercedes'));
+  const before = layout(siblings, links, 'amang');
+  context.previousLayout = before;
+  context.data.visible = [...siblings, 'mercedes'];
+  context.data.people = context.data.visible.map((id) => ({ id, name: id }));
+  const after = vm.runInContext('layoutFamily(data.visible, previousLayout)', context);
+  pair(after, 'luis', 'mercedes');
+  assert.equal(after.positions.get('luis').x, before.positions.get('luis').x);
+  const originalOrder = [...siblings].sort(
+    (a, b) => before.positions.get(a).x - before.positions.get(b).x,
+  );
+  const retainedOrder = [...siblings].sort(
+    (a, b) => after.positions.get(a).x - after.positions.get(b).x,
+  );
+  assert.deepEqual(retainedOrder, originalOrder);
+  for (const id of siblings) {
+    const expectedShift = before.positions.get(id).x > before.positions.get('luis').x ? 210 : 0;
+    assert.equal(after.positions.get(id).x, before.positions.get(id).x + expectedShift);
+  }
+  context.previousLayout = after;
+  const again = vm.runInContext('layoutFamily(data.visible, previousLayout)', context);
+  for (const [id, position] of after.positions) assert.deepEqual(again.positions.get(id), position);
+}
+console.log(
+  'Passed: a newly revealed spouse stays adjacent and later siblings shift right together.',
+);
+
+// Expanding earlier branches cannot interleave their children with an existing cousin group.
+{
+  const adults = ['luis', 'evelyn', 'dionicio', 'leonida'];
+  const dionChildren = ['noli', 'arthur', 'cristy', 'joselito', 'armada'];
+  const links = [
+    sibling('luis', 'evelyn'),
+    sibling('evelyn', 'dionicio'),
+    spouse('dionicio', 'leonida'),
+    spouse('evelyn', 'peter'),
+    spouse('luis', 'mercedes'),
+  ];
+  for (const child of dionChildren)
+    for (const parent of ['dionicio', 'leonida'])
+      links.push({ a: child, b: parent, type: 'parent' });
+  for (const parent of ['evelyn', 'peter']) links.push({ a: 'roland', b: parent, type: 'parent' });
+  for (const child of ['james', 'chris'])
+    for (const parent of ['luis', 'mercedes']) links.push({ a: child, b: parent, type: 'parent' });
+  let current = layout([...adults, ...dionChildren], links, 'luis');
+  for (const added of [
+    ['peter', 'roland'],
+    ['mercedes', 'james', 'chris'],
+  ]) {
+    context.previousLayout = current;
+    context.data.visible.push(...added);
+    context.data.people = context.data.visible.map((id) => ({ id, name: id }));
+    current = vm.runInContext('layoutFamily(data.visible, previousLayout)', context);
+  }
+  const x = (id) => current.positions.get(id).x;
+  assert.equal(Math.abs(x('james') - x('chris')), 210, 'Luis children must be adjacent');
+  assert(
+    Math.max(x('james'), x('chris')) < x('roland'),
+    'Luis children belong before Evelyn branch',
+  );
+  assert(
+    x('roland') < Math.min(...dionChildren.map(x)),
+    'Evelyn child must not split Dionicio children',
+  );
+  const center = (x('luis') + x('mercedes')) / 2;
+  assert.equal(
+    (x('james') + x('chris')) / 2,
+    center,
+    'New children should be centered under their parents',
+  );
+  const childRow = ['james', 'chris', 'roland', ...dionChildren].sort((a, b) => x(a) - x(b));
+  for (let i = 1; i < childRow.length; i++) assert(x(childRow[i]) - x(childRow[i - 1]) >= 210);
+}
+console.log(
+  'Passed: sequential expansion keeps children beneath parents and cousin groups separate.',
+);
+
+// Each spouse's newly revealed siblings stay on their own side of the couple.
+{
+  const links = [
+    spouse('luis', 'mercedes'),
+    sibling('mercedes', 'sally'),
+    sibling('mercedes', 'gloria'),
+    sibling('luis', 'evelyn'),
+    sibling('luis', 'feliciano'),
+  ];
+  const before = layout(['luis', 'mercedes', 'sally', 'gloria'], links, 'mercedes');
+  // This fixture deliberately starts with Luis on the left, as in the reported tree.
+  for (const [i, id] of ['luis', 'mercedes', 'sally', 'gloria'].entries())
+    before.positions.get(id).x = 110 + i * 210;
+  context.previousLayout = before;
+  context.data.visible.push('evelyn', 'feliciano');
+  context.data.people = context.data.visible.map((id) => ({ id, name: id }));
+  const after = vm.runInContext('layoutFamily(data.visible, previousLayout)', context);
+  const x = (id) => after.positions.get(id).x;
+  assert(x('evelyn') < x('luis') && x('feliciano') < x('luis'));
+  pair(after, 'luis', 'mercedes');
+  assert(x('sally') > x('mercedes') && x('gloria') > x('mercedes'));
+  context.previousLayout = after;
+  const again = vm.runInContext('layoutFamily(data.visible, previousLayout)', context);
+  for (const [id, position] of after.positions) assert.deepEqual(again.positions.get(id), position);
+}
+console.log('Passed: newly revealed siblings expand away from the existing spouse.');

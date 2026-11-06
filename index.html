@@ -82,12 +82,12 @@
           </div>
           <div class="tree-view-actions">
             <button id="backToStart" hidden>↩ Back to starting person</button
-            ><button id="showEntireTree">Show entire tree</button>
+            ><button id="showEntireTree">Show entire tree</button
+            ><button id="reset" hidden>Clear</button>
           </div>
           <div id="graphTools" hidden>
             <button id="zoomOut" aria-label="Zoom out">−</button><span id="zoomLevel">100%</span
-            ><button id="zoomIn" aria-label="Zoom in">＋</button><button id="fitGraph">Fit</button
-            ><button id="reset">Clear</button>
+            ><button id="zoomIn" aria-label="Zoom in">＋</button><button id="fitGraph">Fit</button>
           </div>
           <div class="canvas-bottom"><span id="count">0 people in view</span></div>
         </section>
@@ -104,14 +104,6 @@
     <main id="familyMapPage" hidden>
       <div class="family-map-workspace">
         <div class="family-map-stage">
-          <div id="mapYearControls" hidden>
-            <label for="mapYear">Year <output id="mapYearValue"></output></label
-            ><input id="mapYear" type="range" />
-            <p class="hint">
-              The present year uses Current Location. Past years use dated locations only;
-              approximate years are estimates.
-            </p>
-          </div>
           <div id="familyMapCanvas" aria-label="Map of family members’ current locations"></div>
           <div class="map-view-controls">
             <div class="map-view-toggle" role="group" aria-label="Map view">
@@ -119,8 +111,7 @@
                 Current locations</button
               ><button id="mapHistoryView" type="button" aria-pressed="false">Places lived</button>
             </div>
-            <button id="mapTimeView" type="button" aria-pressed="false">Through Time</button
-            ><button id="fitFamilyMap" type="button">Fit everyone</button>
+            <button id="fitFamilyMap" type="button">Fit everyone</button>
           </div>
         </div>
         <aside id="familyMapPeople">
@@ -217,6 +208,7 @@
         </div>
         <div class="people-page-actions">
           <button id="openBulkLocation" type="button">Set location for multiple people</button
+          ><button id="openChildrenGroup" type="button">Set Children</button
           ><button id="openSiblingGroup" type="button">Group siblings</button
           ><button class="primary" id="newPerson">＋ Add a person</button>
         </div>
@@ -369,12 +361,7 @@
                       Search for a city, region, country, or street address. A city and country are
                       enough.
                     </p>
-                    <label
-                      >Living Here Since (Optional)<input
-                        id="currentLocationSince"
-                        placeholder="Year, date, About 1940, or Date unknown"
-                    /></label>
-                    <p class="hint">Used to place this location on the map through time.</p>
+                    <input id="currentLocationSince" type="hidden" />
                     <div id="locationFinder"></div>
                     <p id="locationFinderStatus" class="hint" role="status"></p>
                     <div id="selectedCurrentLocation" hidden>
@@ -471,9 +458,9 @@
     <dialog id="siblingGroupDialog" aria-labelledby="siblingGroupTitle">
       <form id="siblingGroupForm">
         <h2 id="siblingGroupTitle">Group Siblings</h2>
-        <p>
-          The person you are editing and their existing siblings are included. Add another person to
-          connect them to everyone in the group. You can reuse this whenever the family grows.
+        <p id="siblingGroupDescription">
+          Select the people who are siblings. Everyone selected will be connected to everyone else
+          in the group. No starting person is required.
         </p>
         <div id="siblingGroupTags"></div>
         <label for="siblingGroupSearch">Find people</label
@@ -497,6 +484,40 @@
         <div class="form-actions">
           <button id="saveSiblingGroup" type="submit" class="primary">Save sibling group</button
           ><button id="cancelSiblingGroup" type="button">Cancel</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="childrenGroupDialog" aria-labelledby="childrenGroupTitle">
+      <form id="childrenGroupForm">
+        <h2 id="childrenGroupTitle">Set Children</h2>
+        <p>
+          Choose a parent, then select their children. Existing children are included. Saving adds
+          parent connections for everyone selected.
+        </p>
+        <label for="childrenGroupParent">Parent</label>
+        <select id="childrenGroupParent"></select>
+        <div id="childrenGroupTags"></div>
+        <label for="childrenGroupSearch">Find Children</label
+        ><input
+          id="childrenGroupSearch"
+          type="search"
+          placeholder="Type a name…"
+          autocomplete="off"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded="false"
+          aria-controls="childrenGroupMatches"
+        />
+        <div id="childrenGroupMatches" role="listbox" hidden></div>
+        <p id="childrenGroupSummary" aria-live="polite"></p>
+        <p id="childrenGroupError" role="alert"></p>
+        <p class="hint">
+          Removing a name here only excludes them from this update; it does not delete saved
+          relationships. Other parents and relatives are not added automatically.
+        </p>
+        <div class="form-actions">
+          <button id="saveChildrenGroup" type="submit" class="primary">Save Children</button
+          ><button id="cancelChildrenGroup" type="button">Cancel</button>
         </div>
       </form>
     </dialog>
@@ -794,6 +815,7 @@
     <script src="js/sibling-groups.js"></script>
     <script src="js/location-picker.js"></script>
     <script src="js/person-picker.js"></script>
+    <script src="js/children-groups.js"></script>
     <script src="js/map.js"></script>
     <script src="js/location-history.js"></script>
     <script src="js/bulk-location.js"></script>

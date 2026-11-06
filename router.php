@@ -39,6 +39,7 @@ if (in_array($path, [
     '/js/relationships.js',
     '/js/sharing.js',
     '/js/sibling-groups.js',
+    '/js/children-groups.js',
     '/js/timeline-position.js',
     '/js/tree-controls.js',
     '/js/tree.js',

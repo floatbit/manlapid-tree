@@ -8,12 +8,7 @@ function extract(name) {
   return source.slice(start, next < 0 ? undefined : next);
 }
 const ctx = vm.createContext({ console, Date, data: { people: [] }, displayName: (p) => p.name });
-for (const name of [
-  'familyDateYear',
-  'validFamilyDate',
-  'upcomingAnniversaries',
-  'peopleAtMapYear',
-]) {
+for (const name of ['familyDateYear', 'validFamilyDate', 'upcomingAnniversaries']) {
   const code = extract(name);
   vm.runInContext(code, ctx);
 }
@@ -42,38 +37,4 @@ assert.equal(
     .next.getDate(),
   28,
 );
-ctx.data.people = [
-  {
-    id: 'p',
-    name: 'P',
-    birthday: '1980-01-01',
-    birthplace: { location: 'Manila', lat: 14, lng: 120 },
-    location: 'New York',
-    locationLat: 40,
-    locationLng: -74,
-    dateDetails: { currentSince: '2010' },
-    locationHistory: [
-      { date: 'About 1995', location: 'London', lat: 51, lng: 0 },
-      { date: 'Date unknown', location: 'Unknown', lat: 0, lng: 0 },
-    ],
-  },
-];
-assert.equal(ctx.peopleAtMapYear(1970).length, 0);
-assert.equal(ctx.peopleAtMapYear(1985)[0].location, 'Manila');
-assert.equal(ctx.peopleAtMapYear(2000)[0].location, 'London');
-assert.equal(ctx.peopleAtMapYear(2020)[0].location, 'New York');
-ctx.data.people[0].dateDetails.currentSince = '';
-assert.equal(ctx.peopleAtMapYear(2020, 2026)[0].location, 'London');
-assert.equal(ctx.peopleAtMapYear(2026, 2026)[0].location, 'New York');
-ctx.data.people[0].dateDetails.currentSince = 'Date unknown';
-assert.equal(ctx.peopleAtMapYear(2026, 2026)[0].location, 'New York');
-assert.equal(ctx.peopleAtMapYear(2025, 2026)[0].location, 'London');
-ctx.data.people[0].locationLat = null;
-assert.equal(ctx.peopleAtMapYear(2026, 2026)[0].location, 'London');
-ctx.data.people[0].locationLat = 40;
-ctx.data.people[0].deceased = true;
-ctx.data.people[0].dateDetails.death = '2020';
-assert.equal(ctx.peopleAtMapYear(2026, 2026).length, 0);
-console.log(
-  'Passed: approximate dates, anniversary rollover/leap days, and historical map locations without undated guesses.',
-);
+console.log('Passed: approximate dates and anniversary rollover/leap days.');

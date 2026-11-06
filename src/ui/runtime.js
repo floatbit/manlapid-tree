@@ -24,7 +24,10 @@ export const ui = {
 };
 
 const pickers = new WeakMap();
-ui.mountPersonPicker = (select, { required, label, people, display, matches }) => {
+ui.mountPersonPicker = (
+  select,
+  { required, label, people, display, matches, notifyOnQuery = true },
+) => {
   const previous = pickers.get(select);
   if (previous) {
     previous.app.unmount();
@@ -49,7 +52,7 @@ ui.mountPersonPicker = (select, { required, label, people, display, matches }) =
     matches,
     onQuery: () => {
       select.value = '';
-      select.dispatchEvent(new Event('change'));
+      if (notifyOnQuery) select.dispatchEvent(new Event('change'));
     },
     onSelect: (p) => {
       select.value = p.id;

@@ -188,6 +188,34 @@ ui.sync({
   assert(wrapper.text().includes('From Chris Manlapid'));
   wrapper.unmount();
 }
+{
+  const select = document.createElement('select');
+  select.id = 'migrationPickerTest';
+  select.innerHTML = '<option value=""></option><option value="melissa">Melissa</option>';
+  document.body.append(select);
+  let changes = 0;
+  select.addEventListener('change', () => changes++);
+  ui.mountPersonPicker(select, {
+    required: false,
+    label: 'Choose a person',
+    people: () => people,
+    display: (p) => p.name + ' · 3 places',
+    matches,
+    notifyOnQuery: false,
+  });
+  const input = document.querySelector('#migrationPickerTestSearch');
+  input.value = 'mimi';
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+  await nextTick();
+  assert.equal(changes, 0, 'Typing must not redraw the map sidebar');
+  const option = document.querySelector('#migrationPickerTestMatches [role="option"]');
+  assert.equal(option.textContent, 'Melissa Manlapig · 3 places');
+  option.click();
+  await nextTick();
+  assert.equal(changes, 1);
+  assert.equal(select.value, 'melissa');
+  assert.equal(input.value, 'Melissa Manlapig · 3 places');
+}
 console.log(
   'Passed: Vue keyboard autocomplete, repeated selection, nickname tags, reports, and lightbox navigation/share.',
 );

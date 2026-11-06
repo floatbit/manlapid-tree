@@ -394,9 +394,11 @@ async function renderMigrationView() {
             (stop, i) =>
               `<li><button type="button" data-migration-stop="${i}"><strong>${
                 i === 0 && p.birthplace ? 'Born · ' : ''
-              }${esc(stop.date)}${stop.current ? ' · Current' : ''}</strong><span>${esc(
-                stop.location,
-              )}</span>${stop.note ? `<small>${esc(stop.note)}</small>` : ''}</button></li>`,
+              }${esc(familyDateLabel(stop.date))}${
+                stop.current ? ' · Current' : ''
+              }</strong><span>${esc(stop.location)}</span>${
+                stop.note ? `<small>${esc(stop.note)}</small>` : ''
+              }</button></li>`,
           )
           .join('')}</ol>${
           !stops.length ? '<p>No places lived recorded yet.</p>' : ''
@@ -407,6 +409,17 @@ async function renderMigrationView() {
     migrationPersonId = e.target.value;
     renderMigrationView();
   };
+  ui.mountPersonPicker($('#migrationPerson'), {
+    required: false,
+    label: 'Choose a person',
+    people: () => data.people,
+    display: (item) => {
+      const count = migrationStopsForPerson(item).length;
+      return `${displayName(item)} · ${count} ${count === 1 ? 'place' : 'places'}`;
+    },
+    matches: personMatchesQuery,
+    notifyOnQuery: false,
+  });
   if (p)
     $('#editMigrationPerson').onclick = () => {
       showSection('people');
@@ -435,14 +448,14 @@ async function renderMigrationView() {
       map: familyMap,
       position: { lat: stop.lat, lng: stop.lng },
       content: pin,
-      title: stop.date + ' · ' + stop.location,
+      title: familyDateLabel(stop.date) + ' · ' + stop.location,
     });
     marker.addListener('click', () => {
       const content = document.createElement('div');
       content.className = 'map-person-popup';
-      content.innerHTML = `<h3>${esc(stop.location)}</h3><p>${esc(stop.date)}</p><p>${esc(
-        stop.note,
-      )}</p>`;
+      content.innerHTML = `<h3>${esc(stop.location)}</h3><p>${esc(
+        familyDateLabel(stop.date),
+      )}</p><p>${esc(stop.note)}</p>`;
       familyMapPopup.setContent(content);
       familyMapPopup.open({ map: familyMap, anchor: marker });
     });

@@ -33,7 +33,7 @@ function view(album) { if(album.photos.length) api.value.openPhotoLightbox(album
               {{ album.title }}
             </button>
             <p>
-              {{ album.date ? album.date + ' · ' : ''
+              {{ album.date ? api.familyDateLabel(album.date) + ' · ' : ''
               }}{{ api.milestoneMediaCount(album.photos) || 'No photos yet' }}
             </p>
             <small>{{ album.milestoneId ? 'Linked to a milestone' : 'Independent album' }}</small

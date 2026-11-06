@@ -1,50 +1,56 @@
-# Code structure
+# Frontend structure
 
-The site still runs directly through PHP/MAMP, with no frontend build step.
+The app uses Vue 3 and Vite while continuing to run through the existing PHP/MAMP
+host and MySQL API. `npm run build` generates `frontend/`; see README for deployment.
 
-## Browser code
+## Vue application
 
-`index.html` defines markup and the ordered script list. Files use the existing shared browser scope; preserve that order when adding dependencies. `app.js` now contains only database startup and refresh registration.
+- `src/main.js` mounts the component tree, binds the controller adapter, and starts database loading.
+- `src/App.vue` composes the header, pages, dialogs, and system notices.
+- `src/pages/` contains the eight page components. All pages remain mounted so switching pages preserves form drafts, canvas state, and focus behavior.
+- `src/components/` contains reactive Reports, album/recipe listings, recipe details, Timeline events, anniversaries, autocomplete, connection rows, nickname tags, media previews, avatars, and notifications.
+- `src/dialogs/` separates each dialog's template. `PhotoLightbox.vue` owns its reactive photo/video navigation, keyboard handling, sharing, and focus restoration.
+- `src/domain/reports.js` calculates recorded generations without DOM dependencies.
+- `src/ui/runtime.js` owns shallow reactive view models and the small adapter between Vue and the existing controllers. Components read saved snapshots and invoke explicit controller actions; they do not call the database directly.
 
-- `js/core.js`: browser state, names, API requests, shared saves, ancestry safeguards.
-- `js/relationships.js`: immediate connections, kinship labels, path finding and branch reachability.
-- `js/tree.js`: tree layout, connectors, camera and rendering.
-- `js/tree-controls.js`: quick-add family dialog, pan, zoom and fit controls.
-- `js/navigation.js`: sidebar, suggestions, header search and page navigation.
-- `js/milestones.js`: chronological events, milestone editor and media controls.
-- `js/people.js`: directory search, profile form, portraits and connections.
-- `js/backups.js`: portable backup export/import.
-- `js/relationship-finder.js` and `js/person-picker.js`: relationship page controls.
-- `js/lightbox.js` and `js/sharing.js`: image/video viewer and direct links.
-- `js/timeline-position.js`: timeline scroll restoration.
-- `js/sibling-groups.js`: batch sibling connections.
-- `js/location-picker.js`, `js/location-history.js`, `js/bulk-location.js`: Google location inputs and history.
-- `js/map.js`, `js/albums.js`, `js/recipes.js`: feature pages.
+## Existing controllers and algorithms
 
-## Styles
+`js/` retains the existing database/save, tree layout, map SDK, upload, location,
+backup, and form controllers. These are **not all rewritten as Vue composables**.
+Keeping the established mutation and validation paths preserves behavior while
+UI is extracted. These files are bundled into one ES module, not loaded as browser
+globals or separate script tags. `scripts/runtime-order.json` declares their
+compatibility order; Vite's `family-runtime` plugin watches and bundles them.
 
-`style.css` contains the original base, tree and editor styles. `css/features.css` contains subsequent page/component styles. Stylesheet order is preserved deliberately so the cleanup does not change the cascade. Existing overrides remain until they can be consolidated with dedicated visual coverage.
+Future controller extraction can replace this compatibility adapter one service
+at a time. Do not give Vue and a controller competing ownership of the same DOM
+subtree. Dynamic Vue components are unmounted before controller-owned rows or
+pickers are replaced.
 
-## Server
+- `js/core.js`: saved family data, PHP requests/revision locks, refresh, names, dates, ancestry validation.
+- `js/relationships.js`, `js/tree.js`, `js/tree-controls.js`: kinship, path finding, layout, routing, canvas/camera interactions, and quick-add.
+- `js/navigation.js`, `js/sharing.js`: existing hash URL format, Back/Forward, deep links, sidebar, tree search.
+- `js/people.js`: profile saving, portraits, dirty-state indication, and adapters to Vue directory/connection/nickname controls.
+- `js/milestones.js`, `js/albums.js`, `js/recipes.js`: domain calculations and CRUD/upload controllers, delegating page rendering to Vue.
+- `js/map.js` and `js/location-*.js`: Google Maps/Places integrations and recorded locations.
+- `js/sibling-groups.js`, `js/children-groups.js`, `js/bulk-location.js`: bulk validation/save controllers using the shared Vue autocomplete.
+- `js/backups.js`: portable backup import/export.
+- `js/timeline-position.js`: scroll and location-rail measurement.
 
-`api.php` coordinates requests and transactions. `server/` holds database setup, validation, media, albums and recipes. Server code and database migration behavior were left unchanged during this frontend cleanup. `router.php` serves an explicit allowlist of public files for the PHP development server.
+## Styles and server
 
-## Checks and formatting
+`style.css` and `css/features.css` preserve the existing cascade and appearance.
+Server code, database schema, and upload layout are unchanged by this migration.
+`router.php` allows generated public frontend assets, while keeping server files private.
 
-Install development tools with `npm install`; these are not needed to serve the app. `npm run format` and `npm run format:check` use the checked-in Prettier configuration. JavaScript, HTML and CSS are formatted; embedded HTML strings are deliberately not rewritten. PHP remains independently organized under `server/`.
+## Validation
 
-`npm test` checks asset routing, JavaScript parsing, layout, kinship, ancestry and location history. `npm run test:database` exercises media/albums/recipes in disposable MySQL databases and needs access to the configured MySQL server. Tests load scripts in the same order as `index.html` instead of assuming all code lives in `app.js`.
+- `npm run build`: compile Vue and bundle production assets.
+- `npm test`: Vue compilation/public asset checks, existing layout/kinship/history/date/URL tests, and DOM-based Vue component interactions.
+- `npm run test:database`: media, album, recipe migration/save/load/rollback checks in disposable databases.
+- `npm run format` / `npm run format:check`: source formatting, including Vue components.
 
-## Rollback of this cleanup
-
-The pre-cleanup source archive is:
-
-`/Users/chrismanlapid/Desktop/htdocs/staging/manlapid-tree/server/backups/code-cleanup-20261104-225529.tar.gz`
-
-From the project directory, restore it with:
-
-```sh
-tar -xzf server/backups/code-cleanup-20261104-225529.tar.gz
-```
-
-This restores the former HTML, JavaScript, CSS, router, tests and documentation. New feature files become unused because the restored HTML references the original scripts. The archive deliberately excludes credentials, uploads, Git internals and earlier backups. This cleanup does not modify family records, uploaded media or server configuration, so no database rollback is needed.
+Rollback: restore your pre-migration Git commit, then follow that commit's launch
+instructions. Reverting a future Vue change requires rebuilding `frontend/` from
+its matching source before serving it. No database rollback is needed for this
+frontend migration.

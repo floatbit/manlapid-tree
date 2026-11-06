@@ -32,84 +32,18 @@ function updateBulkLocationSelection() {
     !bulkLocation || !bulkLocationPeople.length || bulkLocationPending || bulkLocationSaving;
 }
 function setupBulkLocationSearch() {
-  const input = $('#bulkLocationSearch'),
-    list = $('#bulkLocationMatches');
-  let results = [],
-    active = -1;
-  function close() {
-    list.hidden = true;
-    active = -1;
-    input.setAttribute('aria-expanded', 'false');
-    input.removeAttribute('aria-activedescendant');
-  }
-  function choose(id) {
-    if (!bulkLocationPeople.includes(id)) bulkLocationPeople.push(id);
-    updateBulkLocationSelection();
-    input.focus();
-    search();
-  }
-  function highlight() {
-    list.querySelectorAll('button').forEach((button, i) => {
-      button.classList.toggle('search-active', i === active);
-      button.setAttribute('aria-selected', String(i === active));
-    });
-    if (active >= 0) {
-      input.setAttribute('aria-activedescendant', 'bulk-location-option-' + active);
-      list.children[active]?.scrollIntoView({ block: 'nearest' });
-    }
-  }
-  function search() {
-    const query = input.value.trim().toLocaleLowerCase();
-    active = -1;
-    input.removeAttribute('aria-activedescendant');
-    if (!query) {
-      results = [];
-      close();
-      return;
-    }
-    results = data.people
-      .filter((p) => !bulkLocationPeople.includes(p.id) && personMatchesQuery(p, query))
-      .sort((a, b) => a.name.localeCompare(b.name));
-    list.innerHTML =
-      results
-        .map(
-          (p, i) =>
-            `<button type="button" role="option" aria-selected="false" id="bulk-location-option-${i}">${esc(
-              displayName(p),
-            )}</button>`,
-        )
-        .join('') || '<p>No matching people.</p>';
-    list.hidden = false;
-    input.setAttribute('aria-expanded', 'true');
-    list
-      .querySelectorAll('button')
-      .forEach((button, i) => (button.onclick = () => choose(results[i].id)));
-  }
-  input.oninput = search;
-  input.onfocus = search;
-  input.onkeydown = (event) => {
-    if (event.isComposing) return;
-    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-      event.preventDefault();
-      if (list.hidden) search();
-      if (results.length && !list.hidden) {
-        active =
-          active < 0
-            ? event.key === 'ArrowDown'
-              ? 0
-              : results.length - 1
-            : (active + (event.key === 'ArrowDown' ? 1 : -1) + results.length) % results.length;
-        highlight();
-      }
-    } else if (event.key === 'Enter') {
-      event.preventDefault();
-      if (!list.hidden && results.length) choose(results[Math.max(0, active)]);
-    } else if (event.key === 'Escape' && !list.hidden) {
-      event.preventDefault();
-      event.stopPropagation();
-      close();
-    } else if (event.key === 'Tab') close();
-  };
+  ui.mountSearch({
+    inputId: 'bulkLocationSearch',
+    listId: 'bulkLocationMatches',
+    options: () => data.people.filter((p) => !bulkLocationPeople.includes(p.id)),
+    display: displayName,
+    matches: personMatchesQuery,
+    keepResults: true,
+    onSelect: (p) => {
+      if (!bulkLocationPeople.includes(p.id)) bulkLocationPeople.push(p.id);
+      updateBulkLocationSelection();
+    },
+  });
 }
 $('#openBulkLocation').onclick = async () => {
   const session = ++bulkLocationSession;

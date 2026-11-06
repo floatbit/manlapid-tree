@@ -122,199 +122,17 @@ function renderTimeline() {
   } · ${(data.milestones || []).length} ${
     (data.milestones || []).length === 1 ? 'milestone' : 'milestones'
   }${missing ? ` · ${missing} ${missing === 1 ? 'person needs' : 'people need'} a birthday` : ''}`;
-  const dateFormat = new Intl.DateTimeFormat('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-    timeZone: 'UTC',
-  });
-  $('#timelineEvents').innerHTML = events.length
-    ? [...years]
-        .map(
-          ([year, items]) =>
-            `<section class="birth-year" aria-label="Family events in ${year}"><h2>${year}</h2><div class="birth-cards">${items
-              .map((event) => {
-                if (event.kind === 'birth' || event.kind === 'death') {
-                  const p = event.person;
-                  return `<button class="birth-event" data-birth-person="${p.id}">${avatar(
-                    p,
-                  )}<span><small>${
-                    event.kind === 'death' ? 'IN REMEMBRANCE' : 'WELCOME TO THE FAMILY'
-                  }</small><strong>${esc(displayName(p))} ${
-                    event.kind === 'death' ? 'passed away' : 'was born'
-                  }</strong><time>${esc(
-                    familyDateLabel(event.date),
-                  )}</time></span><span class="birth-arrow" aria-hidden="true">↗</span></button>`;
-                }
-                const names = (event.participants || [])
-                  .map((id) => (person(id) ? displayName(person(id)) : ''))
-                  .filter(Boolean);
-                return `<article class="birth-event milestone-event">${
-                  event.photos?.length
-                    ? `<button class="milestone-gallery" data-gallery="${
-                        event.id
-                      }" aria-label="View ${event.photos.length} media items from ${esc(
-                        event.title,
-                      )}">${milestoneMediaPreview(
-                        event.photos[0],
-                        'avatar milestone-cover',
-                        event.title,
-                      )}</button>`
-                    : `<span class="avatar milestone-icon">${
-                        milestoneIcons[event.type] || '★'
-                      }</span>`
-                }<button class="milestone-details" data-milestone="${event.id}"><span><small>${
-                  milestoneTypes[event.type] || 'Milestone'
-                }</small><strong>${esc(event.title)}</strong><time datetime="${
-                  event.date
-                }">${dateFormat.format(new Date(event.date + 'T12:00:00Z'))}${
-                  event.location ? ' · ' + esc(event.location) : ''
-                }</time>${
-                  names.length
-                    ? `<span class="milestone-people">${esc(names.join(', '))}</span>`
-                    : ''
-                }${
-                  event.photos?.length
-                    ? `<span class="milestone-photo-count">▧ ${milestoneMediaCount(
-                        event.photos,
-                      )}</span>`
-                    : ''
-                }</span><span class="birth-arrow" aria-hidden="true">↗</span></button></article>`;
-              })
-              .join('')}</div></section>`,
-        )
-        .join('')
-    : '<div class="timeline-empty"><span>✳</span><h2>A Lifetime of Stories Starts Here.</h2><p>Add birthdays in People or record your first family milestone.</p></div>';
-  document
-    .querySelectorAll('[data-birth-person]')
-    .forEach((button) => (button.onclick = () => start(button.dataset.birthPerson)));
-  document.querySelectorAll('[data-gallery]').forEach(
-    (button) =>
-      (button.onclick = () => {
-        const event = data.milestones.find((event) => event.id === button.dataset.gallery);
-        openPhotoLightbox(event.photos, 0, event.title);
-      }),
-  );
-  document
-    .querySelectorAll('[data-milestone]')
-    .forEach((button) => (button.onclick = () => openMilestone(button.dataset.milestone)));
+  ui.sync(data);
+  ui.setTimeline(events);
 }
 let draftMilestonePhotos = [],
   milestonePhotoSession = 0,
   processingMilestonePhotos = false;
 let draftMilestonePeople = [];
 function renderMilestonePeople() {
-  $('#milestonePeople').innerHTML =
-    '<div id="milestonePersonTags"></div><input id="milestonePersonSearch" type="text" placeholder="Type a name to add people…" autocomplete="off" role="combobox" aria-label="Search people involved" aria-autocomplete="list" aria-expanded="false" aria-controls="milestonePersonMatches"><div id="milestonePersonMatches" role="listbox" hidden></div>';
-  const input = $('#milestonePersonSearch'),
-    matches = $('#milestonePersonMatches');
-  let active = -1,
-    results = [];
-  function tags() {
-    $('#milestonePersonTags').innerHTML = draftMilestonePeople
-      .filter((id) => person(id))
-      .map(
-        (id) =>
-          `<button type="button" class="person-tag" data-remove-participant="${esc(
-            id,
-          )}" aria-label="Remove ${esc(firstLastName(person(id)))}">${esc(
-            firstLastName(person(id)),
-          )} <span aria-hidden="true">×</span></button>`,
-      )
-      .join('');
-    document.querySelectorAll('[data-remove-participant]').forEach(
-      (button) =>
-        (button.onclick = () => {
-          draftMilestonePeople = draftMilestonePeople.filter(
-            (id) => id !== button.dataset.removeParticipant,
-          );
-          tags();
-          suggest();
-          input.focus();
-        }),
-    );
-  }
-  function choose(id) {
-    if (!draftMilestonePeople.includes(id)) draftMilestonePeople.push(id);
-    input.value = '';
-    tags();
-    suggest();
-    input.focus();
-  }
-  function highlight() {
-    [...matches.querySelectorAll('[role="option"]')].forEach((button, i) => {
-      button.classList.toggle('search-active', i === active);
-      button.setAttribute('aria-selected', String(i === active));
-    });
-    if (active >= 0) {
-      input.setAttribute('aria-activedescendant', 'milestone-person-' + active);
-      matches.children[active]?.scrollIntoView({ block: 'nearest' });
-    } else input.removeAttribute('aria-activedescendant');
-  }
-  function suggest() {
-    const query = input.value.trim().toLocaleLowerCase();
-    active = -1;
-    if (!query) {
-      results = [];
-      matches.replaceChildren();
-      close();
-      return;
-    }
-    results = data.people
-      .filter((p) => !draftMilestonePeople.includes(p.id) && personMatchesQuery(p, query))
-      .sort((a, b) => firstLastName(a).localeCompare(firstLastName(b)))
-      .slice(0, 10);
-    matches.hidden = false;
-    input.setAttribute('aria-expanded', 'true');
-    matches.innerHTML =
-      results
-        .map(
-          (p, i) =>
-            `<button type="button" role="option" id="milestone-person-${i}" aria-selected="false" data-participant="${esc(
-              p.id,
-            )}">${esc(firstLastName(p))}</button>`,
-        )
-        .join('') +
-      '<p class="picker-status">' +
-      (results.length ? '' : 'No matching people.') +
-      '</p>';
-    matches
-      .querySelectorAll('[data-participant]')
-      .forEach((button) => (button.onclick = () => choose(button.dataset.participant)));
-    highlight();
-  }
-  function close() {
-    matches.hidden = true;
-    active = -1;
-    input.setAttribute('aria-expanded', 'false');
-    input.removeAttribute('aria-activedescendant');
-  }
-  input.oninput = suggest;
-  input.onfocus = suggest;
-  input.onkeydown = (event) => {
-    if (event.isComposing) return;
-    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-      event.preventDefault();
-      if (matches.hidden) suggest();
-      if (results.length) {
-        active =
-          (active + (event.key === 'ArrowDown' ? 1 : active < 0 ? 0 : -1) + results.length) %
-          results.length;
-        highlight();
-      }
-    } else if (event.key === 'Enter') {
-      event.preventDefault();
-      if (!matches.hidden && results.length) choose(results[Math.max(0, active)].id);
-    } else if (event.key === 'Escape' && !matches.hidden) {
-      event.preventDefault();
-      event.stopPropagation();
-      close();
-    } else if (event.key === 'Tab') close();
-  };
-  $('#milestonePeople').onfocusout = (event) => {
-    if (!event.currentTarget.contains(event.relatedTarget)) close();
-  };
-  tags();
+  ui.setMilestonePeople(draftMilestonePeople, (ids) => {
+    draftMilestonePeople = ids;
+  });
 }
 function openMilestone(id) {
   milestonePhotoSession++;
@@ -501,7 +319,6 @@ $('#milestoneDelete').onclick = async () => {
   renderTimeline();
   notify('Milestone deleted');
 };
-$('#timelineTab').onclick = () => showSection('timeline');
 $('#addBirthdays').onclick = () => {
   tab(true);
   const missing = data.people.find(
@@ -553,29 +370,5 @@ function upcomingAnniversaries(people, milestones, today = new Date()) {
     .sort((a, b) => a.next - b.next || a.title.localeCompare(b.title));
 }
 function renderUpcomingAnniversaries() {
-  const events = upcomingAnniversaries(data.people, data.milestones || []);
-  $('#upcomingAnniversaries').innerHTML =
-    '<h2>Upcoming Anniversaries</h2><p class="hint">Next 90 days · February 29 is observed on February 28 in non-leap years.</p>' +
-    (events
-      .map(
-        (event, i) =>
-          `<button type="button" data-upcoming="${i}"><small>${esc(event.kind)} · ${
-            event.days === 0 ? 'Today' : 'In ' + event.days + ' days'
-          }</small><strong>${esc(event.title)}</strong><span>${esc(
-            event.next.toLocaleDateString('en-US', { month: 'long', day: 'numeric' }),
-          )}${event.years ? ' · ' + event.years + ' years' : ''}</span></button>`,
-      )
-      .join('') || '<p>No anniversaries with a known month and day in the next 90 days.</p>');
-  $('#upcomingAnniversaries')
-    .querySelectorAll('[data-upcoming]')
-    .forEach(
-      (button) =>
-        (button.onclick = () => {
-          const event = events[Number(button.dataset.upcoming)];
-          if (event.personId) {
-            showSection('people');
-            edit(event.personId);
-          } else openMilestone(event.milestoneId);
-        }),
-    );
+  ui.sync(data);
 }

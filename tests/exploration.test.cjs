@@ -172,7 +172,13 @@ console.log(
 
 // Bulk children adds only missing parent links and rejects conflicts and ancestry cycles.
 {
-  vm.runInContext(source.slice(source.indexOf('function ancestryCyclePerson('), source.indexOf('async function saveShared(')), ctx);
+  vm.runInContext(
+    source.slice(
+      source.indexOf('function ancestryCyclePerson('),
+      source.indexOf('async function saveShared('),
+    ),
+    ctx,
+  );
   const bulk = fs.readFileSync(
     require('node:path').join(__dirname, '../js/children-groups.js'),
     'utf8',
@@ -219,8 +225,17 @@ console.log(
 console.log('Passed: person searches match nicknames and recorded names without case sensitivity.');
 
 {
-  const navigation = fs.readFileSync(require('node:path').join(__dirname, '../js/navigation.js'), 'utf8');
-  vm.runInContext(navigation.slice(navigation.indexOf('function similarity('), navigation.indexOf('let activeSearchIndex')), ctx);
+  const navigation = fs.readFileSync(
+    require('node:path').join(__dirname, '../js/navigation.js'),
+    'utf8',
+  );
+  vm.runInContext(
+    navigation.slice(
+      navigation.indexOf('function similarity('),
+      navigation.indexOf('let activeSearchIndex'),
+    ),
+    ctx,
+  );
   ctx.melissa = { name: 'Melissa Manlapig', nicknames: ['Mimi'] };
   assert.equal(vm.runInContext("personSearchScore(melissa, 'mimi')", ctx), 0);
   assert.equal(vm.runInContext("personSearchScore(melissa, 'MIMI')", ctx), 0);

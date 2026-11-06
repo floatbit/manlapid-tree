@@ -2,6 +2,37 @@
 
 Open **http://staging.localhost/manlapid-tree/** through your existing MAMP/PHP host. This project needs PHP with PDO MySQL; a static Python server and direct file URLs no longer support saving.
 
+## Vue frontend development and deployment
+
+The frontend now uses Vue 3 single-file components and Vite. The PHP/MySQL API,
+configuration files, uploads, and existing share-link URLs are unchanged.
+Use Node 22.12+ and install the locked dependencies:
+
+```sh
+nvm install
+nvm use
+npm ci
+npm run build
+```
+
+`.nvmrc` pins Node 22.19.0, the version used to build and test this project.
+
+Keep opening **http://staging.localhost/manlapid-tree/** through MAMP. The root
+`index.html` loads the generated `frontend/app.js` and its hashed chunks. The
+`frontend/` directory is ignored by Git and must be regenerated after checkout,
+pull, or rollback. Deploy `index.html`, the **entire** generated `frontend/` directory,
+`style.css`, `css/`, and the PHP files together. Keep your existing server config
+and uploads. Do not upload `node_modules/`, tests, or development sources.
+
+During development, `npm run build:watch` rebuilds the same files used by MAMP.
+`npm run dev` also provides Vite's dev server with hot updates; its API and uploads
+proxy targets the existing staging PHP host. Google API referrer restrictions
+must allow whichever development address you use. No Node server is required
+in production.
+
+`npm test` runs the domain, Vue compilation, and component tests after a build.
+`npm run test:database` runs existing isolated-database integration tests.
+
 ## Shared family storage
 
 The MySQL database is `manlapid_tree`. Server-only connection settings are in `server/config.local.php` (ignored by Git). Copy `server/config.example.php` to configure a different installation. This Mac uses the MAMP MySQL socket when present; other installations can use the configured host and port.

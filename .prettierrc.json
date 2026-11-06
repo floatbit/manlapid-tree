@@ -3,5 +3,13 @@
   "singleQuote": true,
   "trailingComma": "all",
   "htmlWhitespaceSensitivity": "css",
-  "embeddedLanguageFormatting": "off"
+  "embeddedLanguageFormatting": "off",
+  "overrides": [
+    {
+      "files": "*.vue",
+      "options": {
+        "embeddedLanguageFormatting": "auto"
+      }
+    }
+  ]
 }

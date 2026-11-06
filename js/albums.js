@@ -15,60 +15,19 @@ function sortedAlbums(albums, order = 'newest', query = '') {
     });
 }
 function renderAlbums() {
-  const all = data.albums || [],
-    albums = sortedAlbums(all, $('#albumOrder').value, $('#albumSearch').value),
-    years = new Map();
-  $('#albumsSummary').textContent = `${all.length} albums · ${all.reduce(
-    (n, a) => n + a.photos.length,
+  ui.sync(data);
+  const all = data.albums || [];
+  document.querySelector('#albumsSummary').textContent = `${all.length} albums · ${all.reduce(
+    (sum, a) => sum + a.photos.length,
     0,
   )} photos and videos`;
-  for (const album of albums) {
-    const year = album.date ? album.date.slice(0, 4) : 'Undated';
-    if (!years.has(year)) years.set(year, []);
-    years.get(year).push(album);
-  }
-  $('#albumsGrid').innerHTML =
-    [...years]
-      .map(
-        ([year, items]) =>
-          `<section class="album-year"><h2>${esc(year)}</h2><div class="album-grid">${items
-            .map(
-              (a) =>
-                `<article class="album-card"><button type="button" class="album-cover" data-album-view="${esc(
-                  a.id,
-                )}" aria-label="View ${esc(a.title)}">${
-                  a.photos.length
-                    ? milestoneMediaPreview(a.photos[0], '', a.title)
-                    : '<span class="empty-album-cover">▧</span>'
-                }</button><div class="album-card-details"><button type="button" class="album-card-title" data-album-edit="${esc(
-                  a.id,
-                )}">${esc(a.title)}</button><p>${a.date ? esc(a.date) + ' · ' : ''}${
-                  milestoneMediaCount(a.photos) || 'No photos yet'
-                }</p>${
-                  a.milestoneId
-                    ? '<small>Linked to a milestone</small>'
-                    : '<small>Independent album</small>'
-                }<button type="button" data-album-edit="${esc(
-                  a.id,
-                )}">Edit Album ↗</button></div></article>`,
-            )
-            .join('')}</div></section>`,
-      )
-      .join('') ||
-    '<p>No albums found. Create an album to collect your family photos and videos.</p>';
-  $('#albumsGrid')
-    .querySelectorAll('[data-album-view]')
-    .forEach(
-      (button) =>
-        (button.onclick = () => {
-          const album = all.find((a) => a.id === button.dataset.albumView);
-          if (album.photos.length) openPhotoLightbox(album.photos, 0, album.title);
-          else openAlbum(album.id);
-        }),
-    );
-  $('#albumsGrid')
-    .querySelectorAll('[data-album-edit]')
-    .forEach((button) => (button.onclick = () => openAlbum(button.dataset.albumEdit)));
+  ui.setAlbums(
+    sortedAlbums(
+      all,
+      document.querySelector('#albumOrder').value,
+      document.querySelector('#albumSearch').value,
+    ),
+  );
 }
 function openAlbum(id) {
   const album = (data.albums || []).find((a) => a.id === id);
@@ -275,7 +234,6 @@ function openSharedAlbum(params) {
     }
   } else openAlbum(album.id);
 }
-$('#albumsTab').onclick = () => showSection('albums');
 $('#newAlbum').onclick = () => openAlbum();
 $('#albumSearch').oninput = renderAlbums;
 $('#albumOrder').onchange = renderAlbums;

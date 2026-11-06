@@ -24,3 +24,6 @@
 ._*
 Thumbs.db
 /server/config.maps.local.php
+
+# Vite production bundle; regenerate with npm run build
+/frontend/

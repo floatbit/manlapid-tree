@@ -47,146 +47,12 @@ function selectPersonFromDirectory(id) {
 }
 
 function renderOverview() {
-  renderOverviewSummary();
-  const connected = new Set(data.links.flatMap((link) => [link.a, link.b]));
-  const noConnections = data.people
-    .filter((p) => !connected.has(p.id))
-    .sort((a, b) => a.name.localeCompare(b.name));
-  const noBirthdays = data.people
-    .filter((p) => !(p.dateDetails?.birth || p.birthday) || p.dateDetails?.birth === 'Date unknown')
-    .sort((a, b) => a.name.localeCompare(b.name));
-  const noBirthplaces = data.people
-    .filter((p) => !p.birthplace?.location?.trim())
-    .sort((a, b) => a.name.localeCompare(b.name));
-  const noCurrentLocations = data.people
-    .filter((p) => !p.location?.trim())
-    .sort((a, b) => a.name.localeCompare(b.name));
-  const noPhotos = data.people
-    .filter((p) => !p.photo?.trim())
-    .sort((a, b) => a.name.localeCompare(b.name));
-  const missingSection = (title, people, kind) =>
-    `<section class="directory-missing"><h3>${title} <span>${
-      people.length
-    }</span></h3><div class="directory-missing-list">${
-      people
-        .map(
-          (p) =>
-            `<button type="button" data-missing-person="${esc(
-              p.id,
-            )}" data-missing-kind="${kind}">${esc(displayName(p))} ↗</button>`,
-        )
-        .join('') || '<p>Everyone is up to date.</p>'
-    }</div></section>`;
-  $('#overviewReports').innerHTML = `${missingSection(
-    'No Connections',
-    noConnections,
-    'connections',
-  )}${missingSection('No Birthday', noBirthdays, 'birthday')}${missingSection(
-    'No Birthplace',
-    noBirthplaces,
-    'birthplace',
-  )}${missingSection('No Current Location', noCurrentLocations, 'location')}${missingSection('No Photo', noPhotos, 'photo')}`;
-  $('#overviewReports')
-    .querySelectorAll('[data-missing-person]')
-    .forEach(
-      (button) =>
-        (button.onclick = () => {
-          showSection('people');
-          selectPersonFromDirectory(button.dataset.missingPerson);
-          if (button.dataset.missingKind === 'birthday')
-            $('#birthday').focus({ preventScroll: true });
-        }),
-    );
+  ui.sync(data);
 }
 
 function directory() {
-  $(
-    '#peopleList',
-  ).innerHTML = `<h3>${data.people.length} people</h3><label for="directorySearch">Find a person to edit</label><div class="directory-search-field"><input id="directorySearch" type="search" placeholder="Search by name…" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="directoryMatches"><button id="clearDirectorySearch" type="button" aria-label="Clear people search" hidden>×</button></div><div id="directoryMatches" role="listbox" hidden></div>`;
-  const input = $('#directorySearch'),
-    list = $('#directoryMatches');
-  let matches = [],
-    active = -1;
-  function close() {
-    list.hidden = true;
-    input.setAttribute('aria-expanded', 'false');
-    input.removeAttribute('aria-activedescendant');
-    active = -1;
-  }
-  function select(p) {
-    selectPersonFromDirectory(p.id);
-  }
-  function highlight() {
-    [...list.children].forEach((button, i) => {
-      button.classList.toggle('search-active', i === active);
-      button.setAttribute('aria-selected', String(i === active));
-    });
-    if (active >= 0) {
-      input.setAttribute('aria-activedescendant', 'directory-match-' + active);
-      list.children[active]?.scrollIntoView({ block: 'nearest' });
-    }
-  }
-  function search() {
-    $('#clearDirectorySearch').hidden = !input.value;
-    try {
-      localStorage.setItem('kinfolk-people-search-v1', input.value);
-    } catch {}
-    const query = input.value.trim().toLocaleLowerCase();
-    active = -1;
-    input.removeAttribute('aria-activedescendant');
-    if (!query) {
-      close();
-      return;
-    }
-    matches = data.people
-      .filter((p) => personMatchesQuery(p, query))
-      .sort((a, b) => a.name.localeCompare(b.name));
-    list.hidden = false;
-    input.setAttribute('aria-expanded', 'true');
-    list.innerHTML =
-      matches
-        .map(
-          (p, i) =>
-            `<button type="button" role="option" aria-selected="false" id="directory-match-${i}">${esc(
-              displayName(p),
-            )}</button>`,
-        )
-        .join('') || '<p>No matching people.</p>';
-    if (matches.length)
-      [...list.children].forEach((button, i) => (button.onclick = () => select(matches[i])));
-  }
-  $('#clearDirectorySearch').onclick = () => {
-    input.value = '';
-    search();
-    input.focus();
-  };
-  input.oninput = search;
-  input.onfocus = search;
-  input.onkeydown = (event) => {
-    if (event.isComposing) return;
-    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-      event.preventDefault();
-      if (list.hidden) search();
-      if (matches.length && !list.hidden) {
-        active =
-          active < 0
-            ? event.key === 'ArrowDown'
-              ? 0
-              : matches.length - 1
-            : (active + (event.key === 'ArrowDown' ? 1 : -1) + matches.length) % matches.length;
-        highlight();
-      }
-    } else if (event.key === 'Enter') {
-      event.preventDefault();
-      if (!list.hidden && matches.length) select(matches[Math.max(0, active)]);
-    } else if (event.key === 'Escape' || event.key === 'Tab') close();
-  };
-  $('#peopleList').onfocusout = null;
+  ui.sync(data);
   $('#requestEmail').value = data.email;
-  try {
-    input.value = localStorage.getItem('kinfolk-people-search-v1') || '';
-  } catch {}
-  if (input.value.trim()) search();
 }
 
 function updateConnectionsCount() {
@@ -198,122 +64,18 @@ function updateConnectionsCount() {
 }
 let relationPickerSerial = 0;
 function relationRow(value = {}) {
-  const row = document.createElement('div');
-  row.className = 'relation-row';
-  const pickerId = 'relation-picker-' + ++relationPickerSerial;
-  row.innerHTML = `<div class="relation-person-picker"><input type="hidden" class="relation-person-id" value="${esc(
-    value.id || '',
-  )}"><input class="relation-person-search" aria-label="Family member" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="${pickerId}" autocomplete="off" placeholder="Search for a person…" value="${esc(
-    person(value.id) ? displayName(person(value.id)) : '',
-  )}"><div id="${pickerId}" class="relation-person-matches" role="listbox" hidden></div></div><span class="relation-phrase">is their</span><select aria-label="Relationship">${[
-    'parent',
-    'child',
-    'sibling',
-    'spouse',
-  ]
-    .map((t) => `<option ${value.type === t ? 'selected' : ''}>${t}</option>`)
-    .join(
-      '',
-    )}</select><button type="button" class="remove-relation" aria-label="Remove connection">×</button>`;
-  const input = row.querySelector('.relation-person-search'),
-    hidden = row.querySelector('.relation-person-id'),
-    list = row.querySelector('[role="listbox"]');
-  let matches = [],
-    active = -1;
-  function close() {
-    list.hidden = true;
-    active = -1;
-    input.setAttribute('aria-expanded', 'false');
-    input.removeAttribute('aria-activedescendant');
-  }
-  function choose(p) {
-    hidden.value = p.id;
-    updateConnectionsCount();
-    updatePersonUnsaved();
-    input.value = displayName(p);
-    input.setCustomValidity('');
-    close();
-    input.focus();
-  }
-  function highlight() {
-    [...list.querySelectorAll('button')].forEach((button, i) => {
-      button.classList.toggle('search-active', i === active);
-      button.setAttribute('aria-selected', String(i === active));
-    });
-    if (active >= 0) {
-      input.setAttribute('aria-activedescendant', pickerId + '-' + active);
-      list.children[active]?.scrollIntoView({ block: 'nearest' });
-    }
-  }
-  function search() {
-    const query = input.value.trim().toLocaleLowerCase();
-    if (!query) {
-      matches = [];
-      close();
-      return;
-    }
-    active = -1;
-    input.removeAttribute('aria-activedescendant');
-    matches = data.people
-      .filter((p) => p.id !== $('#personId').value && personMatchesQuery(p, query))
-      .sort((a, b) => a.name.localeCompare(b.name));
-    list.innerHTML =
-      matches
-        .map(
-          (p, i) =>
-            `<button type="button" id="${pickerId}-${i}" role="option" aria-selected="false">${esc(
-              displayName(p),
-            )}</button>`,
-        )
-        .join('') || '<p>No matching people.</p>';
-    list.hidden = false;
-    input.setAttribute('aria-expanded', 'true');
-    list
-      .querySelectorAll('button')
-      .forEach((button, i) => (button.onclick = () => choose(matches[i])));
-  }
-  input.oninput = () => {
-    hidden.value = '';
-    updateConnectionsCount();
-    updatePersonUnsaved();
-    input.setCustomValidity(input.value.trim() ? 'Select a person from the matches.' : '');
-    search();
-  };
-  input.onfocus = () => {
-    if (!hidden.value) search();
-  };
-  input.onkeydown = (event) => {
-    if (event.isComposing) return;
-    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-      event.preventDefault();
-      if (list.hidden) search();
-      if (matches.length && !list.hidden) {
-        active =
-          active < 0
-            ? event.key === 'ArrowDown'
-              ? 0
-              : matches.length - 1
-            : (active + (event.key === 'ArrowDown' ? 1 : -1) + matches.length) % matches.length;
-        highlight();
-      }
-    } else if (event.key === 'Enter' && !list.hidden) {
-      event.preventDefault();
-      if (matches.length) choose(matches[Math.max(0, active)]);
-    } else if (event.key === 'Escape' && !list.hidden) {
-      event.preventDefault();
-      event.stopPropagation();
-      close();
-    } else if (event.key === 'Tab') close();
-  };
-  row.querySelector('.relation-person-picker').onfocusout = (event) => {
-    if (!event.currentTarget.contains(event.relatedTarget)) close();
-  };
-  row.querySelector('.remove-relation').onclick = () => {
-    row.remove();
-    updateConnectionsCount();
-    updatePersonUnsaved();
-  };
-  $('#relations').append(row);
+  ui.addRelation(
+    {
+      id: value.id,
+      type: value.type || 'parent',
+      pickerId: 'relation-picker-' + ++relationPickerSerial,
+      owner: () => document.querySelector('#personId').value,
+    },
+    () => {
+      updateConnectionsCount();
+      updatePersonUnsaved();
+    },
+  );
   updateConnectionsCount();
 }
 
@@ -346,7 +108,7 @@ function edit(id, { updateUrl = true } = {}) {
   $('#personPhotoPreview').innerHTML = draftPhoto
     ? `<img src="${esc(draftPhoto)}" alt="Portrait preview">`
     : '';
-  $('#relations').innerHTML = '';
+  ui.clearRelations();
   if (p) connectionsDirect(id).forEach(relationRow);
   updateConnectionsCount();
   $('#delete').hidden = !p;
@@ -551,8 +313,6 @@ $('#delete').onclick = async () => {
   edit();
   render();
 };
-$('#treeTab').onclick = () => tab(false);
-$('#peopleTab').onclick = () => tab(true);
 $('#newPerson').onclick = () => edit();
 $('#addFirst').onclick = () => {
   tab(true);
@@ -620,38 +380,5 @@ function readPersonNicknames() {
   ];
 }
 function renderNicknameTags() {
-  const names = JSON.parse($('#nicknames').value || '[]');
-  $('#nicknameTags').innerHTML = names
-    .map(
-      (name, i) =>
-        `<button type="button" data-index="${i}" aria-label="Remove nickname ${esc(name)}">${esc(
-          name,
-        )} ×</button>`,
-    )
-    .join('');
-  $('#nicknameTags')
-    .querySelectorAll('button')
-    .forEach(
-      (button) =>
-        (button.onclick = () => {
-          names.splice(Number(button.dataset.index), 1);
-          $('#nicknames').value = JSON.stringify(names);
-          renderNicknameTags();
-          updatePersonUnsaved();
-          $('#nicknameInput').focus();
-        }),
-    );
+  ui.setNicknames(JSON.parse(document.querySelector('#nicknames').value || '[]'));
 }
-function commitNicknameTags() {
-  $('#nicknames').value = JSON.stringify(readPersonNicknames());
-  $('#nicknameInput').value = '';
-  renderNicknameTags();
-  updatePersonUnsaved();
-}
-$('#nicknameInput').addEventListener('keydown', (event) => {
-  if (!event.isComposing && (event.key === 'Enter' || event.key === ',')) {
-    event.preventDefault();
-    commitNicknameTags();
-  }
-});
-$('#nicknameInput').addEventListener('blur', commitNicknameTags);

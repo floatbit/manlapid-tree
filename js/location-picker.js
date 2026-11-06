@@ -2,12 +2,9 @@ let mapsPlacesPromise = null,
   locationFinderVersion = 0,
   locationLookupPending = false;
 function loadPlacesLibrary() {
+  if (!mapsApiKey) return Promise.reject(new Error('Google location search is not configured.'));
   if (mapsPlacesPromise) return mapsPlacesPromise;
   mapsPlacesPromise = new Promise((resolve, reject) => {
-    if (!mapsApiKey) {
-      reject(new Error('Google location search is not configured.'));
-      return;
-    }
     if (window.google?.maps?.importLibrary) {
       google.maps.importLibrary('places').then(resolve, reject);
       return;

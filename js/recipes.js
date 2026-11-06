@@ -45,31 +45,8 @@ function renderRecipes() {
   $('#recipesCount').textContent = `${recipes.length} ${
     recipes.length === 1 ? 'recipe' : 'recipes'
   }`;
-  $('#recipesGrid').innerHTML =
-    recipes
-      .map(
-        (r) =>
-          `<button type="button" class="recipe-card" data-recipe="${esc(r.id)}">${
-            r.photos.length
-              ? `<img src="${esc(r.photos[0])}" alt="${esc(r.title)}" loading="lazy">`
-              : '<span class="recipe-placeholder" aria-hidden="true">♧</span>'
-          }<span class="recipe-card-body"><small>${
-            recipeCategories[r.category] || 'Other'
-          }</small><strong>${esc(r.title)}</strong>${
-            person(r.personId) ? `<span>From ${esc(displayName(person(r.personId)))}</span>` : ''
-          }<span>${[
-            r.servings ? 'Serves ' + esc(r.servings) : '',
-            r.prepMinutes !== null ? 'Prep ' + r.prepMinutes + ' min' : '',
-            r.cookMinutes !== null ? 'Cook ' + r.cookMinutes + ' min' : '',
-          ]
-            .filter(Boolean)
-            .join(' · ')}</span></span></button>`,
-      )
-      .join('') ||
-    '<div class="recipes-empty"><h2>Every Family Has a Dish Worth Keeping.</h2><p>Add a recipe, its story, and a photo or handwritten card.</p></div>';
-  $('#recipesGrid')
-    .querySelectorAll('[data-recipe]')
-    .forEach((b) => (b.onclick = () => openRecipe(b.dataset.recipe)));
+  ui.sync(data);
+  ui.setRecipes(recipes);
   if (selectedRecipeId) {
     if ((data.recipes || []).some((r) => r.id === selectedRecipeId))
       openRecipe(selectedRecipeId, { updateUrl: false });
@@ -86,64 +63,7 @@ function openRecipe(id, { updateUrl = true } = {}) {
   $('#recipeDirectory').hidden = true;
   const detail = $('#recipeDetail');
   detail.hidden = false;
-  detail.innerHTML = `<div class="recipe-detail-actions"><button type="button" id="recipeBack">← All recipes</button><div><button type="button" id="recipePrint">Print recipe</button><button type="button" id="recipeShare">Copy link</button><button type="button" id="recipeEdit" class="primary">Edit Recipe</button></div></div><p class="eyebrow">${
-    recipeCategories[r.category] || 'Family recipe'
-  }</p><h1>${esc(r.title)}</h1>${
-    person(r.personId)
-      ? `<p class="recipe-attribution">From ${esc(displayName(person(r.personId)))}</p>`
-      : ''
-  }<p class="recipe-facts">${[
-    r.servings ? 'Servings: ' + esc(r.servings) : '',
-    r.prepMinutes !== null ? 'Prep: ' + r.prepMinutes + ' minutes' : '',
-    r.cookMinutes !== null ? 'Cook: ' + r.cookMinutes + ' minutes' : '',
-  ]
-    .filter(Boolean)
-    .join(' · ')}</p>${
-    r.photos.length
-      ? `<button type="button" class="recipe-hero" data-recipe-photo="0"><img src="${esc(
-          r.photos[0],
-        )}" alt="${esc(r.title)}"></button>`
-      : ''
-  }<div class="recipe-cooking-columns"><section><h2>Ingredients</h2><ul>${r.ingredients
-    .split(/\n+/)
-    .filter((line) => line.trim())
-    .map((line) => `<li>${esc(line)}</li>`)
-    .join('')}</ul></section><section><h2>Instructions</h2><ol>${r.instructions
-    .split(/\n+/)
-    .filter((line) => line.trim())
-    .map((line) => `<li>${esc(line)}</li>`)
-    .join('')}</ol></section></div>${
-    r.story
-      ? `<section class="recipe-family-story"><h2>The Family Story</h2><p>${esc(
-          r.story,
-        )}</p></section>`
-      : ''
-  }${
-    r.photos.length > 1
-      ? `<section class="recipe-more-photos"><h2>Photos and Recipe Cards</h2><div>${r.photos
-          .slice(1)
-          .map(
-            (photo, i) =>
-              `<button type="button" data-recipe-photo="${i + 1}"><img src="${esc(
-                photo,
-              )}" alt="${esc(r.title)} — photo ${i + 2}" loading="lazy"></button>`,
-          )
-          .join('')}</div></section>`
-      : ''
-  }`;
-  $('#recipeBack').onclick = closeRecipe;
-  $('#recipeEdit').onclick = () => editRecipe(id);
-  $('#recipePrint').onclick = () => {
-    document.body.classList.add('recipe-print');
-    window.print();
-  };
-  $('#recipeShare').onclick = () => copyDirectLink({ recipe: id });
-  detail
-    .querySelectorAll('[data-recipe-photo]')
-    .forEach(
-      (b) =>
-        (b.onclick = () => openPhotoLightbox(r.photos, Number(b.dataset.recipePhoto), r.title)),
-    );
+  ui.setRecipeDetail(r);
   if (updateUrl) {
     const url = new URL(location.href);
     url.hash = new URLSearchParams({ recipe: id }).toString();
@@ -152,6 +72,7 @@ function openRecipe(id, { updateUrl = true } = {}) {
 }
 function closeRecipe() {
   selectedRecipeId = null;
+  ui.setRecipeDetail(null);
   $('#recipeDetail').hidden = true;
   $('#recipeDirectory').hidden = false;
   if (new URLSearchParams(location.hash.slice(1)).has('recipe')) {
@@ -337,11 +258,11 @@ async function addRecipePhotos(files) {
     }
   }
 }
-$('#recipesTab').onclick = () => showSection('recipes');
 $('#newRecipe').onclick = () => editRecipe();
 for (const id of ['recipeSearch', 'recipeCategoryFilter', 'recipePersonFilter'])
   $('#' + id).addEventListener(id === 'recipeSearch' ? 'input' : 'change', () => {
     selectedRecipeId = null;
+    ui.setRecipeDetail(null);
     $('#recipeDirectory').hidden = false;
     $('#recipeDetail').hidden = true;
     renderRecipes();

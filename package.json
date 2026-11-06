@@ -2,12 +2,26 @@
   "name": "manlapid-family-tree",
   "private": true,
   "scripts": {
-    "format": "prettier --write index.html export.html app.js js css style.css tests/*.cjs .prettierrc.json package.json",
-    "format:check": "prettier --check index.html export.html app.js js css style.css tests/*.cjs .prettierrc.json package.json",
-    "test": "node tests/assets.test.cjs && node tests/layout.test.cjs && node tests/exploration.test.cjs && node tests/dates-and-history.test.cjs && php tests/ancestry.test.php && php tests/location-history.test.php && node tests/navigation.test.cjs",
-    "test:database": "php tests/media.test.php && php tests/albums.test.php && php tests/recipes.test.php"
+    "format": "prettier --write index.html export.html app.js js src scripts css style.css tests/*.{cjs,mjs} vite.config.js .prettierrc.json package.json",
+    "format:check": "prettier --check index.html export.html app.js js src scripts css style.css tests/*.{cjs,mjs} vite.config.js .prettierrc.json package.json",
+    "test": "node tests/assets.test.cjs && node tests/layout.test.cjs && node tests/exploration.test.cjs && node tests/dates-and-history.test.cjs && php tests/ancestry.test.php && php tests/location-history.test.php && node tests/navigation.test.cjs && npm run test:components",
+    "test:database": "php tests/media.test.php && php tests/albums.test.php && php tests/recipes.test.php",
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "build:watch": "vite build --watch",
+    "preview": "vite preview --host 127.0.0.1",
+    "test:components": "node --import ./tests/setup-dom.mjs --import ./tests/register-vue.mjs tests/components.test.mjs"
   },
   "devDependencies": {
-    "prettier": "2.8.8"
+    "@vitejs/plugin-vue": "^6.0.10",
+    "jsdom": "^26.1.0",
+    "prettier": "2.8.8",
+    "vite": "^7.3.7"
+  },
+  "dependencies": {
+    "vue": "^3.5.45"
+  },
+  "engines": {
+    "node": ">=22.12.0"
   }
 }

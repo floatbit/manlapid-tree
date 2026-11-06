@@ -336,6 +336,7 @@ function showSection(section, { replace = false } = {}) {
   )
     section = 'tree';
   rememberSection(section);
+  ui.setSection(section);
   if (!restoringPageHistory) updatePageUrl(section, { replace });
   $('#overviewPage').hidden = section !== 'overview';
   $('#overviewTab').classList.toggle('active', section === 'overview');
@@ -376,8 +377,6 @@ function openRelationshipFinder() {
 function tab(editor) {
   showSection(editor ? 'people' : 'tree');
 }
-
-$('#overviewTab').onclick = () => showSection('overview');
 
 let restoringPageHistory = false,
   lastRestoredPageUrl = null;

@@ -1,0 +1,78 @@
+<script setup lang="js">
+import { computed } from 'vue';
+import { family, timelineView, useRuntime } from '../ui/runtime.js';
+import PersonAvatar from './PersonAvatar.vue';
+import MediaPreview from './MediaPreview.vue';
+const api=computed(useRuntime);
+const years=computed(()=>{
+ const groups=new Map();
+ for(const event of timelineView.value){const year=api.value.familyDateYear(event.date) || 'Date Unknown';if(!groups.has(year))groups.set(year,[]);groups.get(year).push(event);}
+ return [...groups];
+});
+function names(event) {return (event.participants || []).map((id)=>family.value.people.find((p)=>p.id === id)).filter(Boolean).map((p)=>api.value.displayName(p)).join(', ');}
+</script>
+<template>
+  <div id="timelineEvents">
+    <section
+      v-for="[year, items] in years"
+      :key="year"
+      class="birth-year"
+      :aria-label="'Family events in ' + year"
+    >
+      <h2>{{ year }}</h2>
+      <div class="birth-cards">
+        <template v-for="event in items" :key="event.id">
+          <button
+            v-if="event.kind === 'birth' || event.kind === 'death'"
+            class="birth-event"
+            @click="api.start(event.person.id)"
+          >
+            <PersonAvatar :person="event.person" /><span
+              ><small>{{
+                event.kind === 'death' ? 'IN REMEMBRANCE' : 'WELCOME TO THE FAMILY'
+              }}</small
+              ><strong
+                >{{ api.displayName(event.person) }}
+                {{ event.kind === 'death' ? 'passed away' : 'was born' }}</strong
+              ><time>{{ api.familyDateLabel(event.date) }}</time></span
+            ><span class="birth-arrow" aria-hidden="true">↗</span>
+          </button>
+          <article v-else class="birth-event milestone-event">
+            <button
+              v-if="event.photos?.length"
+              class="milestone-gallery"
+              :aria-label="`View ${event.photos.length} media items from ${event.title}`"
+              @click="api.openPhotoLightbox(event.photos, 0, event.title)"
+            >
+              <MediaPreview
+                :src="event.photos[0]"
+                class-name="avatar milestone-cover"
+                :alt="event.title"
+              /></button
+            ><span v-else class="avatar milestone-icon">{{
+              api.milestoneIcons[event.type] || '★'
+            }}</span
+            ><button class="milestone-details" @click="api.openMilestone(event.id)">
+              <span
+                ><small>{{ api.milestoneTypes[event.type] || 'Milestone' }}</small
+                ><strong>{{ event.title }}</strong
+                ><time :datetime="event.date"
+                  >{{ api.familyDateLabel(event.date)
+                  }}{{ event.location ? ' · ' + event.location : '' }}</time
+                ><span v-if="names(event)" class="milestone-people">{{ names(event) }}</span
+                ><span v-if="event.photos?.length" class="milestone-photo-count"
+                  >▧ {{ api.milestoneMediaCount(event.photos) }}</span
+                ></span
+              ><span class="birth-arrow" aria-hidden="true">↗</span>
+            </button>
+          </article>
+        </template>
+      </div>
+    </section>
+    <div v-if="!years.length" class="timeline-empty">
+      <span>✳</span>
+      <h2>A Lifetime of Stories Starts Here.</h2>
+      <p>Add birthdays in People or record your first family milestone.</p>
+    </div>
+  </div>
+</template>

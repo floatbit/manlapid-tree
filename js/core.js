@@ -101,10 +101,7 @@ const avatar = (p) =>
     ? `<img class="avatar" src="${esc(p.photo)}" alt="${esc(displayName(p))}">`
     : `<span class="avatar">${esc(initials(p))}</span>`;
 function notify(message) {
-  $('#toast').textContent = message;
-  $('#toast').style.display = 'block';
-  clearTimeout(notify.timer);
-  notify.timer = setTimeout(() => ($('#toast').style.display = 'none'), 3000);
+  ui.notify(message);
 }
 const VIEW_KEY = 'kinfolk-view-v1';
 let sharedReady = false,
@@ -193,6 +190,7 @@ function applyShared(result) {
   data.albums = result.albums || [];
   data.recipes = result.recipes || [];
   data.email = result.email;
+  ui.sync(data);
   sharedRevision = result.revision;
   csrfToken = result.csrf;
   data.visible = data.visible.filter((id) => person(id));

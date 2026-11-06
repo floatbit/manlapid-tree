@@ -59,13 +59,4 @@ function openSharedLink() {
   }
 }
 $('#shareMilestone').onclick = () => copyDirectLink({ milestone: $('#milestoneId').value });
-$('#shareLightbox').onclick = () => {
-  const media = lightboxPhotos[lightboxIndex],
-    album = (data.albums || []).find((item) => item.photos?.includes(media));
-  if (album) copyDirectLink({ album: album.id, media });
-  else {
-    const recipe = (data.recipes || []).find((r) => r.photos.includes(media));
-    if (recipe) copyDirectLink({ recipe: recipe.id, media });
-  }
-};
 window.addEventListener('hashchange', restorePageFromUrl);

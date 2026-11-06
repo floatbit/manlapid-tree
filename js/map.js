@@ -277,7 +277,6 @@ async function renderFamilyMap({ fit = true } = {}) {
         'The map could not load. Check your connection and Google Maps API settings, then try again.';
   }
 }
-$('#mapTab').onclick = () => showSection('map');
 $('#fitFamilyMap').onclick = fitFamilyMap;
 
 function setFamilyMapMode(mode) {

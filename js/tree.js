@@ -40,6 +40,7 @@ function start(id) {
   $('#familyMapPage').hidden = true;
   $('#mapTab').classList.remove('active');
   rememberSection('tree');
+  ui.setSection('tree');
   if (!restoringPageHistory) updatePageUrl('tree');
   $('#relationships').hidden = true;
   $('#openRelationshipFinder').classList.remove('active');

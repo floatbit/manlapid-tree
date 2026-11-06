@@ -17,6 +17,11 @@ if (str_starts_with($path,'/uploads/')) {
 }
 if ($path === '/api.php') { require __DIR__ . '/api.php'; return true; }
 if ($path === '/' || $path === '/index.html') { header('Content-Type: text/html; charset=utf-8'); readfile(__DIR__ . '/index.html'); return true; }
+// Vite production output contains only public frontend assets.
+if (preg_match('~^/frontend/(?:[a-zA-Z0-9_-]+/)*[a-zA-Z0-9_.-]+\.(?:js|css|woff2?|svg|png)$~', $path)) {
+    $file = realpath(__DIR__.$path); $root = realpath(__DIR__.'/frontend');
+    if ($file && $root && str_starts_with($file, $root.DIRECTORY_SEPARATOR) && is_file($file)) return false;
+}
 // Serve only explicitly listed public assets; server source and backups stay private.
 if (in_array($path, [
     '/app.js',

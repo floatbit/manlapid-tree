@@ -88,12 +88,7 @@ function setupSiblingGroupSearch() {
       return;
     }
     matches = data.people
-      .filter(
-        (p) =>
-          !siblingGroupIds.includes(p.id) &&
-          (p.name.toLocaleLowerCase().includes(query) ||
-            displayName(p).toLocaleLowerCase().includes(query)),
-      )
+      .filter((p) => !siblingGroupIds.includes(p.id) && personMatchesQuery(p, query))
       .sort((a, b) => a.name.localeCompare(b.name))
       .slice(0, 12);
     list.innerHTML =

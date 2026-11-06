@@ -16,14 +16,15 @@ function respond(int $status, array $body): void {
     exit;
 }
 require_once __DIR__.'/server/images.php';
+require_once __DIR__.'/server/nicknames.php';
 require_once __DIR__.'/server/categories.php';
 require_once __DIR__.'/server/ancestry.php';
 require_once __DIR__.'/server/location-history.php';
 function snapshot(PDO $db, string $csrf): array {
     $mapsConfig=is_file(__DIR__.'/server/config.maps.local.php')?require __DIR__.'/server/config.maps.local.php':[];
     $state = $db->query('SELECT revision, request_email FROM family_state WHERE id = 1')->fetch();
-    $people = $db->query("SELECT id, name, first_name AS firstName, middle_name AS middleName, last_name AS lastName, photo, bio, COALESCE(birthday, '') AS birthday, location, location_place_id AS locationPlaceId, location_lat AS locationLat, location_lng AS locationLng,location_history AS locationHistory,birthplace,deceased,date_details FROM family_people ORDER BY display_order, id")->fetchAll();
-    foreach($people as &$p){$p['dateDetails']=json_decode($p['date_details']??'null',true);unset($p['date_details']);$p['deceased']=(bool)$p['deceased'];$p['locationHistory']=json_decode($p['locationHistory']??'[]',true)?:[];$p['birthplace']=json_decode($p['birthplace']??'null',true);}unset($p);
+    $people = $db->query("SELECT id, name, first_name AS firstName, middle_name AS middleName, last_name AS lastName, photo, bio, COALESCE(birthday, '') AS birthday, location, location_place_id AS locationPlaceId, location_lat AS locationLat, location_lng AS locationLng,location_history AS locationHistory,birthplace,deceased,date_details,nicknames FROM family_people ORDER BY display_order, id")->fetchAll();
+    foreach($people as &$p){$p['nicknames']=json_decode($p['nicknames']??'[]',true)?:[];$p['dateDetails']=json_decode($p['date_details']??'null',true);unset($p['date_details']);$p['deceased']=(bool)$p['deceased'];$p['locationHistory']=json_decode($p['locationHistory']??'[]',true)?:[];$p['birthplace']=json_decode($p['birthplace']??'null',true);}unset($p);
     $links = $db->query('SELECT person_a AS a, person_b AS b, relationship_type AS type FROM family_relationships ORDER BY person_a, person_b')->fetchAll();
     $milestones = $db->query('SELECT id,title,event_type AS type,event_date AS date,description,location,participants,photos,album_id AS albumId FROM family_milestones ORDER BY event_date,id')->fetchAll();
     foreach ($milestones as &$event) { $event['participants'] = json_decode($event['participants'],true) ?: []; $event['photos'] = json_decode($event['photos'] ?? '[]',true) ?: []; }
@@ -55,7 +56,7 @@ function validateFamily(array $body): array {
         if(($lat===null)!==($lng===null) || ($lat!==null&&(!is_numeric($lat)||!is_numeric($lng)||!is_finite((float)$lat)||!is_finite((float)$lng)||abs((float)$lat)>90||abs((float)$lng)>180)))throw new InvalidArgumentException('Invalid current location coordinates.');
         if(array_key_exists('deceased',$row)&&!is_bool($row['deceased']))throw new InvalidArgumentException('Invalid deceased status.');
         $ids[$id] = true;
-        $cleanPeople[] = $names + ['id'=>$id, 'name'=>$name, 'photo'=>$photo, 'bio'=>field($row,'bio',20000), 'birthday'=>$birthday, 'location'=>field($row,'location',255), 'locationPlaceId'=>field($row,'locationPlaceId',255), 'locationLat'=>$lat===null?null:(float)$lat,'locationLng'=>$lng===null?null:(float)$lng,'locationHistory'=>cleanLocationHistory($row['locationHistory']??null),'birthplace'=>array_key_exists('birthplace',$row)?cleanBirthplace($row['birthplace']):false,'dateDetails'=>cleanDateDetails($row['dateDetails']??null),'deceased'=>$row['deceased']??null];
+        $cleanPeople[] = $names + ['id'=>$id, 'name'=>$name, 'photo'=>$photo, 'bio'=>field($row,'bio',20000), 'birthday'=>$birthday, 'location'=>field($row,'location',255), 'locationPlaceId'=>field($row,'locationPlaceId',255), 'locationLat'=>$lat===null?null:(float)$lat,'locationLng'=>$lng===null?null:(float)$lng,'locationHistory'=>cleanLocationHistory($row['locationHistory']??null),'birthplace'=>array_key_exists('birthplace',$row)?cleanBirthplace($row['birthplace']):false,'nicknames'=>array_key_exists('nicknames',$row)?cleanNicknames($row['nicknames']):null,'dateDetails'=>cleanDateDetails($row['dateDetails']??null),'deceased'=>$row['deceased']??null];
     }
     foreach ($links as $link) {
         if (!is_array($link)) throw new InvalidArgumentException('Invalid connection.');
@@ -120,9 +121,10 @@ try {
         $db->rollBack(); respond(409,['error'=>'Another browser changed the family. Reload to get the latest data before saving.']);
     }
     // Existing free-text locations may remain, but new or changed locations need Google selection data.
-    $savedLocations=[];foreach($db->query('SELECT id,location,location_place_id,location_lat,location_lng,location_history,birthplace,deceased,date_details FROM family_people')->fetchAll() as $old)$savedLocations[$old['id']]=$old;
+    $savedLocations=[];foreach($db->query('SELECT id,location,location_place_id,location_lat,location_lng,location_history,birthplace,deceased,date_details,nicknames FROM family_people')->fetchAll() as $old)$savedLocations[$old['id']]=$old;
     foreach($people as &$p){
         $old=$savedLocations[$p['id']]??null;
+        if($p['nicknames']===null)$p['nicknames']=json_decode($old['nicknames']??'[]',true)?:[];
         if($p['dateDetails']===null)$p['dateDetails']=json_decode($old['date_details']??'null',true);
         if($p['deceased']===null)$p['deceased']=(bool)($old['deceased']??false);
         if($p['birthplace']===false)$p['birthplace']=json_decode($old['birthplace']??'null',true);
@@ -148,8 +150,8 @@ try {
     prepareMilestoneAlbums($db,$milestones);
     $db->exec('DELETE FROM family_relationships');
     $db->exec('DELETE FROM family_people');
-    $insert = $db->prepare('INSERT INTO family_people (id,name,photo,bio,birthday,location,display_order,first_name,middle_name,last_name,location_place_id,location_lat,location_lng,location_history,birthplace,deceased,date_details) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
-    foreach ($people as $i=>$p) $insert->execute([$p['id'],$p['name'],$p['photo'],$p['bio'],$p['birthday'] ?: null,$p['location'],$i,$p['firstName'],$p['middleName'],$p['lastName'],$p['locationPlaceId'],$p['locationLat'],$p['locationLng'],json_encode($p['locationHistory']),json_encode($p['birthplace']),(int)$p['deceased'],json_encode($p['dateDetails'])]);
+    $insert = $db->prepare('INSERT INTO family_people (id,name,photo,bio,birthday,location,display_order,first_name,middle_name,last_name,location_place_id,location_lat,location_lng,location_history,birthplace,deceased,date_details,nicknames) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
+    foreach ($people as $i=>$p) $insert->execute([$p['id'],$p['name'],$p['photo'],$p['bio'],$p['birthday'] ?: null,$p['location'],$i,$p['firstName'],$p['middleName'],$p['lastName'],$p['locationPlaceId'],$p['locationLat'],$p['locationLng'],json_encode($p['locationHistory']),json_encode($p['birthplace']),(int)$p['deceased'],json_encode($p['dateDetails']),json_encode($p['nicknames'])]);
     $insert = $db->prepare('INSERT INTO family_relationships (person_a,person_b,relationship_type) VALUES (?,?,?)');
     foreach ($links as $link) $insert->execute([$link['a'],$link['b'],$link['type']]);
     $db->exec('DELETE FROM family_milestones');

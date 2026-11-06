@@ -51,11 +51,7 @@ function setupRelationshipSearch(id, { required = true, label = null } = {}) {
     }
     results = data.people
       .filter((p) => [...select.options].some((option) => option.value === p.id))
-      .filter(
-        (p) =>
-          p.name.toLocaleLowerCase().includes(query) ||
-          displayName(p).toLocaleLowerCase().includes(query),
-      )
+      .filter((p) => personMatchesQuery(p, query))
       .sort((a, b) => a.name.localeCompare(b.name));
     list.innerHTML =
       results

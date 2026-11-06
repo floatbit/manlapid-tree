@@ -68,9 +68,4 @@ $('#shareLightbox').onclick = () => {
     if (recipe) copyDirectLink({ recipe: recipe.id, media });
   }
 };
-window.addEventListener('hashchange', () => {
-  if (!sharedReady) return;
-  if ($('#photoLightbox').open) $('#photoLightbox').close();
-  if ($('#milestoneDialog').open) $('#milestoneDialog').close();
-  openSharedLink();
-});
+window.addEventListener('hashchange', restorePageFromUrl);

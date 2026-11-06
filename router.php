@@ -33,6 +33,7 @@ if (in_array($path, [
     '/js/milestones.js',
     '/js/navigation.js',
     '/js/people.js',
+    '/js/overview.js',
     '/js/person-picker.js',
     '/js/recipes.js',
     '/js/relationship-finder.js',

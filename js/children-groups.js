@@ -96,8 +96,7 @@ function setupChildrenGroupSearch() {
         (p) =>
           p.id !== $('#childrenGroupParent').value &&
           !childrenGroupIds.includes(p.id) &&
-          (p.name.toLocaleLowerCase().includes(query) ||
-            displayName(p).toLocaleLowerCase().includes(query)),
+          personMatchesQuery(p, query),
       )
       .sort((a, b) => a.name.localeCompare(b.name))
       .slice(0, 12);

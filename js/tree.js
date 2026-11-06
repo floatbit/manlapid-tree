@@ -22,6 +22,8 @@ function expand(id, { fit = false } = {}) {
   render({ expanding: !fit, centerId: fit ? null : id, fit });
 }
 function start(id) {
+  $('#overviewPage').hidden = true;
+  $('#overviewTab').classList.remove('active');
   $('#recipesPage').hidden = true;
   $('#recipesTab').classList.remove('active');
   $('#albumsPage').hidden = true;
@@ -38,6 +40,7 @@ function start(id) {
   $('#familyMapPage').hidden = true;
   $('#mapTab').classList.remove('active');
   rememberSection('tree');
+  if (!restoringPageHistory) updatePageUrl('tree');
   $('#relationships').hidden = true;
   $('#openRelationshipFinder').classList.remove('active');
   $('#timeline').hidden = true;

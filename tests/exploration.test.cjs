@@ -205,3 +205,25 @@ console.log(
 console.log(
   'Passed: bulk children skips existing links and duplicates, and rejects self, cycle, and relationship conflicts.',
 );
+
+{
+  const core = fs.readFileSync(require('node:path').join(__dirname, '../js/core.js'), 'utf8');
+  vm.runInContext(core.slice(core.indexOf('function personMatchesQuery(')), ctx);
+  vm.runInContext('function firstLastName(p) { return p.name; }', ctx);
+  ctx.nicknamePerson = { name: 'Christopher Manlapid', nicknames: ['Chris', 'Boy'] };
+  assert(vm.runInContext("personMatchesQuery(nicknamePerson, ' boy ')", ctx));
+  assert(vm.runInContext("personMatchesQuery(nicknamePerson, 'CHRIS')", ctx));
+  assert(vm.runInContext("personMatchesQuery(nicknamePerson, 'manlapid')", ctx));
+  assert(!vm.runInContext("personMatchesQuery(nicknamePerson, 'unknown')", ctx));
+}
+console.log('Passed: person searches match nicknames and recorded names without case sensitivity.');
+
+{
+  const navigation = fs.readFileSync(require('node:path').join(__dirname, '../js/navigation.js'), 'utf8');
+  vm.runInContext(navigation.slice(navigation.indexOf('function similarity('), navigation.indexOf('let activeSearchIndex')), ctx);
+  ctx.melissa = { name: 'Melissa Manlapig', nicknames: ['Mimi'] };
+  assert.equal(vm.runInContext("personSearchScore(melissa, 'mimi')", ctx), 0);
+  assert.equal(vm.runInContext("personSearchScore(melissa, 'MIMI')", ctx), 0);
+  assert(vm.runInContext("personSearchScore(melissa, 'mim')", ctx) < 0.65);
+}
+console.log('Passed: main tree fuzzy search finds Melissa by her nickname Mimi.');

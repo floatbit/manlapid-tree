@@ -29,7 +29,13 @@ function updatePersonUnsaved() {
 }
 $('#deathDate').addEventListener('input', () => {
   if ($('#deathDate').value.trim()) $('#deceased').checked = true;
+  updateDeathDateVisibility();
 });
+function updateDeathDateVisibility() {
+  $('#deathDateField').hidden = !$('#deceased').checked;
+  $('#deathDateHint').hidden = !$('#deceased').checked;
+}
+$('#deceased').addEventListener('change', updateDeathDateVisibility);
 $('#personForm').addEventListener('input', updatePersonUnsaved);
 $('#personForm').addEventListener('change', updatePersonUnsaved);
 function selectPersonFromDirectory(id) {
@@ -40,7 +46,8 @@ function selectPersonFromDirectory(id) {
   notify(`Editing ${displayName(selected)}`);
 }
 
-function directory() {
+function renderOverview() {
+  renderOverviewSummary();
   const connected = new Set(data.links.flatMap((link) => [link.a, link.b]));
   const noConnections = data.people
     .filter((p) => !connected.has(p.id))
@@ -53,6 +60,9 @@ function directory() {
     .sort((a, b) => a.name.localeCompare(b.name));
   const noCurrentLocations = data.people
     .filter((p) => !p.location?.trim())
+    .sort((a, b) => a.name.localeCompare(b.name));
+  const noPhotos = data.people
+    .filter((p) => !p.photo?.trim())
     .sort((a, b) => a.name.localeCompare(b.name));
   const missingSection = (title, people, kind) =>
     `<section class="directory-missing"><h3>${title} <span>${
@@ -67,9 +77,7 @@ function directory() {
         )
         .join('') || '<p>Everyone is up to date.</p>'
     }</div></section>`;
-  $('#peopleList').innerHTML = `<h3>${
-    data.people.length
-  } people</h3><label for="directorySearch">Find a person to edit</label><div class="directory-search-field"><input id="directorySearch" type="search" placeholder="Search by name…" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="directoryMatches"><button id="clearDirectorySearch" type="button" aria-label="Clear people search" hidden>×</button></div><div id="directoryMatches" role="listbox" hidden></div>${missingSection(
+  $('#overviewReports').innerHTML = `${missingSection(
     'No Connections',
     noConnections,
     'connections',
@@ -77,17 +85,24 @@ function directory() {
     'No Birthplace',
     noBirthplaces,
     'birthplace',
-  )}${missingSection('No Current Location', noCurrentLocations, 'location')}`;
-  $('#peopleList')
+  )}${missingSection('No Current Location', noCurrentLocations, 'location')}${missingSection('No Photo', noPhotos, 'photo')}`;
+  $('#overviewReports')
     .querySelectorAll('[data-missing-person]')
     .forEach(
       (button) =>
         (button.onclick = () => {
+          showSection('people');
           selectPersonFromDirectory(button.dataset.missingPerson);
           if (button.dataset.missingKind === 'birthday')
             $('#birthday').focus({ preventScroll: true });
         }),
     );
+}
+
+function directory() {
+  $(
+    '#peopleList',
+  ).innerHTML = `<h3>${data.people.length} people</h3><label for="directorySearch">Find a person to edit</label><div class="directory-search-field"><input id="directorySearch" type="search" placeholder="Search by name…" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="directoryMatches"><button id="clearDirectorySearch" type="button" aria-label="Clear people search" hidden>×</button></div><div id="directoryMatches" role="listbox" hidden></div>`;
   const input = $('#directorySearch'),
     list = $('#directoryMatches');
   let matches = [],
@@ -124,7 +139,7 @@ function directory() {
       return;
     }
     matches = data.people
-      .filter((p) => p.name.toLocaleLowerCase().includes(query))
+      .filter((p) => personMatchesQuery(p, query))
       .sort((a, b) => a.name.localeCompare(b.name));
     list.hidden = false;
     input.setAttribute('aria-expanded', 'true');
@@ -240,12 +255,7 @@ function relationRow(value = {}) {
     active = -1;
     input.removeAttribute('aria-activedescendant');
     matches = data.people
-      .filter(
-        (p) =>
-          p.id !== $('#personId').value &&
-          (p.name.toLocaleLowerCase().includes(query) ||
-            displayName(p).toLocaleLowerCase().includes(query)),
-      )
+      .filter((p) => p.id !== $('#personId').value && personMatchesQuery(p, query))
       .sort((a, b) => a.name.localeCompare(b.name));
     list.innerHTML =
       matches
@@ -319,6 +329,8 @@ function edit(id, { updateUrl = true } = {}) {
   $('#personForm').reset();
   $('#personId').value = p?.id || '';
   $('#deceased').checked = !!p?.deceased;
+  $('#nicknames').value = JSON.stringify(p?.nicknames || []);
+  renderNicknameTags();
   $('#formTitle').textContent = p ? 'Edit ' + displayName(p) : 'Add a Person';
   for (const field of ['firstName', 'middleName', 'lastName', 'bio', 'birthday', 'location'])
     $('#' + field).value = (field.endsWith('Name') ? nameParts(p)[field] : p?.[field]) || '';
@@ -327,6 +339,7 @@ function edit(id, { updateUrl = true } = {}) {
   $('#locationLng').value = p?.locationLng ?? '';
   $('#birthday').value = p?.dateDetails?.birth || p?.birthday || '';
   $('#deathDate').value = p?.dateDetails?.death || '';
+  updateDeathDateVisibility();
   $('#currentLocationSince').value = p?.dateDetails?.currentSince || '';
   resetLocationFinder();
   draftPhoto = p?.photo || '';
@@ -389,6 +402,7 @@ $('#personForm').onsubmit = async (event) => {
     id,
     name,
     firstName,
+    nicknames: readPersonNicknames(),
     middleName,
     lastName,
     photo,
@@ -593,3 +607,51 @@ function alignPersonActions() {
 new ResizeObserver(alignPersonActions).observe($('#personForm'));
 new ResizeObserver(alignPersonActions).observe($('#personForm .locations-section'));
 window.addEventListener('resize', alignPersonActions);
+
+function readPersonNicknames() {
+  const names = [
+    ...JSON.parse($('#nicknames').value || '[]'),
+    ...$('#nicknameInput').value.split(','),
+  ];
+  return [
+    ...new Map(
+      names.map((name) => [name.trim().toLocaleLowerCase(), name.trim()]).filter(([key]) => key),
+    ).values(),
+  ];
+}
+function renderNicknameTags() {
+  const names = JSON.parse($('#nicknames').value || '[]');
+  $('#nicknameTags').innerHTML = names
+    .map(
+      (name, i) =>
+        `<button type="button" data-index="${i}" aria-label="Remove nickname ${esc(name)}">${esc(
+          name,
+        )} ×</button>`,
+    )
+    .join('');
+  $('#nicknameTags')
+    .querySelectorAll('button')
+    .forEach(
+      (button) =>
+        (button.onclick = () => {
+          names.splice(Number(button.dataset.index), 1);
+          $('#nicknames').value = JSON.stringify(names);
+          renderNicknameTags();
+          updatePersonUnsaved();
+          $('#nicknameInput').focus();
+        }),
+    );
+}
+function commitNicknameTags() {
+  $('#nicknames').value = JSON.stringify(readPersonNicknames());
+  $('#nicknameInput').value = '';
+  renderNicknameTags();
+  updatePersonUnsaved();
+}
+$('#nicknameInput').addEventListener('keydown', (event) => {
+  if (!event.isComposing && (event.key === 'Enter' || event.key === ',')) {
+    event.preventDefault();
+    commitNicknameTags();
+  }
+});
+$('#nicknameInput').addEventListener('blur', commitNicknameTags);

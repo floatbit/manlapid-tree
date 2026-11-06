@@ -261,11 +261,7 @@ function renderMilestonePeople() {
       return;
     }
     results = data.people
-      .filter(
-        (p) =>
-          !draftMilestonePeople.includes(p.id) &&
-          firstLastName(p).toLocaleLowerCase().includes(query),
-      )
+      .filter((p) => !draftMilestonePeople.includes(p.id) && personMatchesQuery(p, query))
       .sort((a, b) => firstLastName(a).localeCompare(firstLastName(b)))
       .slice(0, 10);
     matches.hidden = false;

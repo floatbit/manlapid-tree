@@ -24,8 +24,8 @@ function renderDetailsContent() {
   }
   $('#details').innerHTML = `<p class="eyebrow">A CLOSER LOOK</p>${avatar(p)}<h2>${esc(
     p.name,
-  )}</h2>${
-    p.deceased ? '<span class="deceased-badge">Deceased</span>' : ''
+  )}</h2>${p.deceased ? '<span class="deceased-badge">Deceased</span>' : ''}${
+    p.nicknames?.length ? `<p class="hint">Also known as: ${esc(p.nicknames.join(', '))}</p>` : ''
   }<p class="label-context">Tree labels are relative to this person.</p><div class="person-view-actions"><button id="sharePerson">Copy person link</button><button id="traceSelected" ${
     !data.root || data.root === p.id ? 'hidden' : ''
   }>Show path from starting person</button><button id="centerSelected">◎ Center person</button><button id="collapseSelected" ${
@@ -127,11 +127,7 @@ function setupSuggestionSearch() {
       return;
     }
     matches = data.people
-      .filter(
-        (p) =>
-          p.name.toLocaleLowerCase().includes(query) ||
-          displayName(p).toLocaleLowerCase().includes(query),
-      )
+      .filter((p) => personMatchesQuery(p, query))
       .sort((a, b) => a.name.localeCompare(b.name))
       .slice(0, 10);
     list.innerHTML =
@@ -187,6 +183,11 @@ function similarity(a, b) {
   }
   return row[b.length] / Math.max(a.length, b.length);
 }
+function personSearchScore(p, query) {
+  return Math.min(
+    ...[p.name, displayName(p), ...(p.nicknames || [])].map((name) => similarity(name, query)),
+  );
+}
 let activeSearchIndex = -1;
 function closeSearch() {
   activeSearchIndex = -1;
@@ -239,7 +240,9 @@ function handleSearchKey(event) {
       return;
     }
     const q = $('#search').value.trim().toLowerCase(),
-      exact = data.people.filter((p) => p.name.toLowerCase() === q);
+      exact = data.people.filter((p) =>
+        [p.name, ...(p.nicknames || [])].some((name) => name.toLowerCase() === q),
+      );
     if (exact.length === 1) start(exact[0].id);
     else if (options.length) start(options[0].dataset.match);
     else search();
@@ -254,7 +257,7 @@ function search() {
     return;
   }
   const matches = data.people
-    .map((p) => ({ p, score: similarity(p.name, query) }))
+    .map((p) => ({ p, score: personSearchScore(p, query) }))
     .filter((m) => m.score < 0.65)
     .sort((a, b) => a.score - b.score)
     .slice(0, 5);
@@ -296,13 +299,20 @@ function search() {
 function savedSection() {
   try {
     const section = localStorage.getItem('kinfolk-section-v1');
-    return ['tree', 'people', 'timeline', 'relationships', 'map', 'albums', 'recipes'].includes(
-      section,
-    )
+    return [
+      'overview',
+      'tree',
+      'people',
+      'timeline',
+      'relationships',
+      'map',
+      'albums',
+      'recipes',
+    ].includes(section)
       ? section
-      : 'tree';
+      : 'overview';
   } catch {
-    return 'tree';
+    return 'overview';
   }
 }
 function rememberSection(section) {
@@ -310,27 +320,25 @@ function rememberSection(section) {
     localStorage.setItem('kinfolk-section-v1', section);
   } catch {}
 }
-function showSection(section) {
+function showSection(section, { replace = false } = {}) {
   if (!$('#timeline').hidden) saveTimelinePosition();
   if (
-    !['tree', 'people', 'timeline', 'relationships', 'map', 'albums', 'recipes'].includes(section)
+    ![
+      'overview',
+      'tree',
+      'people',
+      'timeline',
+      'relationships',
+      'map',
+      'albums',
+      'recipes',
+    ].includes(section)
   )
     section = 'tree';
   rememberSection(section);
-  for (const [param, page] of [
-    ['recipe', 'recipes'],
-    ['album', 'albums'],
-  ])
-    if (section !== page && new URLSearchParams(location.hash.slice(1)).has(param)) {
-      const url = new URL(location.href);
-      url.hash = '';
-      history.replaceState(null, '', url);
-    }
-  if (section !== 'people' && new URLSearchParams(location.hash.slice(1)).has('editPerson')) {
-    const url = new URL(location.href);
-    url.hash = '';
-    history.replaceState(null, '', url);
-  }
+  if (!restoringPageHistory) updatePageUrl(section, { replace });
+  $('#overviewPage').hidden = section !== 'overview';
+  $('#overviewTab').classList.toggle('active', section === 'overview');
   $('#recipesPage').hidden = section !== 'recipes';
   $('#recipesTab').classList.toggle('active', section === 'recipes');
   $('#albumsPage').hidden = section !== 'albums';
@@ -345,7 +353,8 @@ function showSection(section) {
   $('#peopleTab').classList.toggle('active', section === 'people');
   $('#timelineTab').classList.toggle('active', section === 'timeline');
   $('#openRelationshipFinder').classList.toggle('active', section === 'relationships');
-  if (section === 'people') {
+  if (section === 'overview') renderOverview();
+  else if (section === 'people') {
     directory();
     resetLocationFinder();
     setupBirthplaceFinder();
@@ -367,3 +376,48 @@ function openRelationshipFinder() {
 function tab(editor) {
   showSection(editor ? 'people' : 'tree');
 }
+
+$('#overviewTab').onclick = () => showSection('overview');
+
+let restoringPageHistory = false,
+  lastRestoredPageUrl = null;
+function sectionFromUrl(url = new URL(location.href)) {
+  const params = new URLSearchParams(url.hash.slice(1));
+  for (const [key, section] of [
+    ['editPerson', 'people'],
+    ['person', 'tree'],
+    ['album', 'albums'],
+    ['recipe', 'recipes'],
+    ['milestone', 'timeline'],
+  ])
+    if (params.has(key)) return section;
+  const page = params.get('page');
+  if (page === 'reports') return 'overview';
+  return ['tree', 'people', 'timeline', 'relationships', 'map', 'albums', 'recipes'].includes(page)
+    ? page
+    : null;
+}
+function updatePageUrl(section, { replace = false } = {}) {
+  lastRestoredPageUrl = null;
+  const url = new URL(location.href);
+  const params =
+    sectionFromUrl(url) === section
+      ? new URLSearchParams(url.hash.slice(1))
+      : new URLSearchParams();
+  params.set('page', section === 'overview' ? 'reports' : section);
+  url.hash = params.toString();
+  if (url.href !== location.href) history[replace ? 'replaceState' : 'pushState'](null, '', url);
+}
+function restorePageFromUrl() {
+  if (!sharedReady || restoringPageHistory || lastRestoredPageUrl === location.href) return;
+  lastRestoredPageUrl = location.href;
+  restoringPageHistory = true;
+  try {
+    for (const dialog of document.querySelectorAll('dialog[open]')) dialog.close();
+    showSection(sectionFromUrl() || 'tree');
+    openSharedLink();
+  } finally {
+    restoringPageHistory = false;
+  }
+}
+window.addEventListener('popstate', restorePageFromUrl);

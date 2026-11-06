@@ -299,6 +299,7 @@ async function refreshShared() {
     if (result.revision !== sharedRevision) {
       applyShared(result);
       render();
+      if (!$('#overviewPage').hidden) renderOverview();
       if (!$('#timeline').hidden) renderTimeline();
       if (!$('#familyMapPage').hidden) renderFamilyMap({ fit: false });
       if (!$('#albumsPage').hidden) renderAlbums();
@@ -324,15 +325,7 @@ async function connectDatabase() {
     $('#databaseNotice').hidden = true;
     syncStatus('● Saved to MySQL');
     edit();
-    showSection(
-      new URLSearchParams(location.hash.slice(1)).has('recipe')
-        ? 'recipes'
-        : new URLSearchParams(location.hash.slice(1)).has('album')
-        ? 'albums'
-        : new URLSearchParams(location.hash.slice(1)).has('editPerson')
-        ? 'people'
-        : savedSection(),
-    );
+    showSection(sectionFromUrl() || savedSection(), { replace: true });
     if (data.root) $('#search').value = person(data.root) ? displayName(person(data.root)) : '';
     openSharedLink();
   } catch (error) {
@@ -363,4 +356,11 @@ function familyDateLabel(value) {
     year: 'numeric',
     timeZone: 'UTC',
   }).format(new Date(value + 'T12:00:00Z'));
+}
+
+function personMatchesQuery(p, query) {
+  const q = query.trim().toLocaleLowerCase();
+  return [p.name, displayName(p), firstLastName(p), ...(p.nicknames || [])].some((name) =>
+    name.toLocaleLowerCase().includes(q),
+  );
 }

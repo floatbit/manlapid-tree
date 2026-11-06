@@ -11,13 +11,14 @@
     <header>
       <a class="brand" href="#" aria-label="Family tree home">✳</a>
       <nav>
-        <button class="active" id="treeTab">Family Tree</button>
+        <button class="active" id="treeTab">Tree</button>
         <button id="timelineTab">Timeline</button>
-        <button id="mapTab">Map</button>
         <button id="peopleTab">People</button>
+        <button id="mapTab">Map</button>
         <button id="albumsTab">Album</button>
         <button id="recipesTab">Recipes</button>
         <button id="openRelationshipFinder">Relationships</button>
+        <button id="overviewTab">Reports</button>
       </nav>
       <div class="search">
         <label for="search">Find someone in your family</label>
@@ -56,6 +57,21 @@
       </p>
     </section>
     <input id="familyBackup" type="file" accept="application/json,.json" hidden />
+    <main id="overviewPage" hidden>
+      <div class="intro">
+        <div>
+          <p class="eyebrow">OUR FAMILY AT A GLANCE</p>
+          <h1>Family Reports</h1>
+          <p>
+            Explore our family, upcoming anniversaries, shared memories, and the details still to
+            discover.
+          </p>
+        </div>
+      </div>
+      <div id="overviewSummary"></div>
+      <h2>Missing Details</h2>
+      <div id="overviewReports" class="overview-reports"></div>
+    </main>
     <main id="explore">
       <div class="workspace">
         <section class="canvas" id="canvas">
@@ -241,6 +257,20 @@
                     >Last name<input id="lastName" maxlength="120" autocomplete="family-name"
                   /></label>
                 </div>
+                <label for="nicknameInput">Nicknames / Also Known As</label>
+                <input id="nicknames" type="hidden" value="[]" />
+                <div class="nickname-editor">
+                  <span id="nicknameTags"></span
+                  ><input
+                    id="nicknameInput"
+                    placeholder="Type a nickname and press Enter"
+                    maxlength="120"
+                    autocomplete="off"
+                  />
+                </div>
+                <p class="hint">
+                  Press Enter or comma to add a nickname. Nicknames are included in person searches.
+                </p>
                 <label
                   >Birth Date<input
                     id="birthday"
@@ -248,12 +278,14 @@
                 ><label class="deceased-field"
                   ><input id="deceased" type="checkbox" /> Deceased</label
                 >
-                <label
+                <label id="deathDateField" hidden
                   >Death Date (Optional)<input
                     id="deathDate"
                     placeholder="1940, About 1940, YYYY-MM-DD, or Date unknown"
                 /></label>
-                <p class="hint">Dates accept an exact date, a year, About 1940, or Date unknown.</p>
+                <p id="deathDateHint" class="hint" hidden>
+                  Dates accept an exact date, a year, About 1940, or Date unknown.
+                </p>
               </section>
               <section class="profile-section">
                 <h3>Photo and Story</h3>
@@ -805,6 +837,7 @@
     <script src="js/navigation.js"></script>
     <script src="js/milestones.js"></script>
     <script src="js/people.js"></script>
+    <script src="js/overview.js"></script>
     <script src="js/tree-controls.js"></script>
     <script src="app.js"></script>
     <script src="js/backups.js"></script>

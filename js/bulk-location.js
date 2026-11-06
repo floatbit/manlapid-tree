@@ -68,12 +68,7 @@ function setupBulkLocationSearch() {
       return;
     }
     results = data.people
-      .filter(
-        (p) =>
-          !bulkLocationPeople.includes(p.id) &&
-          (p.name.toLocaleLowerCase().includes(query) ||
-            displayName(p).toLocaleLowerCase().includes(query)),
-      )
+      .filter((p) => !bulkLocationPeople.includes(p.id) && personMatchesQuery(p, query))
       .sort((a, b) => a.name.localeCompare(b.name));
     list.innerHTML =
       results

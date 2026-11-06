@@ -320,6 +320,21 @@ function layoutFamily(ids, previous = null) {
       // Otherwise a newly revealed cousin can land in the middle of this family.
       for (const family of families.values())
         for (const child of family.children.slice(1)) joinPartners(family.children[0], child);
+      const hasVisibleParents = (unit) =>
+        unit.some((id) =>
+          connectionsDirect(id).some(
+            (c) => c.type === 'parent' && visible.has(c.id) && levels.get(c.id) < levels.get(id),
+          ),
+        );
+      // A spouse's sibling with no visible parents belongs beside that spouse's
+      // family, rather than being sorted as an unrelated floating card.
+      for (const id of row)
+        for (const c of connectionsDirect(id)) {
+          if (c.type !== 'sibling' || !row.includes(c.id)) continue;
+          const a = units.find((unit) => unit.includes(id));
+          const b = units.find((unit) => unit.includes(c.id));
+          if (a !== b && hasVisibleParents(a) !== hasVisibleParents(b)) joinPartners(id, c.id);
+        }
       const ordered = units
         .map((unit) => {
           const anchor = (id) => previous.positions.get(id)?.x ?? positions.get(id).x + offset;

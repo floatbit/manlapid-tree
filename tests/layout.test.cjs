@@ -383,3 +383,34 @@ console.log(
   for (const [id, position] of after.positions) assert.deepEqual(again.positions.get(id), position);
 }
 console.log('Passed: newly revealed siblings expand away from the existing spouse.');
+
+// A spouse's sibling without visible parents stays with that family across unrelated expansion.
+{
+  const links = [
+    spouse('luis', 'mercedes'),
+    spouse('chris', 'christy'),
+    sibling('christy', 'kin'),
+    sibling('luis', 'evelyn'),
+    spouse('evelyn', 'peter'),
+  ];
+  for (const child of ['chris', 'james'])
+    for (const p of ['luis', 'mercedes']) links.push({ a: child, b: p, type: 'parent' });
+  for (const p of ['evelyn', 'peter']) links.push({ a: 'roland', b: p, type: 'parent' });
+  const ids = ['luis', 'mercedes', 'evelyn', 'chris', 'christy', 'kin', 'james'];
+  const before = layout(ids, links, 'luis');
+  // Match the existing visual order reported by the user.
+  for (const [index, id] of ['kin', 'christy', 'chris', 'james'].entries())
+    before.positions.get(id).x = 110 + index * 210;
+  context.previousLayout = before;
+  context.data.visible.push('peter', 'roland');
+  context.data.people = context.data.visible.map((id) => ({ id, name: id }));
+  const after = vm.runInContext('layoutFamily(data.visible, previousLayout)', context);
+  const x = (id) => after.positions.get(id).x;
+  assert.equal(x('christy') - x('kin'), 210, 'Kin must remain beside Christy');
+  assert.equal(x('chris') - x('christy'), 210, 'The couple must stay together');
+  assert(x('kin') < x('james') && x('kin') < x('roland'), 'Kin cannot jump past other families');
+  context.previousLayout = after;
+  const again = vm.runInContext('layoutFamily(data.visible, previousLayout)', context);
+  for (const [id, position] of after.positions) assert.deepEqual(again.positions.get(id), position);
+}
+console.log('Passed: a spouse sibling stays with the family during unrelated expansion.');

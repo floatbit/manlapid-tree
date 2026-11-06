@@ -110,10 +110,6 @@ for (const type of ['pointerup', 'pointercancel', 'lostpointercapture'])
   $('#graph').addEventListener(type, endTreeDrag);
 function handleTreeWheel(event) {
   if (!(event.metaKey || event.shiftKey) || !graphLayout || $('#graph').hidden) return;
-  if (zoomLocked) {
-    event.preventDefault();
-    return;
-  }
   const graph = $('#graph'),
     scene = $('#scene');
   const delta = Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
@@ -132,7 +128,8 @@ function handleTreeWheel(event) {
     0.2,
     Math.min(2, before.a * Math.exp(-Math.max(-180, Math.min(180, pixels)) * 0.0025)),
   );
-  setGraphScale(next, { animate: false });
+  treeCenterRequest++;
+  setGraphScale(next, { animate: false, manual: true });
   const after = new DOMMatrixReadOnly(getComputedStyle(scene).transform);
   graph.scrollTo({
     left: worldX * next + after.e - x,

@@ -174,7 +174,7 @@ async function setupBirthplaceFinder() {
     finder.setAttribute('placeholder', 'Search for a city, country, or address');
     finder.setAttribute('aria-label', 'Search birthplace city or country');
     $('#birthplaceFinder').append(finder);
-    $('#birthplaceStatus').textContent = 'Select a Google suggestion. A city or country is enough.';
+    $('#birthplaceStatus').textContent = '';
     let selection = 0;
     finder.addEventListener(
       'gmp-error',

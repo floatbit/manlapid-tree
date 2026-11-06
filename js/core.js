@@ -282,7 +282,7 @@ async function refreshShared() {
     savingShared ||
     !$('#editor').hidden ||
     $('#familyDialog').open ||
-    !$('#relationships').hidden ||
+    $('#relationships').open ||
     $('#milestoneDialog').open ||
     $('#photoLightbox').open ||
     $('#siblingGroupDialog').open ||
@@ -357,8 +357,16 @@ function familyDateLabel(value) {
 }
 
 function personMatchesQuery(p, query) {
-  const q = query.trim().toLocaleLowerCase();
-  return [p.name, displayName(p), firstLastName(p), ...(p.nicknames || [])].some((name) =>
-    name.toLocaleLowerCase().includes(q),
-  );
+  const normalize = (text) =>
+    text.normalize('NFKD').replace(/\p{M}/gu, '').toLocaleLowerCase().replace(/\s+/g, '');
+  const letters = [...normalize(query)];
+  if (!letters.length) return true;
+  return [p.name, displayName(p), firstLastName(p), ...(p.nicknames || [])].some((name) => {
+    let next = 0;
+    for (const letter of normalize(name)) {
+      if (letter === letters[next]) next++;
+      if (next === letters.length) return true;
+    }
+    return false;
+  });
 }

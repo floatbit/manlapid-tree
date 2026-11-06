@@ -11,6 +11,7 @@
 # Database backups and source media for bulk imports
 /server/backups/
 /imports/
+/import/
 
 # Dependencies and temporary output
 /node_modules/

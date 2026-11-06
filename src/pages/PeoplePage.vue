@@ -108,10 +108,6 @@ import NicknameTags from '../components/NicknameTags.vue';
               <div class="location-life-timeline">
                 <div class="birthplace-field location-timeline-stop">
                   <h4>Birthplace <span class="optional">Optional</span></h4>
-                  <p class="hint">
-                    Choose a city or country from Google. This is the starting point of their
-                    migration path.
-                  </p>
                   <div id="birthplaceFinder"></div>
                   <p id="birthplaceStatus" class="hint" role="status"></p>
                   <div id="selectedBirthplace" hidden>
@@ -160,10 +156,6 @@ import NicknameTags from '../components/NicknameTags.vue';
                   aria-labelledby="currentLocationLabel"
                 >
                   <h3 id="currentLocationLabel">Current Location</h3>
-                  <p class="hint">
-                    Search for a city, region, country, or street address. A city and country are
-                    enough.
-                  </p>
                   <input id="currentLocationSince" type="hidden" />
                   <div id="locationFinder"></div>
                   <p id="locationFinderStatus" class="hint" role="status"></p>

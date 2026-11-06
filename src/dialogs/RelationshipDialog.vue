@@ -1,5 +1,18 @@
+<script setup lang="js">
+import { ref } from 'vue';
+const dialog = ref(null);
+</script>
 <template>
-  <main id="relationships" hidden aria-labelledby="relationshipTitle">
+  <dialog id="relationships" ref="dialog" aria-labelledby="relationshipTitle">
+    <button
+      type="button"
+      class="relationship-dialog-close"
+      aria-label="Close relationship finder"
+      title="Close"
+      @click="dialog.close()"
+    >
+      ×
+    </button>
     <section class="finder-page">
       <form id="relationshipForm">
         <p class="eyebrow">FOLLOW THE FAMILY CONNECTION</p>
@@ -13,5 +26,5 @@
         <div id="relationshipResult" aria-live="polite"></div>
       </form>
     </section>
-  </main>
+  </dialog>
 </template>

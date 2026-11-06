@@ -11,7 +11,7 @@ import BulkLocationDialog from './dialogs/BulkLocationDialog.vue';
 import SiblingGroupDialog from './dialogs/SiblingGroupDialog.vue';
 import ChildrenGroupDialog from './dialogs/ChildrenGroupDialog.vue';
 import FamilyDialog from './dialogs/FamilyDialog.vue';
-import RelationshipsPage from './pages/RelationshipsPage.vue';
+import RelationshipDialog from './dialogs/RelationshipDialog.vue';
 import RecipeDialog from './dialogs/RecipeDialog.vue';
 import AlbumDialog from './dialogs/AlbumDialog.vue';
 import MilestoneDialog from './dialogs/MilestoneDialog.vue';
@@ -32,7 +32,7 @@ import SystemNotices from './components/SystemNotices.vue';
   <SiblingGroupDialog />
   <ChildrenGroupDialog />
   <FamilyDialog />
-  <RelationshipsPage />
+  <RelationshipDialog />
   <RecipeDialog />
   <AlbumDialog />
   <MilestoneDialog />

@@ -1564,17 +1564,8 @@ gmp-place-autocomplete {
   border-radius: 10px;
   box-shadow: 0 4px 22px #263c3612;
 }
-.tree-view-actions #graphTools {
-  position: static;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-  color: var(--ink);
-}
 .tree-view-actions button,
-.tree-view-actions #graphTools button {
+#graphTools button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1586,7 +1577,7 @@ gmp-place-autocomplete {
   box-shadow: none;
 }
 .tree-view-actions button:hover,
-.tree-view-actions #graphTools button:hover {
+#graphTools button:hover {
   background: #edf3e7;
 }
 #lockZoom .zoom-locked-icon,
@@ -1601,9 +1592,67 @@ gmp-place-autocomplete {
   width: auto;
   padding: 8px;
 }
-.tree-view-actions button {
+.tree-view-actions button,
+#graphTools button {
   gap: 6px;
 }
-.tree-view-actions button span {
+.tree-view-actions button span,
+#graphTools button span {
   min-width: 0;
 }
+
+#relationships {
+  position: fixed;
+  width: min(900px, calc(100% - 32px));
+  max-width: 900px;
+  max-height: calc(100dvh - 40px);
+  margin: auto;
+  padding: 28px;
+  overflow: auto;
+}
+#relationships .relationship-dialog-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  border: 0;
+  background: transparent;
+  font-size: 24px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+}
+#relationships #relationshipTitle {
+  font-size: 30px;
+  padding-right: 24px;
+}
+.tree-view-actions #openRelationshipFinder {
+  margin-left: 0;
+  background: transparent;
+}
+.tree-view-actions #openRelationshipFinder:hover,
+.tree-view-actions #backToStart:hover {
+  background: #edf3e7;
+}
+
+#graphTools {
+  top: auto;
+  right: 20px;
+  bottom: 16px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fffefa;
+  color: var(--ink);
+  box-shadow: 0 4px 22px #263c3612;
+}
+@media (max-width: 900px) {
+  #graphTools {
+    top: auto;
+    bottom: 16px;
+    right: 10px;
+  }
+}
+
+#locationFinderStatus:empty { display: none; }
+
+#birthplaceStatus:empty { display: none; }

@@ -2495,7 +2495,7 @@ header nav {
 }
 #directoryMatches {
   margin-top: 8px;
-  max-height: 420px;
+  max-height: max(600px, calc(100vh - 240px));
   overflow: auto;
 }
 #peopleList #directoryMatches button {

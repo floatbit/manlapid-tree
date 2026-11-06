@@ -184,9 +184,10 @@ function similarity(a, b) {
   return row[b.length] / Math.max(a.length, b.length);
 }
 function personSearchScore(p, query) {
-  return Math.min(
+  const score = Math.min(
     ...[p.name, displayName(p), ...(p.nicknames || [])].map((name) => similarity(name, query)),
   );
+  return personMatchesQuery(p, query) ? Math.min(score, 0.5) : score;
 }
 let activeSearchIndex = -1;
 function closeSearch() {
@@ -321,6 +322,12 @@ function rememberSection(section) {
   } catch {}
 }
 function showSection(section, { replace = false } = {}) {
+  if (section === 'relationships') {
+    showSection('tree', { replace });
+    openRelationshipFinder();
+    return;
+  }
+  if ($('#relationships').open) $('#relationships').close();
   if (!$('#timeline').hidden) saveTimelinePosition();
   if (
     ![
@@ -349,11 +356,9 @@ function showSection(section, { replace = false } = {}) {
   $('#editor').hidden = section !== 'people';
   $('#explore').hidden = section !== 'tree';
   $('#timeline').hidden = section !== 'timeline';
-  $('#relationships').hidden = section !== 'relationships';
   $('#treeTab').classList.toggle('active', section === 'tree');
   $('#peopleTab').classList.toggle('active', section === 'people');
   $('#timelineTab').classList.toggle('active', section === 'timeline');
-  $('#openRelationshipFinder').classList.toggle('active', section === 'relationships');
   if (section === 'overview') renderOverview();
   else if (section === 'people') {
     directory();
@@ -365,14 +370,20 @@ function showSection(section, { replace = false } = {}) {
   } else if (section === 'recipes') renderRecipes();
   else if (section === 'albums') renderAlbums();
   else if (section === 'map') renderFamilyMap();
-  else if (section === 'relationships') populateRelationshipFinder();
   else {
     render();
     fitGraph();
   }
 }
 function openRelationshipFinder() {
-  showSection('relationships');
+  if (!sharedReady) {
+    notify('Wait for the family database to load.');
+    return;
+  }
+  if ($('#explore').hidden) showSection('tree');
+  populateRelationshipFinder();
+  if (!$('#relationships').open) $('#relationships').showModal();
+  $('#relationshipFromPicker input').focus();
 }
 function tab(editor) {
   showSection(editor ? 'people' : 'tree');

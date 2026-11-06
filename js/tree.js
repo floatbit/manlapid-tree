@@ -42,7 +42,7 @@ function start(id) {
   rememberSection('tree');
   ui.setSection('tree');
   if (!restoringPageHistory) updatePageUrl('tree');
-  $('#relationships').hidden = true;
+  if ($('#relationships').open) $('#relationships').close();
   $('#openRelationshipFinder').classList.remove('active');
   $('#timeline').hidden = true;
   $('#editor').hidden = true;
@@ -110,7 +110,12 @@ async function centerAfterTreeSettles(id, request) {
     Promise.allSettled(nodeAnimations.map((animation) => animation.finished)),
     new Promise((resolve) => setTimeout(resolve, reducedMotion.matches ? 0 : 180)),
   ]);
-  if (request !== treeCenterRequest || data.selected !== id || !graphLayout?.positions.has(id))
+  if (
+    zoomLocked ||
+    request !== treeCenterRequest ||
+    data.selected !== id ||
+    !graphLayout?.positions.has(id)
+  )
     return;
   centerGraphOnPerson(id, graphScale, getComputedStyle($('#scene')).transform);
 }
@@ -655,13 +660,14 @@ function familyLines(layout) {
     )
     .join('');
 }
-function setGraphScale(scale, { animate = true, fromTransform = null } = {}) {
+function setGraphScale(scale, { animate = true, fromTransform = null, manual = false } = {}) {
   if (!graphLayout) return;
   const g = $('#graph'),
     scene = $('#scene');
   const before = fromTransform || getComputedStyle(scene).transform;
   for (const motion of scene.getAnimations()) motion.cancel();
-  graphScale = zoomLocked ? graphScale : Math.max(0.2, Math.min(2, scale));
+  graphScale = zoomLocked && !manual ? graphScale : Math.max(0.2, Math.min(2, scale));
+  if (zoomLocked && manual) setGraphZoomLocked(true);
   const w = graphLayout.width * graphScale,
     h = graphLayout.height * graphScale;
   $('#graphSpace').style.width =
@@ -942,7 +948,8 @@ function render({ expanding = false, centerId = null, fit = false } = {}) {
     height !== oldLayout.height ||
     ids.length !== oldNodes.size;
   if (fit) {
-    fitGraph({ fromTransform: oldTransform });
+    if (zoomLocked) centerGraphOnPerson(data.selected || root, graphScale, oldTransform);
+    else fitGraph({ fromTransform: oldTransform });
   } else if (expanding && sameTree) {
     const graph = $('#graph');
     const before = new DOMMatrixReadOnly(oldTransform);
@@ -983,5 +990,6 @@ function render({ expanding = false, centerId = null, fit = false } = {}) {
   }
   renderedRoot = root;
   renderDetails();
-  if (expanding && sameTree && centerId) centerAfterTreeSettles(centerId, centerRequest);
+  if (expanding && sameTree && centerId && !zoomLocked)
+    centerAfterTreeSettles(centerId, centerRequest);
 }

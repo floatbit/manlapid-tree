@@ -62,8 +62,7 @@ async function resetLocationFinder() {
     finder.setAttribute('aria-label', 'Search cities, countries, or addresses');
     finder.setAttribute('placeholder', 'Search for a city, country, or address');
     $('#locationFinder').append(finder);
-    $('#locationFinderStatus').textContent =
-      'Choose a Google suggestion to set the current location.';
+    $('#locationFinderStatus').textContent = '';
     finder.addEventListener('gmp-error', () => {
       $('#locationFinderStatus').textContent =
         'Google location search is unavailable. Check Places API (New) and the API key settings.';

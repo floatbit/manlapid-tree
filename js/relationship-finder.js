@@ -1,3 +1,4 @@
+$('#openRelationshipFinder').onclick = openRelationshipFinder;
 $('#clearRelationshipPath').onclick = clearRelationshipPath;
 $('#relationshipForm').onsubmit = (event) => {
   event.preventDefault();

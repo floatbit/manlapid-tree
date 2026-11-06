@@ -242,3 +242,21 @@ console.log('Passed: person searches match nicknames and recorded names without 
   assert(vm.runInContext("personSearchScore(melissa, 'mim')", ctx) < 0.65);
 }
 console.log('Passed: main tree fuzzy search finds Melissa by her nickname Mimi.');
+
+{
+  ctx.kitKat = { name: 'Kit Kat', nicknames: ['Kiki'] };
+  for (const query of ['kit', 'kk', 'k k', 'KTKT', 'kki'])
+    assert(vm.runInContext(`personMatchesQuery(kitKat, ${JSON.stringify(query)})`, ctx), query);
+  for (const query of ['kkk', 'kz', 'tkkt'])
+    assert(!vm.runInContext(`personMatchesQuery(kitKat, ${JSON.stringify(query)})`, ctx), query);
+  assert(vm.runInContext("personSearchScore(kitKat,'kk')", ctx) < 0.65);
+  assert(
+    vm.runInContext("personSearchScore(kitKat,'kit')", ctx) <
+      vm.runInContext("personSearchScore(kitKat,'kk')", ctx),
+  );
+  ctx.accentName = { name: 'José Manlapig', nicknames: [] };
+  assert(vm.runInContext("personMatchesQuery(accentName,'jose')", ctx));
+}
+console.log(
+  'Passed: ordered-letter person search, repeated-letter counts, nicknames, accents, and literal-match ranking.',
+);

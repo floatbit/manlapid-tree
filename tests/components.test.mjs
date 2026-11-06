@@ -8,6 +8,9 @@ import PhotoLightbox from '../src/dialogs/PhotoLightbox.vue';
 import ConnectionRow from '../src/components/ConnectionRow.vue';
 import MilestonePeople from '../src/components/MilestonePeople.vue';
 import RecipeDetail from '../src/components/RecipeDetail.vue';
+import RelationshipDialog from '../src/dialogs/RelationshipDialog.vue';
+import AppHeader from '../src/components/AppHeader.vue';
+import TreePage from '../src/pages/TreePage.vue';
 import { bindRuntime, ui, family, nicknameDraft, lightbox } from '../src/ui/runtime.js';
 const people = [
   { id: 'melissa', name: 'Melissa Manlapig', nicknames: ['Mimi'], photo: '' },
@@ -215,6 +218,21 @@ ui.sync({
   assert.equal(changes, 1);
   assert.equal(select.value, 'melissa');
   assert.equal(input.value, 'Melissa Manlapig · 3 places');
+}
+{
+  const header = mount(AppHeader);
+  assert(!header.findAll('nav button').some((button) => button.text() === 'Relationships'));
+  header.unmount();
+  const tree = mount(TreePage);
+  assert.equal(tree.find('#openRelationshipFinder').text(), 'Relationship');
+  assert.equal(tree.find('#openRelationshipFinder').findAll('circle').length, 2);
+  tree.unmount();
+  const modal = mount(RelationshipDialog);
+  modal.element.showModal();
+  assert(modal.element.open);
+  await modal.find('.relationship-dialog-close').trigger('click');
+  assert(!modal.element.open);
+  modal.unmount();
 }
 console.log(
   'Passed: Vue keyboard autocomplete, repeated selection, nickname tags, reports, and lightbox navigation/share.',

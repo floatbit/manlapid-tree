@@ -139,8 +139,10 @@ function sharedPayload(action) {
     people: data.people,
     links: data.links,
     milestones: data.milestones || [],
-    albums: data.albums || [],
-    recipes: data.recipes || [],
+    ...(action === 'bootstrap' || collectionRevisions.has('albums') ? { albums: data.albums } : {}),
+    ...(action === 'bootstrap' || collectionRevisions.has('recipes')
+      ? { recipes: data.recipes }
+      : {}),
     email: data.email,
   };
 }
@@ -153,8 +155,37 @@ function showDatabaseError(message) {
   $('#databaseNotice').hidden = false;
   syncStatus('● Database unavailable', true);
 }
-async function requestDatabase(body) {
-  const response = await fetch('api.php', {
+const collectionRevisions = new Map();
+const collectionRequests = new Map();
+async function ensureCollection(kind) {
+  if (collectionRevisions.get(kind) === sharedRevision) return;
+  if (collectionRequests.has(kind)) return collectionRequests.get(kind);
+  const pending = (async () => {
+    const revision = sharedRevision;
+    const result = await requestDatabase(undefined, 'collections', [kind]);
+    if (revision !== sharedRevision)
+      throw new Error('Family data changed while loading. Please try again.');
+    data[kind] = result[kind];
+    collectionRevisions.set(kind, revision);
+    ui.sync(data);
+  })();
+  collectionRequests.set(kind, pending);
+  try {
+    await pending;
+  } finally {
+    collectionRequests.delete(kind);
+  }
+}
+// Event handlers use this guard so failures remain visible and retryable.
+function withCollection(kind, action) {
+  if (collectionRevisions.get(kind) === sharedRevision) return action();
+  return ensureCollection(kind)
+    .then(action)
+    .catch((error) => notify('Could not load ' + kind + '. ' + error.message));
+}
+async function requestDatabase(body, view = 'core', include = [...collectionRevisions.keys()]) {
+  const query = new URLSearchParams({ view, include: include.join(',') });
+  const response = await fetch('api.php?' + query, {
     method: body ? 'PUT' : 'GET',
     credentials: 'same-origin',
     cache: 'no-store',
@@ -187,8 +218,12 @@ function applyShared(result) {
   data.people = result.people;
   data.links = result.links;
   data.milestones = result.milestones || [];
-  data.albums = result.albums || [];
-  data.recipes = result.recipes || [];
+  for (const kind of ['albums', 'recipes']) {
+    if (Object.hasOwn(result, kind)) {
+      data[kind] = result[kind];
+      collectionRevisions.set(kind, result.revision);
+    }
+  }
   data.email = result.email;
   ui.sync(data);
   sharedRevision = result.revision;
@@ -293,8 +328,9 @@ async function refreshShared() {
   )
     return;
   try {
-    const result = await requestDatabase();
-    if (result.revision !== sharedRevision) {
+    const revision = await requestDatabase(undefined, 'revision', []);
+    if (revision.revision !== sharedRevision) {
+      const result = await requestDatabase();
       applyShared(result);
       render();
       if (!$('#overviewPage').hidden) renderOverview();

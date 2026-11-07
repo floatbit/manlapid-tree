@@ -10,5 +10,5 @@ const video = () => /^data:video\/(mp4|quicktime)[;,]/i.test(props.src) || /\.(m
       >▶</span
     ></span
   >
-  <img v-else :src="src" :alt="alt" :class="className" />
+  <img v-else loading="lazy" :src="src" :alt="alt" :class="className" />
 </template>

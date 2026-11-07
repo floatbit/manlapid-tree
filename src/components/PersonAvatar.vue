@@ -5,9 +5,11 @@ defineProps({ person: {type:Object,required:true} });
 const api=computed(useRuntime);
 </script>
 <template>
-  <img v-if="person.photo" class="avatar" :src="person.photo" :alt="api.displayName(person)" /><span
-    v-else
+  <img
+    v-if="person.photo"
+    loading="lazy"
     class="avatar"
-    >{{ api.initials(person) }}</span
-  >
+    :src="person.photo"
+    :alt="api.displayName(person)"
+  /><span v-else class="avatar">{{ api.initials(person) }}</span>
 </template>

@@ -13,6 +13,7 @@ function cleanRecipe(PDO $db,array $row): array {
  $limits=['id'=>64,'title'=>200,'personId'=>64,'category'=>20,'ingredients'=>20000,'instructions'=>50000,'servings'=>100,'story'=>20000];$out=[];
  foreach($limits as $key=>$max){$value=$row[$key]??'';if(!is_string($value)||mb_strlen($value)>$max)throw new InvalidArgumentException('Invalid recipe '.$key.'.');$out[$key]=trim($value);}
  if(!preg_match('/^[a-zA-Z0-9_-]{1,64}$/',$out['id'])||!$out['title']||!$out['ingredients']||!$out['instructions']||!isset(RECIPE_CATEGORIES[$out['category']]))throw new InvalidArgumentException('Add a recipe title, category, ingredients, and instructions.');
+ if($out['personId']==='')throw new InvalidArgumentException('Choose who this recipe is from.');
  if($out['personId']!==''){$exists=$db->prepare('SELECT 1 FROM family_people WHERE id=?');$exists->execute([$out['personId']]);if(!$exists->fetchColumn())throw new InvalidArgumentException('Choose someone in the family directory for this recipe.');}
  foreach(['prepMinutes','cookMinutes'] as $key){$value=$row[$key]??null;if($value!==null&&(!is_int($value)||$value<0||$value>100000))throw new InvalidArgumentException('Recipe times must be whole minutes.');$out[$key]=$value;}
  $out['photos']=$row['photos']??[];if(!is_array($out['photos']))throw new InvalidArgumentException('Invalid recipe photos.');foreach($out['photos'] as $photo){if(!is_string($photo)||strlen($photo)>3500000)throw new InvalidArgumentException('Invalid recipe photo.');validateStoredImage($photo,'recipes',$out['id']);}

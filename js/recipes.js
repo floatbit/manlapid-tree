@@ -31,6 +31,8 @@ function recipePersonOptions() {
     .join('');
 }
 function renderRecipes() {
+  if (collectionRevisions.get('recipes') !== sharedRevision)
+    return withCollection('recipes', () => renderRecipes());
   const category = $('#recipeCategoryFilter').value,
     from = $('#recipePersonFilter').value;
   $('#recipeCategoryFilter').innerHTML =
@@ -54,6 +56,8 @@ function renderRecipes() {
   }
 }
 function openRecipe(id, { updateUrl = true } = {}) {
+  if (collectionRevisions.get('recipes') !== sharedRevision)
+    return withCollection('recipes', () => openRecipe(id, { updateUrl }));
   const r = (data.recipes || []).find((r) => r.id === id);
   if (!r) {
     notify('This recipe is no longer available.');
@@ -82,6 +86,8 @@ function closeRecipe() {
   }
 }
 function editRecipe(id) {
+  if (collectionRevisions.get('recipes') !== sharedRevision)
+    return withCollection('recipes', () => editRecipe(id));
   const r = (data.recipes || []).find((r) => r.id === id);
   recipePhotoSession++;
   recipePhotoProcessing = false;
@@ -90,8 +96,9 @@ function editRecipe(id) {
   $('#recipeHeading').textContent = r ? 'Edit Recipe' : 'Add Recipe';
   $('#recipeTitle').value = r?.title || '';
   $('#recipePerson').innerHTML =
-    '<option value="">No attribution yet</option>' + recipePersonOptions();
+    '<option value="">Search for a person…</option>' + recipePersonOptions();
   $('#recipePerson').value = r?.personId || '';
+  setupRelationshipSearch('recipePerson', { required: true, label: 'From Whom' });
   $('#recipeCategory').innerHTML = Object.entries(recipeCategories)
     .map(([key, label]) => `<option value="${key}">${label}</option>`)
     .join('');

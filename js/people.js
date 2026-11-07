@@ -47,6 +47,8 @@ function selectPersonFromDirectory(id) {
 }
 
 function renderOverview() {
+  if (collectionRevisions.get('albums') !== sharedRevision)
+    return withCollection('albums', () => renderOverview());
   ui.sync(data);
 }
 

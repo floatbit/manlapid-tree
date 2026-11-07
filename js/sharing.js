@@ -12,9 +12,15 @@ async function copyDirectLink(values) {
     prompt('Copy this link:', link);
   }
 }
-function openSharedLink() {
+async function openSharedLink() {
   const params = new URLSearchParams(location.hash.slice(1));
   if (params.has('recipe')) {
+    try {
+      await ensureCollection('recipes');
+    } catch (error) {
+      notify(error.message);
+      return;
+    }
     showSection('recipes');
     openRecipe(params.get('recipe'));
     if (params.has('media')) {

@@ -14,6 +14,7 @@ async function exportFamily() {
   $('#exportFamily').disabled = true;
   notify('Preparing backup, including photos…');
   try {
+    await Promise.all(['albums', 'recipes'].map(ensureCollection));
     const backup = JSON.parse(
         JSON.stringify({
           format: 'kinfolk-v1',
@@ -83,6 +84,7 @@ $('#familyBackup').onchange = async (e) => {
   if (!file) return;
   const previous = JSON.stringify(data);
   try {
+    await Promise.all(['albums', 'recipes'].map(ensureCollection));
     if (file.size > 160000000) throw new Error('Backup file is too large.');
     const incoming = JSON.parse(await file.text());
     if (!Array.isArray(incoming.people) || !Array.isArray(incoming.links))

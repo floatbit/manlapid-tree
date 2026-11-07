@@ -7,30 +7,8 @@
         <h3>The Recipe</h3>
         <label>Name<input id="recipeTitle" required maxlength="200" /></label>
         <div class="recipe-field-row">
-          <label>From whom (optional)<select id="recipePerson"></select></label
+          <label>From Whom<select id="recipePerson" required></select></label
           ><label>Category<select id="recipeCategory"></select></label>
-        </div>
-        <div class="recipe-field-row recipe-times">
-          <label
-            >Servings<input
-              id="recipeServings"
-              maxlength="100"
-              placeholder="e.g. 6 people" /></label
-          ><label
-            >Prep time (minutes)<input
-              id="recipePrep"
-              type="number"
-              min="0"
-              max="100000"
-              step="1" /></label
-          ><label
-            >Cooking time (minutes)<input
-              id="recipeCook"
-              type="number"
-              min="0"
-              max="100000"
-              step="1"
-          /></label>
         </div>
       </section>
       <section class="recipe-edit-section">
@@ -77,6 +55,28 @@
         </div>
         <div id="recipePhotoPreview"></div>
         <p id="recipePhotoStatus" class="hint" role="status"></p>
+        <div class="recipe-field-row recipe-times">
+          <label
+            >Servings<input
+              id="recipeServings"
+              maxlength="100"
+              placeholder="e.g. 6 people" /></label
+          ><label
+            >Prep time (minutes)<input
+              id="recipePrep"
+              type="number"
+              min="0"
+              max="100000"
+              step="1" /></label
+          ><label
+            >Cooking time (minutes)<input
+              id="recipeCook"
+              type="number"
+              min="0"
+              max="100000"
+              step="1"
+          /></label>
+        </div>
       </section>
       <p id="recipeError" role="alert"></p>
       <div class="form-actions">

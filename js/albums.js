@@ -15,6 +15,8 @@ function sortedAlbums(albums, order = 'newest', query = '') {
     });
 }
 function renderAlbums() {
+  if (collectionRevisions.get('albums') !== sharedRevision)
+    return withCollection('albums', () => renderAlbums());
   ui.sync(data);
   const all = data.albums || [];
   document.querySelector('#albumsSummary').textContent = `${all.length} albums · ${all.reduce(
@@ -30,6 +32,8 @@ function renderAlbums() {
   );
 }
 function openAlbum(id) {
+  if (collectionRevisions.get('albums') !== sharedRevision)
+    return withCollection('albums', () => openAlbum(id));
   const album = (data.albums || []).find((a) => a.id === id);
   albumUploadSession++;
   albumUploading = false;
@@ -219,6 +223,8 @@ $('#milestoneAlbum').onchange = () => {
   renderMilestonePhotos();
 };
 function openSharedAlbum(params) {
+  if (collectionRevisions.get('albums') !== sharedRevision)
+    return withCollection('albums', () => openSharedAlbum(params));
   const album = (data.albums || []).find((a) => a.id === params.get('album'));
   if (!album) {
     notify('This album is no longer available.');

@@ -135,6 +135,8 @@ function renderMilestonePeople() {
   });
 }
 function openMilestone(id) {
+  if (collectionRevisions.get('albums') !== sharedRevision)
+    return withCollection('albums', () => openMilestone(id));
   milestonePhotoSession++;
   processingMilestonePhotos = false;
   $('#milestoneSave').disabled = false;

@@ -30,7 +30,8 @@ function snapshot(PDO $db, string $csrf): array {
     foreach ($milestones as &$event) { $event['participants'] = json_decode($event['participants'],true) ?: []; $event['photos'] = json_decode($event['photos'] ?? '[]',true) ?: []; }
     unset($event);
     hydrateFamilyMedia($db,$people,$milestones);
-    return ['recipes'=>familyRecipes($db),'albums'=>familyAlbums($db), 'mapsApiKey'=>$mapsConfig['api_key']??'', 'personAliases' => $db->query('SELECT old_id,person_id FROM family_person_aliases')->fetchAll(), 'milestones' => $milestones, 'revision' => (int)$state['revision'], 'people' => $people, 'links' => $links, 'email' => $state['request_email'], 'csrf' => $csrf];
+    $collections=[];foreach(['albums','recipes'] as $kind)if(($_GET['view']??'')!=='core'||in_array($kind,explode(',',$_GET['include']??''),true))$collections[$kind]=$kind==='albums'?familyAlbums($db):familyRecipes($db);
+    return $collections + ['mapsApiKey'=>$mapsConfig['api_key']??'', 'personAliases' => $db->query('SELECT old_id,person_id FROM family_person_aliases')->fetchAll(), 'milestones' => $milestones, 'revision' => (int)$state['revision'], 'people' => $people, 'links' => $links, 'email' => $state['request_email'], 'csrf' => $csrf];
 }
 function field(array $row, string $key, int $max): string {
     $value = $row[$key] ?? '';
@@ -95,6 +96,13 @@ try {
     $db = familyDatabase();
     $method = $_SERVER['REQUEST_METHOD'];
     if ($method === 'GET') {
+        if (($_GET['view']??'') === 'revision') respond(200,['revision'=>(int)$db->query('SELECT revision FROM family_state WHERE id=1')->fetchColumn()]);
+        if (($_GET['view']??'') === 'collections') {
+            $db->beginTransaction();
+            $result=['revision'=>(int)$db->query('SELECT revision FROM family_state WHERE id=1')->fetchColumn()];
+            foreach(explode(',',$_GET['include']??'') as $kind)if(in_array($kind,['albums','recipes'],true))$result[$kind]=$kind==='albums'?familyAlbums($db):familyRecipes($db);
+            $db->commit();respond(200,$result);
+        }
         $db->beginTransaction(); $result = snapshot($db,$csrf); $db->commit(); respond(200,$result);
     }
     if (!in_array($method,['POST','PUT'],true)) { header('Allow: GET, POST, PUT'); respond(405,['error'=>'Method not allowed.']); }

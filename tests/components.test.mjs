@@ -11,7 +11,7 @@ import RecipeDetail from '../src/components/RecipeDetail.vue';
 import RelationshipDialog from '../src/dialogs/RelationshipDialog.vue';
 import AppHeader from '../src/components/AppHeader.vue';
 import TreePage from '../src/pages/TreePage.vue';
-import { bindRuntime, ui, family, nicknameDraft, lightbox } from '../src/ui/runtime.js';
+import { bindRuntime, ui, family, activePage, nicknameDraft, lightbox } from '../src/ui/runtime.js';
 const people = [
   { id: 'melissa', name: 'Melissa Manlapig', nicknames: ['Mimi'], photo: '' },
   { id: 'chris', name: 'Chris Manlapid', photo: 'portrait.jpg', birthday: '1980-12-25' },
@@ -34,6 +34,9 @@ bindRuntime({
   openPhotoLightbox: (...args) => calls.push(args),
   notify: (m) => calls.push(m),
   copyDirectLink: (args) => calls.push(args),
+  savePhotoPeople: async (photo, ids) => {ui.sync({...family.value,photoTags:{...family.value.photoTags,[photo]:ids}});},
+  openTaggedPerson: id => calls.push(id),
+  deletePhotoFromLightbox: async photo => {calls.push(['delete',photo]);ui.sync({...family.value,albums:family.value.albums.map(a=>({...a,photos:a.photos.filter(item=>item!==photo)}))});},
 });
 ui.sync({
   people,
@@ -133,6 +136,21 @@ ui.sync({
   assert.equal(wrapper.find('#lightboxCounter').text(), '1 / 2');
   await wrapper.find('#shareLightbox').trigger('click');
   assert.equal(calls.at(-1).album, 'a');
+  assert(wrapper.find('#photoPeopleSearch').element,'Tag search is available immediately');
+  await wrapper.find('#photoPeopleSearch').setValue('mimi');
+  await wrapper.find('#photoPeopleSearch').trigger('keydown',{key:'ArrowRight'});
+  assert.equal(lightbox.value.index,0,'Typing in the tag picker must not navigate photos');
+  await wrapper.find('#photoPeopleSearch').trigger('keydown',{key:'ArrowDown'});
+  assert.equal(wrapper.find('#photoPeopleMatches [role=option]').attributes('aria-selected'),'true');
+  await wrapper.find('#photoPeopleSearch').trigger('keydown',{key:'Enter'});
+  await flushPromises();
+  assert(!wrapper.text().includes('Save Tags'),'Tags save automatically');
+  assert.deepEqual(family.value.photoTags['photo1.jpg'],['melissa']);
+  assert(wrapper.find('.lightbox-person-tags').text().includes('Melissa'));
+  await wrapper.find('#lightboxNext').trigger('click');
+  assert(!wrapper.find('.lightbox-person-tags').text().includes('Melissa'),'Tags belong only to their photo');
+  await wrapper.find('#lightboxPrevious').trigger('click');
+  assert(wrapper.find('.lightbox-person-tags').text().includes('Melissa'));
   await wrapper.find('#lightboxClose').trigger('click');
   await nextTick();
   assert.equal(lightbox.value.photos.length, 0);
@@ -237,6 +255,44 @@ ui.sync({
   await modal.find('.relationship-dialog-close').trigger('click');
   assert(!modal.element.open);
   modal.unmount();
+}
+{
+  activePage.value='tree';
+  ui.sync({people,links:[],milestones:[],recipes:[],albums:[{id:'random',title:'Random Album',photos:['tagged.jpg','video.mp4','untagged1.jpg','untagged2.jpg']}],photoTags:{'tagged.jpg':['melissa']}});
+  const wrapper=mount(ReportsPage);
+  activePage.value='overview';await flushPromises();await nextTick();
+  let first=wrapper.find('.report-random-image img').attributes('src');
+  assert(['untagged1.jpg','untagged2.jpg'].includes(first),'Reports chooses only untagged photos');
+  const tagInput=wrapper.find('#reportPhotoPeopleSearch');tagInput.element.focus();
+  await tagInput.trigger('keydown',{key:'Escape'});
+  assert.equal(document.activeElement,wrapper.find('#reportRandomPhoto').element,'Escape moves focus out of the tag input');
+  await wrapper.find('#reportRandomPhoto').trigger('keydown',{key:'ArrowRight'});await flushPromises();await nextTick();
+  assert.notEqual(wrapper.find('.report-random-image img').attributes('src'),first,'Right arrow loads another photo');
+  assert.equal(document.activeElement,wrapper.find('#reportPhotoPeopleSearch').element,'Next photo focuses tag search');
+  first=wrapper.find('.report-random-image img').attributes('src');
+  ui.sync({...family.value,photoTags:{...family.value.photoTags,[first]:['melissa']}});await nextTick();
+  assert.equal(wrapper.find('.report-random-image img').attributes('src'),first,'Tagging keeps the current photo in place');
+  activePage.value='tree';await nextTick();activePage.value='overview';await flushPromises();await nextTick();
+  assert.notEqual(wrapper.find('.report-random-image img').attributes('src'),first,'Next visit selects another untagged photo');
+  wrapper.unmount();activePage.value='tree';
+}
+{
+  const wrapper=mount(PhotoLightbox);
+  const originalConfirm=globalThis.confirm;
+  let confirmation;
+  globalThis.confirm=text=>{confirmation=text;return false;};
+  await ui.openLightbox(['uploads/test1.jpg','uploads/test2.jpg'],0,'Delete test');await flushPromises();
+  await wrapper.find('.lightbox-delete').trigger('click');
+  assert.equal(confirmation,'Do you really want to delete this photo?');
+  assert.equal(lightbox.value.photos.length,2,'Cancel preserves photos');
+  globalThis.confirm=()=>true;
+  await wrapper.find('.lightbox-delete').trigger('click');await flushPromises();
+  assert.equal(lightbox.value.photos.length,1);
+  assert.equal(lightbox.value.photos[0],'uploads/test2.jpg');
+  await wrapper.find('.lightbox-delete').trigger('click');await flushPromises();
+  assert.equal(lightbox.value.photos.length,0);
+  assert(!wrapper.element.open,'Deleting the last photo closes the lightbox');
+  globalThis.confirm=originalConfirm;wrapper.unmount();
 }
 console.log(
   'Passed: Vue keyboard autocomplete, repeated selection, nickname tags, reports, and lightbox navigation/share.',

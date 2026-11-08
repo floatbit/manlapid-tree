@@ -31,7 +31,7 @@ export const runtime = {
  start, familyDateYear, milestoneIcons, milestoneTypes, displayName, firstLastName, personMatchesQuery, initials, familyDateLabel,
  upcomingAnniversaries, sortedAlbums, milestoneMediaCount,
  isMilestoneVideo, showSection, edit, selectPersonFromDirectory, openMilestone,
- openAlbum, openRecipe, closeRecipe, editRecipe, recipeCategories, openPhotoLightbox, copyDirectLink, notify,
+ deletePhotoFromLightbox, savePhotoPeople, openTaggedPerson, openAlbum, openRecipe, closeRecipe, editRecipe, recipeCategories, openPhotoLightbox, copyDirectLink, notify,
  updatePersonUnsaved, loadFamilyAlbums, resizePhoto, saveFamilyGroup, deleteFamilyGroup, openSavedFamilyTree, openFamilyMapLocation,
  initialize: connectDatabase,
 };\n`

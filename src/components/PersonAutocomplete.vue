@@ -12,6 +12,7 @@ const props = defineProps({
   inputClass: String,
   listClass: String,
   keepResults: Boolean,
+  clearWhenExhausted: Boolean,
   showClear: { type: Boolean, default: true },
   validateSelection: { type: Boolean, default: true },
   placeholder: { type: String, default: 'Search for a person…' },
@@ -28,24 +29,29 @@ function changed() {
   if(props.validateSelection) input.value.setCustomValidity(query.value.trim() ? 'Select a person from the matches.' : '');
   search();
 }
-function choose(p) {
+async function choose(p) {
   if(!p) return;
   input.value.setCustomValidity('');
   if(!props.keepResults) { query.value=props.display(p);close(); }
   emit('select',p);
   if(props.clearOnSelect){query.value='';close();}
   optionsVersion.value++;
+  active.value=-1;
+  if(props.clearWhenExhausted) {
+    await nextTick();
+    if(!results.value.length) {query.value='';close();emit('query','');}
+  }
   input.value.focus();
 }
 function clear() { query.value='';input.value.setCustomValidity('');search();input.value.focus(); }
 async function keydown(event) {
   if(event.isComposing) return;
   if(event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-    event.preventDefault(); open.value=!!query.value.trim();
+    event.preventDefault(); event.stopPropagation(); open.value=!!query.value.trim();
     if(!results.value.length) return;
     active.value=active.value<0 ? (event.key === 'ArrowDown' ? 0 : results.value.length-1) : (active.value+(event.key === 'ArrowDown' ? 1 : -1)+results.value.length)%results.value.length;
     await nextTick();list.value?.children[active.value]?.scrollIntoView?.({block:'nearest'});
-  } else if(event.key === 'Enter' && open.value) { event.preventDefault();choose(results.value[Math.max(0,active.value)]); }
+  } else if(event.key === 'Enter' && open.value) { event.preventDefault();event.stopPropagation();choose(results.value[Math.max(0,active.value)]); }
   else if(event.key === 'Escape' && open.value) {event.preventDefault();event.stopPropagation();close();}
   else if(event.key === 'Tab') close();
 }

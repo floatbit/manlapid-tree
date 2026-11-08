@@ -139,6 +139,7 @@ function sharedPayload(action) {
     people: data.people,
     links: data.links,
     familyGroups: data.familyGroups || [],
+    ...(data.pendingPhotoTagImports ? {photoTagAssignments:data.pendingPhotoTagImports} : {}),
     milestones: data.milestones || [],
     ...(action === 'bootstrap' || collectionRevisions.has('albums') ? { albums: data.albums } : {}),
     ...(action === 'bootstrap' || collectionRevisions.has('recipes')
@@ -216,6 +217,8 @@ function applyShared(result) {
   data.expanded = data.expanded.map(resolve);
   data.root = resolve(data.root);
   data.selected = resolve(data.selected);
+  delete data.pendingPhotoTagImports;
+  data.photoTags = result.photoTags || {};
   data.familyGroups = result.familyGroups || [];
   data.people = result.people;
   data.links = result.links;
@@ -396,16 +399,7 @@ function familyDateLabel(value) {
 }
 
 function personMatchesQuery(p, query) {
-  const normalize = (text) =>
-    text.normalize('NFKD').replace(/\p{M}/gu, '').toLocaleLowerCase().replace(/\s+/g, '');
-  const letters = [...normalize(query)];
-  if (!letters.length) return true;
-  return [p.name, displayName(p), firstLastName(p), ...(p.nicknames || [])].some((name) => {
-    let next = 0;
-    for (const letter of normalize(name)) {
-      if (letter === letters[next]) next++;
-      if (next === letters.length) return true;
-    }
-    return false;
-  });
+  const normalize = text => String(text || '').normalize('NFKD').replace(/\p{M}/gu, '').toLocaleLowerCase().replace(/\s+/g, ' ').trim();
+  const text = normalize(query);
+  return !text || [p.name, displayName(p), firstLastName(p), ...(p.nicknames || [])].some(name => normalize(name).includes(text));
 }

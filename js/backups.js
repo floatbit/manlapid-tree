@@ -19,6 +19,7 @@ async function exportFamily() {
         JSON.stringify({
           format: 'kinfolk-v1',
           familyGroups: data.familyGroups || [],
+          photoTagAssignments: ['album','recipe','milestone'].flatMap(type => (data[type === 'album' ? 'albums' : type === 'recipe' ? 'recipes' : 'milestones'] || []).flatMap(owner => (type==='milestone' && owner.albumId ? [] : (owner.photos || []).flatMap((photo,index) => data.photoTags?.[photo]?.length ? [{type,owner:owner.id,index,fingerprint:photo.split('/').pop(),people:data.photoTags[photo]}] : [])))),
           people: data.people,
           links: data.links,
           milestones: data.milestones || [],
@@ -90,6 +91,10 @@ $('#familyBackup').onchange = async (e) => {
     const incoming = JSON.parse(await file.text());
     if (!Array.isArray(incoming.people) || !Array.isArray(incoming.links))
       throw new Error('Choose a Kinfolk family backup.');
+    if(incoming.photoTagAssignments !== undefined) {
+      if(!Array.isArray(incoming.photoTagAssignments)) throw new Error('Invalid photo tags.');
+      data.pendingPhotoTagImports=incoming.photoTagAssignments;
+    }
     const ids = new Set(data.people.map((p) => p.id));
     for (const p of incoming.people) {
       if (!p || typeof p.id !== 'string') throw new Error('Invalid person in backup.');

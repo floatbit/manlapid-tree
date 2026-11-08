@@ -245,18 +245,22 @@ console.log('Passed: main tree fuzzy search finds Melissa by her nickname Mimi.'
 
 {
   ctx.kitKat = { name: 'Kit Kat', nicknames: ['Kiki'] };
-  for (const query of ['kit', 'kk', 'k k', 'KTKT', 'kki'])
+  for (const query of ['kit', 'ki', 'kit kat'])
     assert(vm.runInContext(`personMatchesQuery(kitKat, ${JSON.stringify(query)})`, ctx), query);
-  for (const query of ['kkk', 'kz', 'tkkt'])
+  for (const query of ['kk', 'k k', 'KTKT', 'kki', 'kkk', 'kz', 'tkkt'])
     assert(!vm.runInContext(`personMatchesQuery(kitKat, ${JSON.stringify(query)})`, ctx), query);
-  assert(vm.runInContext("personSearchScore(kitKat,'kk')", ctx) < 0.65);
+  assert.equal(vm.runInContext("personSearchScore(kitKat,'kk')", ctx), 1);
   assert(
     vm.runInContext("personSearchScore(kitKat,'kit')", ctx) <
       vm.runInContext("personSearchScore(kitKat,'kk')", ctx),
   );
+  ctx.jennifer = {name:'Jennifer Lee',nicknames:[]};
+  assert(vm.runInContext("personMatchesQuery(jennifer,'ee')",ctx));
+  assert(vm.runInContext("personMatchesQuery(jennifer,'er')",ctx));
+  assert(!vm.runInContext("personMatchesQuery(jennifer,'jlr')",ctx));
   ctx.accentName = { name: 'José Manlapig', nicknames: [] };
   assert(vm.runInContext("personMatchesQuery(accentName,'jose')", ctx));
 }
 console.log(
-  'Passed: ordered-letter person search, repeated-letter counts, nicknames, accents, and literal-match ranking.',
+  'Passed: consecutive-letter searches, no skipped-letter matches, nicknames, accents, and literal-match ranking.',
 );

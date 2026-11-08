@@ -255,7 +255,7 @@ function personSearchScore(p, query) {
   const score = Math.min(
     ...[p.name, displayName(p), ...(p.nicknames || [])].map((name) => similarity(name, query)),
   );
-  return personMatchesQuery(p, query) ? Math.min(score, 0.5) : score;
+  return personMatchesQuery(p, query) ? Math.min(score, 0.5) : 1;
 }
 let activeSearchIndex = -1;
 function closeSearch() {

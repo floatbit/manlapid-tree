@@ -69,5 +69,7 @@ function familyDatabase(): PDO {
     initializeFamilyRecipes($db);
     require_once __DIR__.'/family-groups.php';
     initializeFamilyGroups($db);
+    require_once __DIR__.'/photo-tags.php';
+    initializePhotoTags($db);
     return $db;
 }

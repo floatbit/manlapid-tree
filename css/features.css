@@ -2824,3 +2824,111 @@ input[type='search']:not(#search),
   right: 7px;
   left: auto;
 }
+
+#photoLightbox { overflow-y: auto; }
+.lightbox-people { width: min(760px,100%); box-sizing: border-box; margin: 12px auto; padding: 18px; border: 1px solid #ffffff30; border-radius: 12px; background: #fffefa; color: var(--ink); text-align: left; }
+.lightbox-people-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.lightbox-people h3 { margin: 0; font-size: 15px; }
+#photoLightbox .lightbox-people button { color: var(--green); background: #edf3e7; font-size: 12px; }
+.lightbox-person-tags { display: flex; flex-wrap: wrap; gap: 7px; margin: 12px 0; }
+#photoLightbox .lightbox-person-tags button { border-radius: 24px; padding: 7px 12px; }
+.lightbox-tag-actions { display: flex; gap: 8px; margin-top: 14px; }
+#photoLightbox .lightbox-people .primary { background: var(--green); color: white; }
+#photoLightbox .lightbox-people [role=listbox] { max-height: 180px; overflow-y: auto; }
+#photoLightbox .lightbox-people [role=option] { display: block; width: 100%; text-align: left; margin-top: 4px; }
+#photoLightbox figure { height: auto; min-height: 0; }
+#photoLightbox #lightboxImage, #photoLightbox #lightboxVideo { max-height: 62dvh; }
+#photoLightbox figure { position: relative; inset: auto; height: 60dvh; margin: 78px 80px 16px; }
+#photoLightbox .lightbox-help { position: static; margin: 16px 0 24px; }
+.lightbox-people { max-width: calc(100% - 40px); }
+@media (max-width: 600px) { #photoLightbox figure { inset: auto; margin: 80px 45px 16px; height: 48dvh; } }
+
+/* Keep the photo as large as possible above a compact tagging strip. */
+#photoLightbox[open] { display: flex; flex-direction: column; overflow: hidden; }
+#photoLightbox .lightbox-heading { position: relative; inset: auto; flex: 0 0 auto; margin: 14px 24px 10px; }
+#photoLightbox figure { flex: 1 1 0; min-height: 0; height: auto; inset: auto; margin: 0 72px 12px; }
+#photoLightbox #lightboxImage, #photoLightbox #lightboxVideo { width: 100%; height: 100%; max-height: 100%; object-fit: contain; }
+#photoLightbox .lightbox-people { flex: 0 0 auto; width: min(1100px,calc(100% - 40px)); max-height: 30dvh; overflow-y: auto; padding: 10px 14px; margin: 0 auto 12px; border: 0; border-radius: 10px; }
+#photoLightbox .lightbox-people h3 { font-size: 11px; color: var(--muted); margin: 0 0 6px; }
+.lightbox-tag-editor { display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap; }
+.lightbox-tag-field { flex: 1 1 280px; display: flex; align-items: center; flex-wrap: wrap; gap: 7px; min-width: 0; }
+#photoLightbox .lightbox-person-tags { display: contents; margin: 0; }
+.lightbox-person-tag { display: inline-flex; background: #edf3e7; border-radius: 20px; align-items: center; }
+#photoLightbox .lightbox-person-tag button { margin: 0; padding: 5px 8px; border: 0; background: transparent; border-radius: 20px; font-size: 12px; }
+.lightbox-tag-field > .person-autocomplete { flex: 1 1 180px; min-width: 160px; }
+#photoLightbox #photoPeopleSearch { margin: 0; padding-top: 8px; padding-bottom: 8px; height: 36px; font-size: 13px; }
+#photoLightbox .lightbox-tag-actions { margin: 0; flex-shrink: 0; }
+#photoLightbox .lightbox-tag-actions button { padding: 8px 12px; margin: 0; }
+#photoLightbox .lightbox-help { display: none; }
+@media (max-width: 600px) { #photoLightbox .lightbox-heading { margin: 10px 12px; gap: 8px; } #photoLightbox figure { margin: 0 40px 10px; } #photoLightbox .lightbox-people { width: calc(100% - 20px); max-height: 36dvh; } }
+
+#photoLightbox .lightbox-people { background: #1c2823; color: #e7eee9; color-scheme: dark; }
+#photoLightbox #photoPeopleSearch { background-color: #15201b; border-color: #43544a; color: #f0f4f1; }
+#photoLightbox #photoPeopleSearch::placeholder { color: #a6b7ac; opacity: 1; }
+#photoLightbox .lightbox-person-tag { background: #30463a; }
+#photoLightbox .lightbox-person-tag button { color: #e2ede5; }
+#photoLightbox .lightbox-person-tag button:hover { background: #405e4d; color: white; }
+#photoLightbox .lightbox-people .search-clear-button { color: #b8c8be; background: transparent; }
+#photoLightbox .lightbox-people .search-clear-button:hover { color: white; background: #354a3e; }
+#photoLightbox .lightbox-people [role=listbox] { background: #1c2823; border-color: #43544a; color: #e7eee9; }
+#photoLightbox .lightbox-people [role=option] { background: #25382d; color: #e7eee9; }
+#photoLightbox .lightbox-people [role=option]:hover,
+#photoLightbox .lightbox-people [role=option].search-active { background: #405e4d; color: white; }
+#photoLightbox .lightbox-tag-actions button { background: #30463a; color: #e7eee9; }
+#photoLightbox .lightbox-tag-actions .primary { background: #527e60; color: white; }
+#photoLightbox .lightbox-people .hint { color: #a6b7ac; }
+
+#photoLightbox .lightbox-people { margin-left: 24px; margin-right: auto; width: auto; max-width: calc(100% - 48px); padding: 8px; }
+.lightbox-tag-field { flex: 0 1 auto; justify-content: flex-start; }
+.lightbox-tag-field > .person-autocomplete { flex: 0 1 240px; width: 240px; max-width: 100%; min-width: 160px; }
+#photoLightbox #photoPeopleSearch { height: 32px; font-size: 12px; padding-top: 6px; padding-bottom: 6px; }
+.lightbox-tag-status { font-size: 11px; color: #a6b7ac; align-self: center; }
+@media (max-width:600px) { #photoLightbox .lightbox-people { margin-left: 10px; max-width: calc(100% - 20px); } }
+
+/* Float tag matches upward without changing the photo or tagging strip size. */
+#photoLightbox .lightbox-people { margin-left: auto; margin-right: auto; overflow: visible; }
+.lightbox-tag-field > .person-autocomplete { position: relative; }
+#photoLightbox #photoPeopleMatches {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  top: auto;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  max-height: min(220px, 35dvh);
+  overflow-y: auto;
+  border: 1px solid #43544a;
+  border-radius: 8px;
+  box-shadow: 0 -8px 24px #0005;
+  padding: 4px;
+}
+@media (max-width:600px) { #photoLightbox .lightbox-people { margin-left: auto; margin-right: auto; } }
+
+.report-random-photo { margin: 28px 0; padding: 20px; border: 1px solid var(--line); border-radius: 14px; background: #fffefa; }
+.report-photo-heading { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+.report-photo-heading h2 { margin: 0; }
+.report-photo-heading .hint { margin: 6px 0 0; }
+.report-photo-heading > span { font-size: 12px; color: var(--muted); }
+.report-random-image { display: block; width: 100%; border: 0; padding: 0; background: #15201b; border-radius: 10px; overflow: hidden; }
+.report-random-image img { display: block; width: 100%; max-height: 520px; object-fit: contain; }
+#reportRandomPhoto .lightbox-people { margin: 12px 0 0; width: 100%; max-width: 100%; padding: 10px 0 0; border: 0; background: transparent; color: var(--ink); }
+#reportRandomPhoto .lightbox-person-tags { display: contents; }
+#reportRandomPhoto .lightbox-person-tag button { border: 0; padding: 6px 9px; margin: 0; background: transparent; color: var(--green); font-size: 12px; }
+#reportRandomPhoto .person-autocomplete { position: relative; }
+#reportRandomPhoto [role=listbox] { position: absolute; bottom: calc(100% + 8px); left: 0; right: 0; z-index: 12; background: #fffefa; border: 1px solid var(--line); border-radius: 8px; max-height: 220px; overflow: auto; box-shadow: 0 -6px 20px #0002; }
+#reportRandomPhoto [role=option] { display: block; width: 100%; border: 0; text-align: left; }
+#reportRandomPhoto input[type=search] { margin: 0; height: 36px; font-size: 13px; }
+#reportRandomPhoto .lightbox-people { margin: 0 0 14px; padding: 0; }
+#reportRandomPhoto .report-random-image:hover,
+#reportRandomPhoto .report-random-image:active { background: #15201b; border: 0; box-shadow: none; transform: none; filter: none; opacity: 1; }
+#reportRandomPhoto .report-random-image:hover img { transform: none; filter: none; opacity: 1; }
+#photoLightbox .lightbox-delete { color: #efb7ab; }
+.lightbox-delete-error { margin: 6px 24px; color: #ffb7aa; font-size: 13px; }
+@media (max-width: 600px) { #photoLightbox .lightbox-heading { flex-wrap: wrap; } #photoLightbox .lightbox-heading h2 { flex-basis: 100%; } }
+#reportRandomPhoto [role=listbox] { top: calc(100% + 8px); bottom: auto; box-shadow: 0 6px 20px #0002; }
+.report-photo-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+.report-photo-actions > span { font-size: 12px; color: var(--muted); }
+.report-photo-actions > button { font-size: 12px; }
+#reportRandomPhoto [role=option].search-active,
+#reportRandomPhoto [role=option][aria-selected='true'] { background: #e0ead7; color: var(--green); box-shadow: inset 3px 0 0 #527e60; }
+#photoLightbox .lightbox-people [role=option][aria-selected='true'] { background: #405e4d; color: white; box-shadow: inset 3px 0 0 #9fc9ac; }

@@ -1746,3 +1746,104 @@ gmp-place-autocomplete {
     overflow: visible;
   }
 }
+
+/* Event category pills in the compact timeline layout. */
+#timeline .milestone-event .timeline-event-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 5px;
+  width: fit-content;
+  padding: 5px 11px;
+  border-radius: 999px;
+  background: #f3ebdf;
+  color: #866331;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+/* Give each new arrival a warm announcement within the existing timeline. */
+#timeline .welcome-birth-event {
+  background: linear-gradient(115deg, #edf3e5, #fffaf0 75%);
+  border: 1px solid #c5d2b7;
+  box-shadow: 0 4px 18px #45654809;
+  padding: 25px;
+}
+#timeline .welcome-birth-event:hover {
+  border-color: #91aa7b;
+  box-shadow: 0 5px 20px #45654815;
+}
+#timeline .welcome-birth-event .avatar {
+  width: 74px;
+  height: 74px;
+  border: 3px solid #fffefa;
+  outline: 1px solid #b1c29e;
+  box-shadow: 0 3px 10px #45654812;
+}
+#timeline .welcome-birth-event strong {
+  font-size: 20px;
+  line-height: 1.4;
+}
+@media (max-width: 650px) {
+  #timeline .welcome-birth-event {
+    padding: 18px;
+    gap: 14px;
+  }
+  #timeline .welcome-birth-event .avatar {
+    width: 52px;
+    height: 52px;
+  }
+  #timeline .welcome-birth-event strong {
+    font-size: 16px;
+  }
+}
+
+/* Event icons sit on the date rail, centered over the original marker. */
+#timeline .birth-event::before {
+  content: attr(data-timeline-icon);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  left: -46px;
+  top: 26px;
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--paper);
+  background: #edf3e5;
+  color: #587347;
+  box-shadow: 0 0 0 1px #cbd8bf;
+  font-size: 15px;
+  line-height: 1;
+}
+@media (max-width: 650px) {
+  #timeline .birth-event::before {
+    left: -39px;
+    top: 18px;
+    width: 30px;
+    height: 30px;
+    font-size: 14px;
+  }
+}
+
+#timeline .birth-event.marriage-event::before {
+  font-size: 23px;
+}
+
+#timeline .birth-event.welcome-birth-event::before {
+  font-size: 18.4px;
+}
+
+#timeline .birth-event.birthday-party-event::before,
+#timeline .birth-event.smaller-holiday-icon::before {
+  font-size: 12px;
+}
+@media (max-width: 650px) {
+  #timeline .birth-event.birthday-party-event::before,
+  #timeline .birth-event.smaller-holiday-icon::before {
+    font-size: 11.2px;
+  }
+}

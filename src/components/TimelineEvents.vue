@@ -25,6 +25,8 @@ function names(event) {return (event.participants || []).map((id)=>family.value.
           <button
             v-if="event.kind === 'birth' || event.kind === 'death'"
             class="birth-event"
+            :data-timeline-icon="event.kind === 'birth' ? '✦' : '✧'"
+            :class="{ 'welcome-birth-event': event.kind === 'birth' }"
             @click="api.start(event.person.id)"
           >
             <PersonAvatar :person="event.person" /><span
@@ -37,7 +39,16 @@ function names(event) {return (event.participants || []).map((id)=>family.value.
               ><time>{{ api.familyDateLabel(event.date) }}</time></span
             ><span class="birth-arrow" aria-hidden="true">↗</span>
           </button>
-          <article v-else class="birth-event milestone-event">
+          <article
+            v-else
+            class="birth-event milestone-event"
+            :class="{
+              'marriage-event': event.type === 'marriage',
+              'birthday-party-event': event.type === 'birthday_party',
+              'smaller-holiday-icon': ['thanksgiving', 'christmas', 'easter', 'halloween'].includes(event.type),
+            }"
+            :data-timeline-icon="api.milestoneIcons[event.type] || '★'"
+          >
             <button
               v-if="event.photos?.length"
               class="milestone-gallery"
@@ -54,7 +65,6 @@ function names(event) {return (event.participants || []).map((id)=>family.value.
             }}</span
             ><button class="milestone-details" @click="api.openMilestone(event.id)">
               <span
-                ><small>{{ api.milestoneTypes[event.type] || 'Milestone' }}</small
                 ><strong>{{ event.title }}</strong
                 ><time :datetime="event.date"
                   >{{ api.familyDateLabel(event.date)

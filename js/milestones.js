@@ -68,14 +68,14 @@ const milestoneTypes = {
 const milestoneIcons = {
   new_year: '✦',
   valentines_day: '♡',
-  easter: '✿',
+  easter: '🥚',
   mothers_day: '❀',
   memorial_day: '★',
   fathers_day: '★',
   independence_day: '✦',
   labor_day: '★',
   halloween: '🎃',
-  thanksgiving: '❧',
+  thanksgiving: '🦃',
   hanukkah: '✦',
   christmas: '🎄',
   new_years_eve: '✦',
@@ -85,7 +85,7 @@ const milestoneIcons = {
   move: '⌂',
   graduation: '◇',
   reunion: '✳',
-  other: '★',
+  other: '●',
 };
 function timelineItems() {
   return [

@@ -1,0 +1,35 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const vm = require('node:vm');
+const elements = new Map();
+const $ = id => {
+  if (!elements.has(id)) elements.set(id, { value:'', hidden:false, open:false, textContent:'', querySelectorAll:()=>[], replaceChildren(){}, setAttribute(){}, addEventListener(){}, dispatchEvent(){}, focus(){}, reset(){}, showModal(){this.open=true;}, close(){this.open=false;} });
+  return elements.get(id);
+};
+let picker, googleCalls=0, saves=0, renders=0, mapRefreshes=0, success=true;
+const location={location:'Howell Township, NJ, USA',locationPlaceId:'google-place',locationLat:40.18,locationLng:-74.2};
+const people=[{id:'existing',name:'Existing',...location},{id:'new',name:'New',location:'Old location',locationLat:1,locationLng:2},{id:'missing',name:'Missing',location:''}];
+const ctx=vm.createContext({$,Event,console,data:{people},esc:v=>v,displayName:p=>p.name,personMatchesQuery:()=>true,person:id=>people.find(p=>p.id===id),ui:{mountSearch:options=>{picker=options;}},loadPlacesLibrary:()=>{googleCalls++;throw Error('Should not load Google');},saveShared:async()=>{saves++;return success;},render:()=>renders++,renderFamilyMap:async options=>{assert.equal(options.fit,false);mapRefreshes++;},notify(){},location});
+vm.runInContext(fs.readFileSync('js/bulk-location.js','utf8'),ctx);
+(async()=>{
+ await vm.runInContext("openBulkLocation('current', location)",ctx);
+ assert.equal(googleCalls,0);
+ assert.equal($('#bulkLocationSelected').textContent,location.location);
+ assert.equal($('#bulkLocationFinder').hidden,true);
+ assert.deepEqual(Array.from(picker.options(),p=>p.id),['new','missing']);
+ picker.onSelect(people[1]);
+ assert.equal($('#saveBulkLocation').disabled,false);
+ await $('#bulkLocationForm').onsubmit({preventDefault(){}});
+ assert.equal(saves,1);assert.equal(renders,1);assert.equal(mapRefreshes,1);
+ assert.equal(ctx.data.people[1].locationPlaceId,'google-place');
+ assert.equal(ctx.data.people[1].locationLat,40.18);
+ assert.equal(ctx.data.people[2].location,'');
+ await vm.runInContext("openBulkLocation('current', location)",ctx);
+ assert.deepEqual(Array.from(picker.options(),p=>p.id),['missing']);
+ picker.onSelect(people[2]);success=false;
+ const previous=ctx.data.people;
+ await $('#bulkLocationForm').onsubmit({preventDefault(){}});
+ assert.equal(ctx.data.people,previous);
+ assert($('#bulkLocationError').textContent.includes('not saved'));assert.equal(mapRefreshes,1);
+ console.log('Passed: existing map location picker excludes residents, reuses Google coordinates, saves selections, and rolls back failed saves.');
+})().catch(error=>{console.error(error);process.exitCode=1;});

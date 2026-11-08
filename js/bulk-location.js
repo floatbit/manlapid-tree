@@ -3,7 +3,8 @@ let bulkLocationKind = 'current',
   bulkLocationPeople = [],
   bulkLocationSession = 0,
   bulkLocationPending = false,
-  bulkLocationSaving = false;
+  bulkLocationSaving = false,
+  bulkLocationExisting = false;
 function updateBulkLocationSelection() {
   $('#bulkLocationTags').innerHTML = bulkLocationPeople
     .map(
@@ -36,7 +37,7 @@ function setupBulkLocationSearch() {
   ui.mountSearch({
     inputId: 'bulkLocationSearch',
     listId: 'bulkLocationMatches',
-    options: () => data.people.filter((p) => !bulkLocationPeople.includes(p.id)),
+    options: () => data.people.filter((p) => !bulkLocationPeople.includes(p.id) && !(bulkLocationExisting && sameBulkLocation(p, bulkLocation))),
     display: displayName,
     matches: personMatchesQuery,
     keepResults: true,
@@ -46,7 +47,11 @@ function setupBulkLocationSearch() {
     },
   });
 }
-async function openBulkLocation(kind = 'current') {
+function sameBulkLocation(p, location) {
+  return !!location && p.location && Number.isFinite(Number(p.locationLat)) && Number.isFinite(Number(p.locationLng)) && p.locationLat !== null && p.locationLat !== '' && p.locationLng !== null && p.locationLng !== '' && Number(p.locationLat).toFixed(5) === Number(location.locationLat).toFixed(5) && Number(p.locationLng).toFixed(5) === Number(location.locationLng).toFixed(5);
+}
+async function openBulkLocation(kind = 'current', existingLocation = null) {
+  if (bulkLocationSaving) return;
   bulkLocationKind = kind;
   $('#bulkLocationTitle').textContent =
     kind === 'birthplace' ? 'Set Birthplace' : 'Set Current Location';
@@ -55,18 +60,27 @@ async function openBulkLocation(kind = 'current') {
       ? 'Choose one Google location, then select everyone born there. Saving replaces their Birthplace.'
       : 'Choose one Google location, then select everyone who lives there. Saving replaces their Current Location.';
   const session = ++bulkLocationSession;
-  bulkLocation = null;
+  bulkLocationExisting = kind === 'current' && !!existingLocation;
+  bulkLocation = bulkLocationExisting ? {...existingLocation} : null;
   bulkLocationPeople = [];
   bulkLocationPending = false;
   $('#bulkLocationForm').reset();
   $('#bulkLocationError').textContent = '';
-  $('#bulkLocationSelected').textContent = '';
+  $('#bulkLocationSelected').textContent = bulkLocation?.location || '';
+  $('#bulkLocationFinder').hidden = bulkLocationExisting;
+  $('#saveBulkLocation').textContent = bulkLocationExisting ? 'Set Current Location' : 'Save location for selected people';
   $('#bulkLocationFinder').replaceChildren();
   $('#bulkLocationMatches').hidden = true;
   $('#bulkLocationSearch').setAttribute('aria-expanded', 'false');
   updateBulkLocationSelection();
   setupBulkLocationSearch();
   $('#bulkLocationDialog').showModal();
+  if (bulkLocationExisting) {
+    $('#bulkLocationDescription').textContent = 'Select people to add to this location. Saving replaces their Current Location.';
+    $('#bulkLocationStatus').textContent = 'People already at this location are excluded from the search.';
+    $('#bulkLocationSearch').focus();
+    return;
+  }
   $('#bulkLocationStatus').textContent = 'Loading Google location search…';
   try {
     const { PlaceAutocompleteElement } = await loadPlacesLibrary();
@@ -172,6 +186,7 @@ $('#bulkLocationForm').onsubmit = async (event) => {
     }
     $('#bulkLocationDialog').close();
     render();
+    if (!$('#familyMapPage').hidden) await renderFamilyMap({ fit: false });
     notify(
       `${bulkLocationKind === 'birthplace' ? 'Birthplace' : 'Current Location'} saved for ${
         selected.size

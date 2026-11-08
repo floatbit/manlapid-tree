@@ -376,11 +376,17 @@ async function renderFamilyMap({ fit = true } = {}) {
     groups
       .map(
         (g, i) =>
-          `<button type="button" data-map-group="${i}"><strong>${esc(
+          `<div class="map-location-card"><button type="button" data-map-group="${i}"><strong>${esc(
             g.people[0].location,
-          )}</strong><span>${esc(g.people.map((p) => displayName(p)).join(', '))}</span></button>`,
+          )}</strong><span>${esc(g.people.map((p) => displayName(p)).join(', '))}</span></button><button type="button" class="map-add-people" data-add-map-people="${i}">＋ Add People ↗</button></div>`,
       )
       .join('') || '<p>No locations added yet.</p>';
+  $('#mappedPeople').querySelectorAll('[data-add-map-people]').forEach(button => {
+    button.onclick = () => {
+      const group=groups[Number(button.dataset.addMapPeople)], source=group.people[0];
+      openBulkLocation('current', {location:source.location,locationPlaceId:source.locationPlaceId || '',locationLat:group.position.lat,locationLng:group.position.lng});
+    };
+  });
   const missingReport = document.createElement('a');
   missingReport.href = '#page=reports';
   missingReport.className = 'map-missing-report';

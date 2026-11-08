@@ -4,7 +4,7 @@
   "scripts": {
     "format": "prettier --write index.html export.html app.js js src scripts css style.css tests/*.{cjs,mjs} vite.config.js .prettierrc.json package.json",
     "format:check": "prettier --check index.html export.html app.js js src scripts css style.css tests/*.{cjs,mjs} vite.config.js .prettierrc.json package.json",
-    "test": "node tests/assets.test.cjs && node tests/layout.test.cjs && node tests/exploration.test.cjs && node tests/dates-and-history.test.cjs && php tests/ancestry.test.php && php tests/location-history.test.php && node tests/loading.test.cjs && node tests/family-view.test.mjs && node tests/map-camera.test.cjs && node tests/navigation.test.cjs && node tests/tree-zoom.test.cjs && npm run test:components",
+    "test": "node tests/assets.test.cjs && node tests/layout.test.cjs && node tests/exploration.test.cjs && node tests/dates-and-history.test.cjs && php tests/ancestry.test.php && php tests/location-history.test.php && node tests/loading.test.cjs && node tests/family-view.test.mjs && node tests/map-camera.test.cjs && node tests/bulk-location.test.cjs && node tests/navigation.test.cjs && node tests/tree-zoom.test.cjs && npm run test:components",
     "test:database": "php tests/media.test.php && php tests/albums.test.php && php tests/recipes.test.php && php tests/loading.test.php && php tests/family-groups.test.php",
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",

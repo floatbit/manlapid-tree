@@ -2,7 +2,7 @@
   <dialog id="bulkLocationDialog" aria-labelledby="bulkLocationTitle">
     <form id="bulkLocationForm">
       <h2 id="bulkLocationTitle">Set Current Location</h2>
-      <p>
+      <p id="bulkLocationDescription">
         Choose one Google location, then select everyone who lives there. Saving replaces their
         Current Location and leaves their birthplace and places lived unchanged.
       </p>

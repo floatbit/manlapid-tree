@@ -1653,6 +1653,96 @@ gmp-place-autocomplete {
   }
 }
 
-#locationFinderStatus:empty { display: none; }
+#locationFinderStatus:empty {
+  display: none;
+}
 
-#birthplaceStatus:empty { display: none; }
+#birthplaceStatus:empty {
+  display: none;
+}
+
+/* Memorial portraits regain their original color on hover or keyboard focus. */
+.node.is-deceased img.avatar {
+  filter: grayscale(1);
+}
+.node.is-deceased:hover img.avatar,
+.node.is-deceased:focus-visible img.avatar {
+  filter: grayscale(0);
+}
+
+/* Pulse only the selected portrait's outer ring, keeping the node still. */
+@media (prefers-reduced-motion: no-preference) {
+  .node.selected .avatar {
+    animation: selected-person-ring 1.8s ease-in-out infinite;
+  }
+}
+@keyframes selected-person-ring {
+  0%,
+  100% {
+    outline-offset: 3px;
+    outline-color: #41664b;
+  }
+  50% {
+    outline-offset: 7px;
+    outline-color: #41664b70;
+  }
+}
+
+.multiple-people-tools {
+  position: relative;
+}
+.multiple-people-tools > summary {
+  cursor: pointer;
+  list-style: none;
+  border: 1px solid #dce2d5;
+  border-radius: 8px;
+  background: white;
+  padding: 12px 16px;
+}
+.multiple-people-tools > summary::-webkit-details-marker {
+  display: none;
+}
+.multiple-people-tools > summary:hover,
+.multiple-people-tools > summary:focus-visible {
+  background: #edf3e7;
+}
+.multiple-people-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 20;
+  min-width: 240px;
+  padding: 6px;
+  background: white;
+  border: 1px solid #dce2d5;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px #243d2920;
+}
+.multiple-people-menu button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  box-shadow: none;
+}
+.multiple-people-menu button:hover,
+.multiple-people-menu button:focus-visible {
+  background: #edf3e7;
+}
+
+@media (min-width: 851px) {
+  #editor .directory {
+    overflow: clip;
+  }
+  #peopleList {
+    position: sticky;
+    top: var(--people-header-offset, 100px);
+    align-self: start;
+    max-height: calc(100dvh - var(--people-header-offset, 100px) - 12px);
+    overflow-y: auto;
+  }
+  #peopleList #directoryMatches {
+    max-height: none;
+    overflow: visible;
+  }
+}

@@ -1,5 +1,5 @@
 <script setup lang="js">
-import { LockKeyhole, LockKeyholeOpen, Scan, Eraser, Network } from '@lucide/vue';
+import { LockKeyhole, LockKeyholeOpen, Scan, Eraser, Network, RefreshCw } from '@lucide/vue';
 </script>
 <template>
   <main id="explore">
@@ -59,6 +59,16 @@ import { LockKeyhole, LockKeyholeOpen, Scan, Eraser, Network } from '@lucide/vue
               <circle cx="18" cy="12" r="4" />
             </svg>
             <span>Relationship</span>
+          </button>
+          <button
+            id="redrawTree"
+            type="button"
+            title="Redraw current tree"
+            aria-label="Redraw current tree"
+            hidden
+          >
+            <RefreshCw :size="18" aria-hidden="true" />
+            <span>Redraw</span>
           </button>
           <button id="reset" title="Clear tree" aria-label="Clear tree" hidden>
             <Eraser :size="18" aria-hidden="true" />

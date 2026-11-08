@@ -831,6 +831,7 @@ function render({ expanding = false, centerId = null, fit = false } = {}) {
   $('#graphTools').hidden = !ids.length;
   $('#backToStart').hidden = !ids.length;
   $('#reset').hidden = !ids.length;
+  $('#redrawTree').hidden = !ids.length;
   $('#count').textContent = `${ids.length} ${ids.length === 1 ? 'person' : 'people'} in view`;
   if (!ids.length) {
     graphLayout = null;
@@ -865,7 +866,9 @@ function render({ expanding = false, centerId = null, fit = false } = {}) {
           y: parseFloat(node.style.top) + currentMatrix.f + node.offsetHeight / 2,
         }
       : null;
-    node.className = `node ${id === data.selected ? 'selected' : ''} ${isRoot ? 'root-node' : ''} ${
+    node.className = `node ${p.deceased ? 'is-deceased' : ''} ${
+      id === data.selected ? 'selected' : ''
+    } ${isRoot ? 'root-node' : ''} ${
       relationshipTrace && !relationshipTrace.immediate
         ? relationshipTrace.ids.includes(id)
           ? 'path-member'

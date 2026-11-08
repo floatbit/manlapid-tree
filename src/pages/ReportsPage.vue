@@ -27,11 +27,11 @@ const recentAlbums = computed(() => api.value?.sortedAlbums([...albums.value]).s
 const reports = computed(() => {
   const connected = new Set(family.value.links.flatMap((link) => [link.a, link.b]));
   return [
-    ['No Connections','connections',p => !connected.has(p.id)],
     ['No Birthday','birthday',p => !(p.dateDetails?.birth || p.birthday) || p.dateDetails?.birth === 'Date unknown'],
     ['No Birthplace','birthplace',p => !p.birthplace?.location?.trim()],
     ['No Current Location','location',p => !p.location?.trim()],
-    ['No Photo','photo',p => !p.photo?.trim()],
+    ['Missing Headshots','photo',p => !p.photo?.trim()],
+    ['No Connections','connections',p => !connected.has(p.id)],
   ].map(([title,kind,filter]) => ({title,kind, people:people.value.filter(filter).sort((a,b)=>a.name.localeCompare(b.name))}));
 });
 function editPerson(p, kind) {
@@ -68,6 +68,25 @@ function album(item) {
           <strong>{{ count }}</strong
           ><span>{{ label }}</span>
         </button>
+      </div>
+      <h2>Missing Details</h2>
+      <div id="overviewReports" class="overview-reports">
+        <section v-for="report in reports" :key="report.kind" class="directory-missing">
+          <h3>
+            {{ report.title }} <span>{{ report.people.length }}</span>
+          </h3>
+          <div class="directory-missing-list">
+            <button
+              v-for="p in report.people"
+              :key="p.id"
+              type="button"
+              @click="editPerson(p, report.kind)"
+            >
+              {{ api?.displayName(p) || p.name }} ↗
+            </button>
+            <p v-if="!report.people.length">Everyone is up to date.</p>
+          </div>
+        </section>
       </div>
       <div class="overview-panels">
         <section>
@@ -151,25 +170,6 @@ function album(item) {
           <button type="button" @click="api.showSection('albums')">View Albums ↗</button>
         </section>
       </div>
-    </div>
-    <h2>Missing Details</h2>
-    <div id="overviewReports" class="overview-reports">
-      <section v-for="report in reports" :key="report.kind" class="directory-missing">
-        <h3>
-          {{ report.title }} <span>{{ report.people.length }}</span>
-        </h3>
-        <div class="directory-missing-list">
-          <button
-            v-for="p in report.people"
-            :key="p.id"
-            type="button"
-            @click="editPerson(p, report.kind)"
-          >
-            {{ api?.displayName(p) || p.name }} ↗
-          </button>
-          <p v-if="!report.people.length">Everyone is up to date.</p>
-        </div>
-      </section>
     </div>
   </main>
 </template>

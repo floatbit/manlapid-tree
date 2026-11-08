@@ -1,4 +1,5 @@
-let bulkLocation = null,
+let bulkLocationKind = 'current',
+  bulkLocation = null,
   bulkLocationPeople = [],
   bulkLocationSession = 0,
   bulkLocationPending = false,
@@ -45,7 +46,14 @@ function setupBulkLocationSearch() {
     },
   });
 }
-$('#openBulkLocation').onclick = async () => {
+async function openBulkLocation(kind = 'current') {
+  bulkLocationKind = kind;
+  $('#bulkLocationTitle').textContent =
+    kind === 'birthplace' ? 'Set Birthplace' : 'Set Current Location';
+  $('#bulkLocationDescription').textContent =
+    kind === 'birthplace'
+      ? 'Choose one Google location, then select everyone born there. Saving replaces their Birthplace.'
+      : 'Choose one Google location, then select everyone who lives there. Saving replaces their Current Location.';
   const session = ++bulkLocationSession;
   bulkLocation = null;
   bulkLocationPeople = [];
@@ -65,7 +73,10 @@ $('#openBulkLocation').onclick = async () => {
     if (session !== bulkLocationSession || !$('#bulkLocationDialog').open) return;
     const finder = new PlaceAutocompleteElement();
     finder.setAttribute('placeholder', 'Search for a city, country, or address');
-    finder.setAttribute('aria-label', 'Find a shared current location');
+    finder.setAttribute(
+      'aria-label',
+      kind === 'birthplace' ? 'Find a shared birthplace' : 'Find a shared current location',
+    );
     $('#bulkLocationFinder').append(finder);
     $('#bulkLocationStatus').textContent = 'Choose a city, region, country, or address.';
     let version = 0;
@@ -110,7 +121,9 @@ $('#openBulkLocation').onclick = async () => {
     if (session === bulkLocationSession)
       $('#bulkLocationStatus').textContent = 'Google location search could not load.';
   }
-};
+}
+$('#openBulkLocation').onclick = () => openBulkLocation('current');
+$('#openBulkBirthplace').onclick = () => openBulkLocation('birthplace');
 $('#cancelBulkLocation').onclick = () => $('#bulkLocationDialog').close();
 $('#bulkLocationDialog').addEventListener('cancel', (e) => {
   if (bulkLocationSaving) e.preventDefault();
@@ -126,7 +139,19 @@ $('#bulkLocationForm').onsubmit = async (event) => {
     previous = data.people;
   bulkLocationSaving = true;
   $('#bulkLocationForm').inert = true;
-  data.people = data.people.map((p) => (selected.has(p.id) ? { ...p, ...bulkLocation } : p));
+  const birthplace = {
+    location: bulkLocation.location,
+    placeId: bulkLocation.locationPlaceId,
+    lat: bulkLocation.locationLat,
+    lng: bulkLocation.locationLng,
+  };
+  data.people = data.people.map((p) =>
+    selected.has(p.id)
+      ? bulkLocationKind === 'birthplace'
+        ? { ...p, birthplace }
+        : { ...p, ...bulkLocation }
+      : p,
+  );
   try {
     if (!(await saveShared())) {
       data.people = previous;
@@ -135,7 +160,9 @@ $('#bulkLocationForm').onsubmit = async (event) => {
       return;
     }
     // Keep the open form in sync without discarding unrelated unsaved profile edits.
-    if (selected.has($('#personId').value)) {
+    if (selected.has($('#personId').value) && bulkLocationKind === 'birthplace') {
+      renderBirthplace(birthplace);
+    } else if (selected.has($('#personId').value)) {
       $('#location').value = bulkLocation.location;
       $('#locationPlaceId').value = bulkLocation.locationPlaceId;
       $('#locationLat').value = bulkLocation.locationLat;
@@ -146,7 +173,9 @@ $('#bulkLocationForm').onsubmit = async (event) => {
     $('#bulkLocationDialog').close();
     render();
     notify(
-      `Current Location saved for ${selected.size} ${selected.size === 1 ? 'person' : 'people'}.`,
+      `${bulkLocationKind === 'birthplace' ? 'Birthplace' : 'Current Location'} saved for ${
+        selected.size
+      } ${selected.size === 1 ? 'person' : 'people'}.`,
     );
   } finally {
     bulkLocationSaving = false;

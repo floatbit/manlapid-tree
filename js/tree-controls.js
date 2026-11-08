@@ -179,3 +179,14 @@ $('#fitGraph').onclick = () => {
   fitGraph();
 };
 $('#backToStart').onclick = () => centerPerson(data.root);
+
+function redrawCurrentTree() {
+  if (!data.visible.length) return;
+  for (const animation of treeAnimations) animation.cancel();
+  graphLayout = null;
+  renderedRoot = null;
+  $('#nodes').replaceChildren();
+  $('#lines').replaceChildren();
+  render({ centerId: data.selected || data.root });
+}
+$('#redrawTree').onclick = redrawCurrentTree;

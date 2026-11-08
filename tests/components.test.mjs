@@ -109,7 +109,7 @@ ui.sync({
   assert(
     wrapper
       .findAll('.directory-missing')
-      .find((s) => s.text().includes('No Photo'))
+      .find((s) => s.text().includes('Missing Headshots'))
       .text()
       .includes('Melissa'),
   );

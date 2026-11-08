@@ -11,10 +11,24 @@ import NicknameTags from '../components/NicknameTags.vue';
         <p>Add a person, tell their story, and connect the dots.</p>
       </div>
       <div class="people-page-actions">
-        <button id="openBulkLocation" type="button">Set location for multiple people</button
-        ><button id="openChildrenGroup" type="button">Set Children</button
-        ><button id="openSiblingGroup" type="button">Group siblings</button
-        ><button class="primary" id="newPerson">＋ Add a person</button>
+        <details class="multiple-people-tools" @keydown.esc="$event.currentTarget.open = false">
+          <summary>Multiple People Tools <span aria-hidden="true">▾</span></summary>
+          <div
+            class="multiple-people-menu"
+            @click="
+              ($event) => {
+                if ($event.target.closest('button'))
+                  $event.currentTarget.parentElement.open = false;
+              }
+            "
+          >
+            <button id="openBulkLocation" type="button">Set Current Location</button>
+            <button id="openBulkBirthplace" type="button">Set Birthplace</button>
+            <button id="openChildrenGroup" type="button">Set Children</button>
+            <button id="openSiblingGroup" type="button">Group Siblings</button>
+          </div>
+        </details>
+        <button class="primary" id="newPerson">＋ Add a person</button>
       </div>
     </div>
     <section class="directory">

@@ -181,7 +181,18 @@ function openFamilyMapGroup(group, marker, { restore = false } = {}) {
   content.className = 'map-person-popup';
   const heading = document.createElement('h3');
   heading.textContent = group.people[0].location;
-  content.append(heading);
+  const header = document.createElement('div');
+  header.className = 'map-popup-location-heading';
+  const addPeople = document.createElement('button');
+  addPeople.type = 'button';
+  addPeople.className = 'map-add-people';
+  addPeople.textContent = 'Update People ↗';
+  addPeople.onclick = () => {
+    const source = group.people[0];
+    openBulkLocation('current', { location: source.location, locationPlaceId: source.locationPlaceId || '', locationLat: group.position.lat, locationLng: group.position.lng });
+  };
+  header.append(heading, addPeople);
+  content.append(header);
   for (const p of group.people) {
     const button = document.createElement('button');
     button.type = 'button';
@@ -378,15 +389,9 @@ async function renderFamilyMap({ fit = true } = {}) {
         (g, i) =>
           `<div class="map-location-card"><button type="button" data-map-group="${i}"><strong>${esc(
             g.people[0].location,
-          )}</strong><span>${esc(g.people.map((p) => displayName(p)).join(', '))}</span></button><button type="button" class="map-add-people" data-add-map-people="${i}">＋ Add People ↗</button></div>`,
+          )}</strong><span>${esc(g.people.map((p) => displayName(p)).join(', '))}</span></button></div>`,
       )
       .join('') || '<p>No locations added yet.</p>';
-  $('#mappedPeople').querySelectorAll('[data-add-map-people]').forEach(button => {
-    button.onclick = () => {
-      const group=groups[Number(button.dataset.addMapPeople)], source=group.people[0];
-      openBulkLocation('current', {location:source.location,locationPlaceId:source.locationPlaceId || '',locationLat:group.position.lat,locationLng:group.position.lng});
-    };
-  });
   const missingReport = document.createElement('a');
   missingReport.href = '#page=reports';
   missingReport.className = 'map-missing-report';

@@ -1,11 +1,27 @@
 let bulkLocationKind = 'current',
   bulkLocation = null,
   bulkLocationPeople = [],
+  bulkLocationRemoved = [],
   bulkLocationSession = 0,
   bulkLocationPending = false,
   bulkLocationSaving = false,
   bulkLocationExisting = false;
+function toggleBulkLocationResident(id) {
+  bulkLocationRemoved = bulkLocationRemoved.includes(id) ? bulkLocationRemoved.filter(value => value !== id) : [...bulkLocationRemoved,id];
+  updateBulkLocationSelection();
+}
+function updateBulkLocationResidents() {
+  $('#bulkLocationResidentNames').innerHTML = bulkLocationExisting
+    ? data.people.filter(p => sameBulkLocation(p, bulkLocation)).map(p => {
+      const removed=bulkLocationRemoved.includes(p.id);
+      return `<button type="button" data-location-resident="${esc(p.id)}" class="${removed ? 'pending-removal' : ''}" aria-label="${removed ? 'Undo removal of' : 'Remove'} ${esc(displayName(p))}">${esc(displayName(p))} ${removed ? '↶ Undo' : '×'}</button>`;
+    }).join('') : '';
+  $('#bulkLocationResidentNames').querySelectorAll('[data-location-resident]').forEach(button => {
+    button.onclick = () => toggleBulkLocationResident(button.dataset.locationResident);
+  });
+}
 function updateBulkLocationSelection() {
+  updateBulkLocationResidents();
   $('#bulkLocationTags').innerHTML = bulkLocationPeople
     .map(
       (id) =>
@@ -29,9 +45,9 @@ function updateBulkLocationSelection() {
     );
   $('#bulkLocationSummary').textContent = `${bulkLocationPeople.length} ${
     bulkLocationPeople.length === 1 ? 'person' : 'people'
-  } selected`;
+  } selected${bulkLocationRemoved.length ? ` · ${bulkLocationRemoved.length} to remove` : ''}`;
   $('#saveBulkLocation').disabled =
-    !bulkLocation || !bulkLocationPeople.length || bulkLocationPending || bulkLocationSaving;
+    !bulkLocation || (!bulkLocationPeople.length && !bulkLocationRemoved.length) || bulkLocationPending || bulkLocationSaving;
 }
 function setupBulkLocationSearch() {
   ui.mountSearch({
@@ -63,12 +79,15 @@ async function openBulkLocation(kind = 'current', existingLocation = null) {
   bulkLocationExisting = kind === 'current' && !!existingLocation;
   bulkLocation = bulkLocationExisting ? {...existingLocation} : null;
   bulkLocationPeople = [];
+  bulkLocationRemoved = [];
   bulkLocationPending = false;
   $('#bulkLocationForm').reset();
   $('#bulkLocationError').textContent = '';
   $('#bulkLocationSelected').textContent = bulkLocation?.location || '';
   $('#bulkLocationFinder').hidden = bulkLocationExisting;
-  $('#saveBulkLocation').textContent = bulkLocationExisting ? 'Set Current Location' : 'Save location for selected people';
+  $('#bulkLocationResidents').hidden = !bulkLocationExisting;
+  $('#bulkLocationPeopleHeading').textContent = bulkLocationExisting ? 'Add People' : 'People at This Location';
+  $('#saveBulkLocation').textContent = bulkLocationExisting ? 'Save Changes' : 'Save location for selected people';
   $('#bulkLocationFinder').replaceChildren();
   $('#bulkLocationMatches').hidden = true;
   $('#bulkLocationSearch').setAttribute('aria-expanded', 'false');
@@ -76,7 +95,8 @@ async function openBulkLocation(kind = 'current', existingLocation = null) {
   setupBulkLocationSearch();
   $('#bulkLocationDialog').showModal();
   if (bulkLocationExisting) {
-    $('#bulkLocationDescription').textContent = 'Select people to add to this location. Saving replaces their Current Location.';
+    $('#bulkLocationTitle').textContent = 'Update People';
+    $('#bulkLocationDescription').textContent = 'Add people or remove them with ×. Saving clears the Current Location of anyone removed; adding someone replaces their Current Location.';
     $('#bulkLocationStatus').textContent = 'People already at this location are excluded from the search.';
     $('#bulkLocationSearch').focus();
     return;
@@ -147,9 +167,10 @@ $('#bulkLocationDialog').addEventListener('close', () => {
 });
 $('#bulkLocationForm').onsubmit = async (event) => {
   event.preventDefault();
-  if (bulkLocationSaving || bulkLocationPending || !bulkLocation || !bulkLocationPeople.length)
+  if (bulkLocationSaving || bulkLocationPending || !bulkLocation || (!bulkLocationPeople.length && !bulkLocationRemoved.length))
     return;
   const selected = new Set(bulkLocationPeople),
+    removed = new Set(bulkLocationRemoved),
     previous = data.people;
   bulkLocationSaving = true;
   $('#bulkLocationForm').inert = true;
@@ -164,7 +185,9 @@ $('#bulkLocationForm').onsubmit = async (event) => {
       ? bulkLocationKind === 'birthplace'
         ? { ...p, birthplace }
         : { ...p, ...bulkLocation }
-      : p,
+      : removed.has(p.id) && sameBulkLocation(p, bulkLocation)
+        ? {...p, location:'',locationPlaceId:'',locationLat:null,locationLng:null}
+        : p,
   );
   try {
     if (!(await saveShared())) {
@@ -176,18 +199,19 @@ $('#bulkLocationForm').onsubmit = async (event) => {
     // Keep the open form in sync without discarding unrelated unsaved profile edits.
     if (selected.has($('#personId').value) && bulkLocationKind === 'birthplace') {
       renderBirthplace(birthplace);
-    } else if (selected.has($('#personId').value)) {
-      $('#location').value = bulkLocation.location;
-      $('#locationPlaceId').value = bulkLocation.locationPlaceId;
-      $('#locationLat').value = bulkLocation.locationLat;
-      $('#locationLng').value = bulkLocation.locationLng;
+    } else if (selected.has($('#personId').value) || removed.has($('#personId').value)) {
+      const updated = person($('#personId').value);
+      $('#location').value = updated.location || '';
+      $('#locationPlaceId').value = updated.locationPlaceId || '';
+      $('#locationLat').value = updated.locationLat ?? '';
+      $('#locationLng').value = updated.locationLng ?? '';
       resetLocationFinder();
       updatePlacesLivedCurrent();
     }
     $('#bulkLocationDialog').close();
     render();
     if (!$('#familyMapPage').hidden) await renderFamilyMap({ fit: false });
-    notify(
+    notify(bulkLocationExisting ? 'People at this location updated.' :
       `${bulkLocationKind === 'birthplace' ? 'Birthplace' : 'Current Location'} saved for ${
         selected.size
       } ${selected.size === 1 ? 'person' : 'people'}.`,

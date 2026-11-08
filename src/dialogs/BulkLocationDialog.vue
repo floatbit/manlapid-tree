@@ -9,7 +9,11 @@
       <div id="bulkLocationFinder"></div>
       <p id="bulkLocationStatus" class="hint" role="status"></p>
       <strong id="bulkLocationSelected"></strong>
-      <h3>People at This Location</h3>
+      <section id="bulkLocationResidents" hidden aria-labelledby="bulkLocationResidentsTitle">
+        <h3 id="bulkLocationResidentsTitle">Already at This Location</h3>
+        <div id="bulkLocationResidentNames" class="bulk-location-residents"></div>
+      </section>
+      <h3 id="bulkLocationPeopleHeading">People at This Location</h3>
       <div id="bulkLocationTags"></div>
       <input
         id="bulkLocationSearch"

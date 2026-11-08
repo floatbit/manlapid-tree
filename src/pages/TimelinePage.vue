@@ -1,4 +1,5 @@
 <script setup lang="js">
+import SearchField from '../components/SearchField.vue';
 import TimelineEvents from '../components/TimelineEvents.vue';
 import UpcomingAnniversaries from '../components/UpcomingAnniversaries.vue';
 </script>
@@ -18,6 +19,7 @@ import UpcomingAnniversaries from '../components/UpcomingAnniversaries.vue';
         ><button id="addMilestone" class="primary">＋ Add milestone</button>
       </div>
     </div>
+    <SearchField class="timeline-search"><input id="timelineSearch" type="search" aria-label="Search timeline" placeholder="Search people, events, places, or years…" /></SearchField>
     <p id="timelineSummary" class="hint" role="status"></p>
     <div class="timeline-columns">
       <TimelineEvents />

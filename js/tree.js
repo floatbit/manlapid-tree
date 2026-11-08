@@ -22,6 +22,8 @@ function expand(id, { fit = false } = {}) {
   render({ expanding: !fit, centerId: fit ? null : id, fit });
 }
 function start(id) {
+  $('#familiesPage').hidden = true;
+  $('#familiesTab').classList.remove('active');
   $('#overviewPage').hidden = true;
   $('#overviewTab').classList.remove('active');
   $('#recipesPage').hidden = true;

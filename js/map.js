@@ -1,13 +1,69 @@
-let familyMapMode = 'current',
+const MAP_VIEW_KEY = 'kinfolk-map-view-v1';
+function validMapCamera(camera) {
+  return (
+    camera &&
+    Number.isFinite(camera.center?.lat) &&
+    Math.abs(camera.center.lat) <= 90 &&
+    Number.isFinite(camera.center?.lng) &&
+    Math.abs(camera.center.lng) <= 180 &&
+    Number.isFinite(camera.zoom) &&
+    camera.zoom >= 0 &&
+    camera.zoom <= 24
+  );
+}
+function readMapView() {
+  try {
+    return JSON.parse(localStorage.getItem(MAP_VIEW_KEY) || 'null') || {};
+  } catch {
+    return {};
+  }
+}
+const savedMapView = readMapView();
+let currentLocationsCamera = validMapCamera(savedMapView.current) ? savedMapView.current : null,
+  currentLocationsPopupPersonId =
+    typeof savedMapView.popupPersonId === 'string' ? savedMapView.popupPersonId : null;
+const historyMapCameras = new Map(
+  Object.entries(savedMapView.history || {}).filter(([, camera]) => validMapCamera(camera)),
+);
+let familyMapMode = savedMapView.mode === 'history' ? 'history' : 'current',
   migrationLines = [],
-  migrationPersonId = null;
+  migrationPersonId = typeof savedMapView.personId === 'string' ? savedMapView.personId : null;
 let familyMap = null,
   familyMapMarkers = [],
   familyMapPopup = null,
   familyMapRenderVersion = 0,
   familyMapGroups = [],
   familyMapMarkerLibrary = null,
-  mapSelectedPersonId = null;
+  mapSelectedPersonId = null,
+  mapCameraReady = false;
+function persistMapView() {
+  try {
+    localStorage.setItem(
+      MAP_VIEW_KEY,
+      JSON.stringify({
+        mode: familyMapMode,
+        personId: migrationPersonId,
+        current: currentLocationsCamera,
+        history: Object.fromEntries(historyMapCameras),
+        popupPersonId: currentLocationsPopupPersonId,
+      }),
+    );
+  } catch {}
+}
+function rememberMapCamera() {
+  if (!familyMap || !mapCameraReady) return;
+  const center = familyMap.getCenter(),
+    zoom = familyMap.getZoom();
+  if (!center || !Number.isFinite(zoom)) return;
+  const camera = { center: { lat: center.lat(), lng: center.lng() }, zoom };
+  if (familyMapMode === 'current') currentLocationsCamera = camera;
+  else if (migrationPersonId) historyMapCameras.set(migrationPersonId, camera);
+  persistMapView();
+}
+function restoreMapCamera(camera) {
+  familyMap.setCenter(camera.center);
+  familyMap.setZoom(camera.zoom);
+}
 function mapLocationGroups(people) {
   const groups = new Map(),
     missing = [];
@@ -93,6 +149,7 @@ function drawFamilyMapClusters() {
         : cluster.people.map((p) => displayName(p)).join(', '),
     });
     marker.familyPeople = cluster.people;
+    marker.familyLocationGroup = multiple ? null : cluster.groups[0];
     marker.addListener('click', () => {
       if (!multiple) {
         openFamilyMapGroup(cluster.groups[0], marker);
@@ -108,8 +165,18 @@ function drawFamilyMapClusters() {
     });
     familyMapMarkers.push(marker);
   }
+  if (currentLocationsPopupPersonId) {
+    const marker = familyMapMarkers.find(
+      (item) =>
+        item.familyLocationGroup &&
+        item.familyPeople.some((p) => p.id === currentLocationsPopupPersonId),
+    );
+    if (marker) openFamilyMapGroup(marker.familyLocationGroup, marker, { restore: true });
+    else currentLocationsPopupPersonId = null;
+  }
 }
-function openFamilyMapGroup(group, marker) {
+function openFamilyMapGroup(group, marker, { restore = false } = {}) {
+  currentLocationsPopupPersonId = group.people[0].id;
   const content = document.createElement('div');
   content.className = 'map-person-popup';
   const heading = document.createElement('h3');
@@ -118,16 +185,53 @@ function openFamilyMapGroup(group, marker) {
   for (const p of group.people) {
     const button = document.createElement('button');
     button.type = 'button';
-    button.innerHTML = `${avatar(p)}<span>${esc(
-      displayName(p),
-    )}<small>View details →</small></span>`;
+    button.className = 'map-popup-person-heading';
+    button.innerHTML = `${avatar(p)}<span>${esc(displayName(p))}</span>`;
     button.onclick = () => showMapPerson(p.id);
-    content.append(button);
+    const entry = document.createElement('div');
+    entry.className = 'map-popup-person';
+    entry.append(button);
+    const actions = document.createElement('div');
+    actions.className = 'map-popup-person-actions';
+    for (const [label, action] of [
+      [
+        'View Places Lived',
+        () => {
+          migrationPersonId = p.id;
+          setFamilyMapMode('history');
+        },
+      ],
+      ['View Details', () => showMapPerson(p.id)],
+      [
+        'Open Family Tree',
+        () => {
+          familyMapPopup.close();
+          start(p.id);
+        },
+      ],
+    ]) {
+      const link = document.createElement('button');
+      link.type = 'button';
+      const text = document.createElement('span');
+      text.textContent = label;
+      const arrow = document.createElement('span');
+      arrow.className = 'map-popup-link-arrow';
+      arrow.setAttribute('aria-hidden', 'true');
+      arrow.textContent = '↗';
+      link.append(text, arrow);
+      link.setAttribute('aria-label', label + ' — ' + displayName(p));
+      link.onclick = action;
+      actions.append(link);
+    }
+    entry.append(actions);
+    content.append(entry);
   }
-  if (group.people.length === 1) showMapPerson(group.people[0].id);
+  if (!restore && group.people.length === 1) showMapPerson(group.people[0].id);
   familyMapPopup.setContent(content);
-  familyMapPopup.open({ map: familyMap, anchor: marker });
-  familyMap.panTo(group.position);
+  familyMapPopup.setOptions({ disableAutoPan: restore });
+  familyMapPopup.open({ map: familyMap, anchor: marker, shouldFocus: !restore });
+  if (!restore) familyMap.panTo(group.position);
+  persistMapView();
 }
 function showMapPerson(id) {
   if (familyMapMode === 'history') {
@@ -144,26 +248,88 @@ function showMapPerson(id) {
   $('#mapLocationDirectory').hidden = true;
   const details = $('#mapSelectedPerson');
   details.hidden = false;
-  details.innerHTML = `<button type="button" id="mapBackToLocations">← All locations</button><p class="eyebrow">A CLOSER LOOK</p>${avatar(
-    p,
-  )}<h2>${esc(p.name)}</h2>${p.deceased ? '<span class="deceased-badge">Deceased</span>' : ''}${
-    p.location ? `<p>⌖ ${esc(p.location)}</p>` : ''
-  }${
-    p.dateDetails?.birth || p.birthday
-      ? `<p>Born · ${esc(familyDateLabel(p.dateDetails?.birth || p.birthday))}</p>`
+  $('#familyMapPeople').classList.add('showing-person');
+  const birth = p.dateDetails?.birth || p.birthday || '';
+  let age = null;
+  if (!p.deceased && /^\d{4}-\d{2}-\d{2}$/.test(birth) && validFamilyDate(birth)) {
+    const [year, month, day] = birth.split('-').map(Number),
+      today = new Date();
+    age =
+      today.getFullYear() -
+      year -
+      (today.getMonth() + 1 < month || (today.getMonth() + 1 === month && today.getDate() < day)
+        ? 1
+        : 0);
+    if (age < 0) age = null;
+  }
+  const relatives = connections(id);
+  const shared = (
+    mapLocationGroups(data.people).groups.find((g) => g.people.some((member) => member.id === id))
+      ?.people || []
+  ).filter((member) => member.id !== id);
+  const personButton = (member, label = '') =>
+    `<button type="button" class="map-profile-relative" data-map-relative="${esc(
+      member.id,
+    )}">${avatar(member)}<span><strong>${esc(displayName(member))}</strong>${
+      label ? `<small>${esc(label)}</small>` : ''
+    }</span><span class="map-profile-arrow" aria-hidden="true">↗</span></button>`;
+  const grouped = [
+    ['parent', 'Parents'],
+    ['sibling', 'Siblings'],
+    ['spouse', 'Spouse'],
+    ['child', 'Children'],
+  ]
+    .map(([kind, title]) => {
+      const members = relatives.filter((relative) => relative.type === kind);
+      return members.length
+        ? `<section class="map-profile-family-group"><h4>${title} <span>${
+            members.length
+          }</span></h4>${members
+            .map((relative) => personButton(person(relative.id)))
+            .join('')}</section>`
+        : '';
+    })
+    .join('');
+  const homes = p.locationHistory?.length || 0;
+  details.innerHTML = `<button type="button" id="mapBackToLocations">← All Locations</button>
+    <div class="map-profile-header">${avatar(p)}<div><h2>${esc(p.name)}</h2>${
+    p.deceased
+      ? '<span class="deceased-badge">Deceased</span>'
+      : age !== null
+      ? `<span class="map-profile-age">${age} years old</span>`
       : ''
-  }<p>${esc(
-    p.bio || 'Their story is waiting to be told.',
-  )}</p><button type="button" id="mapPersonTree">Open family tree ↗</button><button type="button" id="mapPersonEdit">Edit person ↗</button><h3>Family Connections</h3><div class="map-family-connections">${
-    connections(id)
-      .map(
-        (c) =>
-          `<button type="button" data-map-relative="${esc(c.id)}">${esc(
-            person(c.id).name,
-          )}<small>${esc(c.type)}</small></button>`,
+  }${birth ? `<p>Born · ${esc(familyDateLabel(birth))}</p>` : ''}${
+    p.deceased && p.dateDetails?.death
+      ? `<p>Died · ${esc(familyDateLabel(p.dateDetails.death))}</p>`
+      : ''
+  }</div></div>
+    <div class="map-profile-actions"><button type="button" id="mapPersonTree">Open Family Tree ↗</button><button type="button" id="mapPersonEdit">Edit Person ↗</button></div>
+    <section class="map-profile-locations"><h3>Locations</h3><dl><div><dt>Current Location</dt><dd>${esc(
+      p.location || 'Not added yet',
+    )}</dd></div><div><dt>Birthplace</dt><dd>${esc(
+    p.birthplace?.location || 'Not added yet',
+  )}</dd></div><div><dt>Places Lived</dt><dd>${homes} ${
+    homes === 1 ? 'past home' : 'past homes'
+  }</dd></div></dl><button type="button" id="mapPersonPlaces">View Places Lived ↗</button></section>
+    <section class="map-profile-shared"><h3>At This Location <span>${shared.length}</span></h3>${
+    shared
+      .map((member) =>
+        personButton(member, relatives.find((relative) => relative.id === member.id)?.type || ''),
       )
-      .join('') || '<p>No connections added yet.</p>'
-  }</div>`;
+      .join('') || '<p class="hint">No other family members have this mapped location.</p>'
+  }</section>
+    <section class="map-profile-family"><h3>Family Connections <span>${
+      relatives.length
+    }</span></h3>${grouped || '<p class="hint">No connections added yet.</p>'}</section>
+    ${
+      p.bio?.trim()
+        ? `<section class="map-profile-story"><h3>About</h3><p>${esc(p.bio)}</p></section>`
+        : ''
+    }`;
+  $('#mapPersonPlaces').onclick = () => {
+    migrationPersonId = id;
+    setFamilyMapMode('history');
+  };
   $('#mapBackToLocations').onclick = closeMapPerson;
   $('#mapPersonTree').onclick = () => start(id);
   $('#mapPersonEdit').onclick = () => {
@@ -186,11 +352,17 @@ function showMapPerson(id) {
 }
 function closeMapPerson() {
   mapSelectedPersonId = null;
+  $('#familyMapPeople').classList.remove('showing-person');
   $('#mapSelectedPerson').hidden = true;
   $('#mapSelectedPerson').replaceChildren();
   $('#mapLocationDirectory').hidden = false;
 }
 async function renderFamilyMap({ fit = true } = {}) {
+  rememberMapCamera();
+  mapCameraReady = false;
+  $('#mapCurrentView').setAttribute('aria-pressed', String(familyMapMode === 'current'));
+  $('#mapHistoryView').setAttribute('aria-pressed', String(familyMapMode === 'history'));
+  $('#fitFamilyMap').textContent = familyMapMode === 'history' ? 'Fit path' : 'Fit everyone';
   const version = ++familyMapRenderVersion,
     { groups, missing } = mapLocationGroups(data.people),
     mapped = groups.reduce((n, g) => n + g.people.length, 0);
@@ -209,25 +381,17 @@ async function renderFamilyMap({ fit = true } = {}) {
           )}</strong><span>${esc(g.people.map((p) => displayName(p)).join(', '))}</span></button>`,
       )
       .join('') || '<p>No locations added yet.</p>';
-  $('#unmappedPeople').innerHTML =
-    missing
-      .sort((a, b) => a.name.localeCompare(b.name))
-      .map(
-        (p) =>
-          `<button type="button" data-map-edit="${esc(p.id)}">${esc(displayName(p))} ↗</button>`,
-      )
-      .join('') || '<p>Everyone has a mapped location.</p>';
-  document.querySelectorAll('[data-map-edit]').forEach(
-    (button) =>
-      (button.onclick = () => {
-        showSection('people');
-        edit(button.dataset.mapEdit);
-        $('#currentLocationLabel').scrollIntoView({
-          block: 'center',
-          behavior: reducedMotion.matches ? 'instant' : 'smooth',
-        });
-      }),
-  );
+  const missingReport = document.createElement('a');
+  missingReport.href = '#page=reports';
+  missingReport.className = 'map-missing-report';
+  missingReport.textContent = `${missing.length} ${
+    missing.length === 1 ? 'person needs' : 'people need'
+  } locations — View Report ↗`;
+  missingReport.onclick = (event) => {
+    event.preventDefault();
+    showSection('overview');
+  };
+  $('#unmappedPeople').replaceChildren(missingReport);
   if (mapSelectedPersonId) showMapPerson(mapSelectedPersonId);
   $('#familyMapStatus').textContent = 'Loading map…';
   try {
@@ -246,8 +410,15 @@ async function renderFamilyMap({ fit = true } = {}) {
         streetViewControl: false,
         gestureHandling: 'cooperative',
       });
-      familyMapPopup = new InfoWindow();
+      familyMapPopup = new InfoWindow({ maxHeight: 560 });
+      familyMapPopup.addListener('closeclick', () => {
+        if (familyMapMode === 'current') {
+          currentLocationsPopupPersonId = null;
+          persistMapView();
+        }
+      });
       familyMap.addListener('zoom_changed', () => drawFamilyMapClusters());
+      familyMap.addListener('idle', rememberMapCamera);
     }
     familyMapGroups = groups;
     familyMapMarkerLibrary = { AdvancedMarkerElement, PinElement };
@@ -270,7 +441,10 @@ async function renderFamilyMap({ fit = true } = {}) {
     $('#familyMapStatus').textContent = groups.length
       ? 'Click a numbered cluster to zoom in, or a location to see who lives there.'
       : 'Add Current Locations in People to place your family on the map.';
-    if (fit) fitFamilyMap();
+    if (currentLocationsCamera) restoreMapCamera(currentLocationsCamera);
+    else if (fit) fitFamilyMap();
+    mapCameraReady = true;
+    persistMapView();
   } catch (error) {
     if (version === familyMapRenderVersion)
       $('#familyMapStatus').textContent =
@@ -280,6 +454,17 @@ async function renderFamilyMap({ fit = true } = {}) {
 $('#fitFamilyMap').onclick = fitFamilyMap;
 
 function setFamilyMapMode(mode) {
+  if (mode === familyMapMode) return;
+  if (familyMapMode === 'current' && familyMap) {
+    const center = familyMap.getCenter(),
+      zoom = familyMap.getZoom();
+    if (center && Number.isFinite(zoom))
+      currentLocationsCamera = { center: { lat: center.lat(), lng: center.lng() }, zoom };
+  }
+  rememberMapCamera();
+  mapCameraReady = false;
+  // Invalidate a current-locations render that was awaiting the Maps library.
+  familyMapRenderVersion++;
   familyMapMode = mode;
   $('#mapCurrentView').setAttribute('aria-pressed', String(mode === 'current'));
   $('#mapHistoryView').setAttribute('aria-pressed', String(mode === 'history'));
@@ -291,8 +476,13 @@ function setFamilyMapMode(mode) {
     renderMigrationView();
   } else {
     closeMapPerson();
-    renderFamilyMap();
+    if (familyMap && currentLocationsCamera) {
+      familyMap.setCenter(currentLocationsCamera.center);
+      familyMap.setZoom(currentLocationsCamera.zoom);
+    }
+    renderFamilyMap({ fit: !currentLocationsCamera });
   }
+  persistMapView();
 }
 function migrationStopsForPerson(p) {
   const homes = [...(p?.locationHistory || [])].sort(
@@ -368,6 +558,10 @@ function fitMigrationPath() {
   familyMap.fitBounds(bounds, 60);
 }
 async function renderMigrationView() {
+  $('#familyMapPeople').classList.add('showing-person');
+  if (migrationPersonId && !person(migrationPersonId)) migrationPersonId = null;
+  const savedCamera = historyMapCameras.get(migrationPersonId);
+  mapCameraReady = false;
   $('#mapLocationDirectory').hidden = true;
   const details = $('#mapSelectedPerson');
   details.hidden = false;
@@ -406,6 +600,8 @@ async function renderMigrationView() {
       : '<p>Choose a person to explore their moves.</p>'
   }`;
   $('#migrationPerson').onchange = (e) => {
+    rememberMapCamera();
+    mapCameraReady = false;
     migrationPersonId = e.target.value;
     renderMigrationView();
   };
@@ -490,10 +686,41 @@ async function renderMigrationView() {
         google.maps.event.trigger(familyMapMarkers[i], 'click');
       }),
   );
-  fitMigrationPath();
+  if (savedCamera) restoreMapCamera(savedCamera);
+  else fitMigrationPath();
+  mapCameraReady = !!stops.length;
+  persistMapView();
 }
 $('#mapCurrentView').onclick = () => {
   $('#fitFamilyMap').textContent = 'Fit everyone';
   setFamilyMapMode('current');
 };
 $('#mapHistoryView').onclick = () => setFamilyMapMode('history');
+
+async function openFamilyMapLocation(personId) {
+  const group = mapLocationGroups(data.people).groups.find((location) =>
+    location.people.some((p) => p.id === personId),
+  );
+  if (!group) {
+    notify('Choose a Google location for this person before opening it on the map.');
+    return;
+  }
+  rememberMapCamera();
+  mapCameraReady = false;
+  familyMapMode = 'current';
+  for (const line of migrationLines) line.setMap(null);
+  migrationLines = [];
+  currentLocationsPopupPersonId = personId;
+  closeMapPerson();
+  showSection('map');
+  await renderFamilyMap({ fit: false });
+  if (!familyMap || familyMapMode !== 'current' || $('#familyMapPage').hidden) return;
+  familyMap.setCenter(group.position);
+  familyMap.setZoom(14);
+  drawFamilyMapClusters();
+  const marker = familyMapMarkers.find(
+    (item) => item.familyLocationGroup && item.familyPeople.some((p) => p.id === personId),
+  );
+  if (marker) openFamilyMapGroup(group, marker);
+  rememberMapCamera();
+}

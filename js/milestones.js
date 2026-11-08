@@ -106,24 +106,31 @@ function timelineItems() {
       a.id.localeCompare(b.id),
   );
 }
+function timelineEventMatches(event, query) {
+  const normalize = value => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase();
+  const people = event.person ? [event.person] : (event.participants || []).map(id => data.people.find(p => p.id === id)).filter(Boolean);
+  const text = normalize([event.title, event.description, event.location, event.type?.replaceAll('_', ' '), event.kind, event.date, familyDateLabel(event.date), ...people.map(p => [p.name, p.firstName, p.middleName, p.lastName, ...(p.nicknames || [])].join(' '))].join(' '));
+  return normalize(query).split(/\s+/).every(word => text.includes(word));
+}
+const timelineSearch = $('#timelineSearch');
+try { timelineSearch.value = localStorage.getItem('kinfolk-timeline-search-v1') || ''; } catch {}
+timelineSearch.addEventListener('input', () => {
+  try { localStorage.setItem('kinfolk-timeline-search-v1', timelineSearch.value); } catch {}
+  renderTimeline();
+});
 function renderTimeline() {
   renderUpcomingAnniversaries();
   const births = birthEvents(data.people),
-    events = timelineItems(),
-    missing = data.people.length - births.length,
-    years = new Map();
-  for (const event of events) {
-    const year = familyDateYear(event.date) || 'Date Unknown';
-    if (!years.has(year)) years.set(year, []);
-    years.get(year).push(event);
-  }
-  $('#timelineSummary').textContent = `${births.length} ${
+    query = $('#timelineSearch').value.trim(),
+    events = timelineItems().filter(event => timelineEventMatches(event, query)),
+    missing = data.people.length - births.length;
+  $('#timelineSummary').textContent = query ? `${events.length} matching ${events.length === 1 ? 'event' : 'events'}` : `${births.length} ${
     births.length === 1 ? 'birth' : 'births'
   } · ${(data.milestones || []).length} ${
     (data.milestones || []).length === 1 ? 'milestone' : 'milestones'
   }${missing ? ` · ${missing} ${missing === 1 ? 'person needs' : 'people need'} a birthday` : ''}`;
   ui.sync(data);
-  ui.setTimeline(events);
+  ui.setTimeline(events, query);
 }
 let draftMilestonePhotos = [],
   milestonePhotoSession = 0,
@@ -134,6 +141,65 @@ function renderMilestonePeople() {
     draftMilestonePeople = ids;
   });
 }
+let milestoneLocationSession = 0,
+  milestoneLocationPending = false;
+function updateMilestoneLocationAddress() {
+  const value = $('#milestoneLocation').value;
+  $('#milestoneLocationAddress').textContent = value;
+  $('#milestoneSelectedLocation').hidden = !value;
+}
+async function setupMilestoneLocationFinder() {
+  const session = ++milestoneLocationSession;
+  milestoneLocationPending = false;
+  updateMilestoneLocationAddress();
+  $('#milestoneLocationFinder').replaceChildren();
+  $('#milestoneLocationStatus').textContent = '';
+  try {
+    const { PlaceAutocompleteElement } = await loadPlacesLibrary();
+    if (session !== milestoneLocationSession || !$('#milestoneDialog').open) return;
+    const finder = new PlaceAutocompleteElement();
+    finder.setAttribute('placeholder', 'Search for a city, country, or address');
+    finder.setAttribute('aria-label', 'Search milestone location');
+    $('#milestoneLocationFinder').append(finder);
+    let version = 0;
+    finder.addEventListener('gmp-select', async ({ placePrediction }) => {
+      const selection = ++version;
+      milestoneLocationPending = true;
+      $('#milestoneLocationStatus').textContent = 'Looking up location…';
+      try {
+        const place = placePrediction.toPlace();
+        await place.fetchFields({ fields: ['formattedAddress', 'displayName'] });
+        if (session !== milestoneLocationSession || selection !== version) return;
+        const address = place.formattedAddress || place.displayName || '';
+        if (!address || address.length > 255) throw new Error('Choose a shorter location.');
+        $('#milestoneLocation').value = address;
+        updateMilestoneLocationAddress();
+        $('#milestoneLocationStatus').textContent = '';
+      } catch {
+        if (session === milestoneLocationSession && selection === version)
+          $('#milestoneLocationStatus').textContent =
+            'Could not select this location. Please choose another Google suggestion.';
+      } finally {
+        if (session === milestoneLocationSession && selection === version)
+          milestoneLocationPending = false;
+      }
+    });
+    finder.addEventListener('gmp-error', () => {
+      if (session === milestoneLocationSession)
+        $('#milestoneLocationStatus').textContent =
+          'Google location search is unavailable. Please try again.';
+    });
+  } catch {
+    if (session === milestoneLocationSession)
+      $('#milestoneLocationStatus').textContent =
+        'Google location search could not load. Your saved location is preserved.';
+  }
+}
+$('#clearMilestoneLocation').onclick = () => {
+  milestoneLocationSession++;
+  $('#milestoneLocation').value = '';
+  setupMilestoneLocationFinder();
+};
 function openMilestone(id) {
   if (collectionRevisions.get('albums') !== sharedRevision)
     return withCollection('albums', () => openMilestone(id));
@@ -145,8 +211,7 @@ function openMilestone(id) {
   $('#milestoneId').value = event?.id || '';
   $('#milestoneHeading').textContent = event ? 'Edit Milestone' : 'Add a Family Milestone';
   for (const field of ['title', 'type', 'date', 'location', 'description'])
-    $('#milestone' + field[0].toUpperCase() + field.slice(1)).value =
-      event?.[field] || (field === 'type' ? 'marriage' : '');
+    $('#milestone' + field[0].toUpperCase() + field.slice(1)).value = event?.[field] || '';
   $('#shareMilestone').hidden = !event;
   draftMilestonePeople = [...(event?.participants || [])];
   renderMilestonePeople();
@@ -157,16 +222,23 @@ function openMilestone(id) {
   $('#milestoneDelete').hidden = !event;
   $('#milestoneError').textContent = '';
   $('#milestoneDialog').showModal();
+  setupMilestoneLocationFinder();
   $('#milestoneTitle').focus();
 }
 $('#addMilestone').onclick = () => openMilestone();
 $('#milestoneCancel').onclick = () => $('#milestoneDialog').close();
 $('#milestoneDialog').addEventListener('close', () => {
+  milestoneLocationSession++;
+  milestoneLocationPending = false;
   milestonePhotoSession++;
 });
 $('#milestoneForm').onsubmit = async (event) => {
   event.preventDefault();
   if (savingShared || processingMilestonePhotos) return;
+  if (milestoneLocationPending) {
+    $('#milestoneError').textContent = 'Wait for the location lookup to finish.';
+    return;
+  }
   const title = $('#milestoneTitle').value.trim();
   if (!title) {
     $('#milestoneError').textContent = 'Enter a title for this milestone.';

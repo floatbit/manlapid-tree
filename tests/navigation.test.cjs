@@ -31,6 +31,7 @@ const code = fs.readFileSync('js/navigation.js', 'utf8');
 vm.runInContext(code.slice(code.indexOf('let restoringPageHistory')), ctx);
 for (const page of [
   'timeline',
+  'families',
   'people',
   'map',
   'albums',

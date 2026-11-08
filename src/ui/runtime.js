@@ -97,7 +97,9 @@ ui.setRecipeDetail = (recipe) => {
 };
 
 export const timelineView = shallowRef([]);
-ui.setTimeline = (events) => {
+export const timelineQuery = shallowRef('');
+ui.setTimeline = (events, query = '') => {
+  timelineQuery.value = query;
   timelineView.value = events;
 };
 

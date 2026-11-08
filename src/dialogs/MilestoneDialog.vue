@@ -6,8 +6,9 @@ import MilestonePeople from '../components/MilestonePeople.vue';
     <form id="milestoneForm">
       <p class="eyebrow">A MOMENT TO REMEMBER</p>
       <h2 id="milestoneHeading">Add a Family Milestone</h2>
+      <p class="hint">* Required fields</p>
       <input type="hidden" id="milestoneId" /><label
-        >Title<input
+        >Title *<input
           id="milestoneTitle"
           required
           maxlength="200"
@@ -15,7 +16,8 @@ import MilestonePeople from '../components/MilestonePeople.vue';
       /></label>
       <div class="milestone-fields">
         <label
-          >Event type<select id="milestoneType">
+          >Event Type *<select id="milestoneType" required>
+            <option value="" disabled selected>Choose an event type…</option>
             <optgroup label="Family milestones">
               <option value="marriage">Marriage</option>
               <option value="birthday_party">Birthday Party</option>
@@ -41,10 +43,19 @@ import MilestonePeople from '../components/MilestonePeople.vue';
               <option value="holiday">Other holiday</option>
             </optgroup>
           </select></label
-        ><label>Date<input id="milestoneDate" type="date" required /></label>
+        ><label>Date *<input id="milestoneDate" type="date" required /></label>
       </div>
-      <label>Location (optional)<input id="milestoneLocation" maxlength="255" /></label
-      ><label
+      <div class="milestone-location-field">
+        <label id="milestoneLocationLabel">Location (optional)</label>
+        <input id="milestoneLocation" type="hidden" />
+        <div id="milestoneLocationFinder" aria-labelledby="milestoneLocationLabel"></div>
+        <div id="milestoneSelectedLocation" hidden>
+          <span id="milestoneLocationAddress"></span
+          ><button id="clearMilestoneLocation" type="button">Clear Location</button>
+        </div>
+        <p id="milestoneLocationStatus" class="hint" role="status"></p>
+      </div>
+      <label
         >Story or details (optional)<textarea
           id="milestoneDescription"
           rows="3"

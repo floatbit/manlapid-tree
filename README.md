@@ -33,6 +33,20 @@ in production.
 `npm test` runs the domain, Vue compilation, and component tests after a build.
 `npm run test:database` runs existing isolated-database integration tests.
 
+## Family groups
+
+The Family page keeps named groups based on one or two parents and their
+selected children. Show Above and Show Below can include grandparents, grandchildren,
+all ancestors, or all descendants from recorded relationships. Each child also has
+an Expand Family control. View preferences are saved with the group. Parent and child pickers search the existing People directory.
+Recorded children are suggested for review; saving a group does not create or
+change relationships. Saved groups can be edited, removed, searched, and opened
+in Tree. New recorded children appear as suggestions instead of silently changing
+a saved group. Family group links use `#page=families&group=<id>`.
+
+Groups are stored in the `family_groups` MySQL table and included in portable
+backups. Removing a group keeps its people and relationship records.
+
 ## Shared family storage
 
 The MySQL database is `manlapid_tree`. Server-only connection settings are in `server/config.local.php` (ignored by Git). Copy `server/config.example.php` to configure a different installation. This Mac uses the MAMP MySQL socket when present; other installations can use the configured host and port.

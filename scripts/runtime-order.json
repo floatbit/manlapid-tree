@@ -21,5 +21,6 @@
   "js/location-history.js",
   "js/bulk-location.js",
   "js/albums.js",
-  "js/recipes.js"
+  "js/recipes.js",
+  "js/family-groups.js"
 ]

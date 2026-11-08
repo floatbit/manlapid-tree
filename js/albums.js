@@ -62,6 +62,8 @@ function openAlbum(id) {
       openMilestone(event.id);
     };
     link.append(button);
+  } else if ((data.familyGroups || []).some(g => g.albumId === album?.id)) {
+    link.textContent = 'Family album: ' + data.familyGroups.filter(g => g.albumId === album.id).map(g => g.name).join(', ');
   } else
     link.textContent =
       'Independent album. You can attach it to an event using the Photo album field in Edit milestone.';

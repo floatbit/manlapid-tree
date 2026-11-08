@@ -21,7 +21,6 @@
           <h2>People on the Map</h2>
           <div id="mappedPeople"></div>
           <h3>Location Needed</h3>
-          <p class="hint">Choose a Google location in People to add someone to the map.</p>
           <div id="unmappedPeople"></div>
         </div>
       </aside>

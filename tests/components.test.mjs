@@ -63,6 +63,10 @@ ui.sync({
   await wrapper.find('input').trigger('keydown', { key: 'ArrowDown' });
   await wrapper.find('input').trigger('keydown', { key: 'Enter' });
   assert.equal(chosen[0].id, 'melissa');
+  await wrapper.find('.search-clear-button').trigger('click');
+  assert.equal(wrapper.find('input').element.value, '');
+  assert(wrapper.find('[role="listbox"]').element.hidden);
+  assert(wrapper.find('.search-clear-button').element.hidden);
   assert.equal(wrapper.find('[role="listbox"]').attributes('hidden'), '');
   wrapper.unmount();
 }

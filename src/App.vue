@@ -1,6 +1,7 @@
 <script setup lang="js">
 import AppHeader from './components/AppHeader.vue';
 import ReportsPage from './pages/ReportsPage.vue';
+import FamiliesPage from './pages/FamiliesPage.vue';
 import TreePage from './pages/TreePage.vue';
 import MapPage from './pages/MapPage.vue';
 import RecipesPage from './pages/RecipesPage.vue';
@@ -23,6 +24,7 @@ import SystemNotices from './components/SystemNotices.vue';
   <AppHeader />
   <ReportsPage />
   <TreePage />
+  <FamiliesPage />
   <MapPage />
   <RecipesPage />
   <AlbumsPage />

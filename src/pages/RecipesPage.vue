@@ -1,4 +1,5 @@
 <script setup lang="js">
+import SearchField from '../components/SearchField.vue';
 import RecipeGrid from '../components/RecipeGrid.vue';
 import RecipeDetail from '../components/RecipeDetail.vue';
 </script>
@@ -15,10 +16,10 @@ import RecipeDetail from '../components/RecipeDetail.vue';
       </div>
       <div class="recipes-filters">
         <label
-          >Search recipes<input
+          >Search recipes<SearchField><input
             id="recipeSearch"
             type="search"
-            placeholder="Search titles, ingredients, or memories…" /></label
+            placeholder="Search titles, ingredients, or memories…" /></SearchField></label
         ><label>Category<select id="recipeCategoryFilter"></select></label
         ><label>From whom<select id="recipePersonFilter"></select></label>
       </div>

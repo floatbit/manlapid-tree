@@ -1,4 +1,5 @@
 <script setup lang="js">
+import SearchField from '../components/SearchField.vue';
 import AlbumGrid from '../components/AlbumGrid.vue';
 </script>
 <template>
@@ -13,7 +14,7 @@ import AlbumGrid from '../components/AlbumGrid.vue';
     </div>
     <div class="albums-toolbar">
       <label
-        >Search albums<input id="albumSearch" type="search" placeholder="Search by title…" /></label
+        >Search albums<SearchField><input id="albumSearch" type="search" placeholder="Search by title…" /></SearchField></label
       ><label
         >Order<select id="albumOrder">
           <option value="newest">Newest first</option>

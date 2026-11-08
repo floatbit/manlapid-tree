@@ -7,6 +7,8 @@ const events = computed(() => api.value?.upcomingAnniversaries(family.value.peop
 const icon = (event) => event.kind === 'Birthday' ? '🎂' : event.kind === 'Wedding Anniversary' ? '♡' : '🕯';
 async function open(event) {
   if ((event.kind === 'Birthday' && event.personId) || (event.kind === 'Wedding Anniversary' && event.milestoneId)) {
+    const search = document.getElementById('timelineSearch');
+    if (search?.value) { search.value = ''; search.dispatchEvent(new Event('input', { bubbles: true })); }
     await nextTick();
     const entry = document.getElementById(event.kind === 'Birthday' ? 'timeline-birth-' + event.personId : 'timeline-milestone-' + event.milestoneId);
     if (!entry) { api.value.notify('This timeline entry is not available.'); return; }

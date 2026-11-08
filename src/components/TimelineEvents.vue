@@ -1,6 +1,6 @@
 <script setup lang="js">
 import { computed } from 'vue';
-import { family, timelineView, useRuntime } from '../ui/runtime.js';
+import { family, timelineView, timelineQuery, useRuntime } from '../ui/runtime.js';
 import PersonAvatar from './PersonAvatar.vue';
 import MediaPreview from './MediaPreview.vue';
 const api=computed(useRuntime);
@@ -94,8 +94,8 @@ function names(event) {return (event.participants || []).map((id)=>family.value.
     </template>
     <div v-if="!years.length" class="timeline-empty">
       <span>✳</span>
-      <h2>A Lifetime of Stories Starts Here.</h2>
-      <p>Add birthdays in People or record your first family milestone.</p>
+      <h2>{{ timelineQuery ? 'No Matching Events.' : 'A Lifetime of Stories Starts Here.' }}</h2>
+      <p>{{ timelineQuery ? 'Try another name, event, place, or year.' : 'Add birthdays in People or record your first family milestone.' }}</p>
     </div>
   </div>
 </template>

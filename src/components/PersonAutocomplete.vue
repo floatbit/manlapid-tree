@@ -12,7 +12,7 @@ const props = defineProps({
   inputClass: String,
   listClass: String,
   keepResults: Boolean,
-  showClear: Boolean,
+  showClear: { type: Boolean, default: true },
   validateSelection: { type: Boolean, default: true },
   placeholder: { type: String, default: 'Search for a person…' },
   matches: { type: Function, required: true },
@@ -60,7 +60,7 @@ defineExpose({input,close});
       }
     "
   >
-    <div :class="showClear ? 'directory-search-field' : undefined">
+    <div :class="showClear ? 'directory-search-field clearable-search' : undefined">
       <input
         :id="inputId"
         ref="input"
@@ -87,7 +87,8 @@ defineExpose({input,close});
       />
       <button
         v-if="showClear"
-        id="clearDirectorySearch"
+        :id="inputId === 'directorySearch' ? 'clearDirectorySearch' : inputId + 'Clear'"
+        class="search-clear-button"
         type="button"
         aria-label="Clear people search"
         :hidden="!query"

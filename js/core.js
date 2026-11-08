@@ -138,6 +138,7 @@ function sharedPayload(action) {
     revision: sharedRevision,
     people: data.people,
     links: data.links,
+    familyGroups: data.familyGroups || [],
     milestones: data.milestones || [],
     ...(action === 'bootstrap' || collectionRevisions.has('albums') ? { albums: data.albums } : {}),
     ...(action === 'bootstrap' || collectionRevisions.has('recipes')
@@ -215,6 +216,7 @@ function applyShared(result) {
   data.expanded = data.expanded.map(resolve);
   data.root = resolve(data.root);
   data.selected = resolve(data.selected);
+  data.familyGroups = result.familyGroups || [];
   data.people = result.people;
   data.links = result.links;
   data.milestones = result.milestones || [];
@@ -324,6 +326,7 @@ async function refreshShared() {
     $('#bulkLocationDialog').open ||
     $('#albumDialog').open ||
     $('#recipeDialog').open ||
+    $('#familyGroupDialog').open ||
     document.activeElement?.matches('input,textarea,select')
   )
     return;

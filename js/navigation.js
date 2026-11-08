@@ -15,6 +15,8 @@ function renderDetails() {
       .join('')}</ol>`;
     $('#details').append(path);
   }
+  const addFamily = $('#details .tree-profile-add');
+  if (addFamily) $('#details').append(addFamily);
 }
 function renderDetailsContent() {
   const p = person(data.selected);
@@ -22,37 +24,96 @@ function renderDetailsContent() {
     renderSuggestions();
     return;
   }
-  $('#details').innerHTML = `<p class="eyebrow">A CLOSER LOOK</p>${avatar(p)}<h2>${esc(
-    p.name,
-  )}</h2>${p.deceased ? '<span class="deceased-badge">Deceased</span>' : ''}${
-    p.nicknames?.length ? `<p class="hint">Also known as: ${esc(p.nicknames.join(', '))}</p>` : ''
-  }<p class="label-context">Tree labels are relative to this person.</p><div class="person-view-actions"><button id="sharePerson">Copy person link</button><button id="traceSelected" ${
-    !data.root || data.root === p.id ? 'hidden' : ''
-  }>Show path from starting person</button><button id="centerSelected">◎ Center person</button><button id="collapseSelected" ${
-    data.expanded.includes(p.id) ? '' : 'disabled'
-  }>− Collapse branch</button></div><p>${esc(p.bio || 'Their story is waiting to be told.')}</p>${
-    p.dateDetails?.birth || p.birthday
-      ? `<p>Born · ${esc(familyDateLabel(p.dateDetails?.birth || p.birthday))}</p>`
-      : ''
-  }${p.dateDetails?.death ? `<p>Died · ${esc(familyDateLabel(p.dateDetails.death))}</p>` : ''}${
-    p.location ? `<p>⌖ ${esc(p.location)}</p>` : ''
-  }<h3>Add to ${esc(p.name.split(/\s+/)[0])}’s family</h3><div class="quick-add">${[
-    'parent',
-    'sibling',
-    'spouse',
-    'child',
+  const birth = p.dateDetails?.birth || p.birthday || '';
+  let age = null;
+  if (!p.deceased && /^\d{4}-\d{2}-\d{2}$/.test(birth) && validFamilyDate(birth)) {
+    const [year, month, day] = birth.split('-').map(Number),
+      today = new Date();
+    age =
+      today.getFullYear() -
+      year -
+      (today.getMonth() + 1 < month || (today.getMonth() + 1 === month && today.getDate() < day)
+        ? 1
+        : 0);
+    if (age < 0) age = null;
+  }
+  const relatives = connections(p.id);
+  const relativeCard = (member, label = '') =>
+    `<button type="button" class="connection map-profile-relative" data-id="${esc(
+      member.id,
+    )}">${avatar(member)}<span><strong>${esc(displayName(member))}</strong>${
+      label ? `<small>${esc(label)}</small>` : ''
+    }</span><span class="map-profile-arrow" aria-hidden="true">↗</span></button>`;
+  const grouped = [
+    ['parent', 'Parents'],
+    ['sibling', 'Siblings'],
+    ['spouse', 'Spouse'],
+    ['child', 'Children'],
   ]
-    .map((type) => `<button data-add-family="${type}">＋ Add ${type}</button>`)
-    .join('')}</div><h3>Family Connections</h3>${
-    connections(p.id)
-      .map(
-        (c) =>
-          `<button class="connection" data-id="${c.id}">${esc(person(c.id).name)} <span>· ${
-            c.type
-          }</span></button>`,
-      )
-      .join('') || '<p>No connections added yet.</p>'
-  }<button id="editSelected">Edit person ↗</button>`;
+    .map(([kind, title]) => {
+      const members = relatives.filter((relative) => relative.type === kind);
+      return members.length
+        ? `<section class="map-profile-family-group"><h4>${title} <span>${
+            members.length
+          }</span></h4>${members
+            .map((relative) => relativeCard(person(relative.id)))
+            .join('')}</section>`
+        : '';
+    })
+    .join('');
+  const homes = p.locationHistory?.length || 0;
+  $('#details').innerHTML = `<div class="map-profile-header">${avatar(p)}<div><h2>${esc(
+    p.name,
+  )}</h2>${
+    p.deceased
+      ? '<span class="deceased-badge">Deceased</span>'
+      : age !== null
+      ? `<span class="map-profile-age">${age} years old</span>`
+      : ''
+  }${birth ? `<p>Born · ${esc(familyDateLabel(birth))}</p>` : ''}${
+    p.deceased && p.dateDetails?.death
+      ? `<p>Died · ${esc(familyDateLabel(p.dateDetails.death))}</p>`
+      : ''
+  }</div></div>
+    ${
+      p.nicknames?.length ? `<p class="hint">Also known as: ${esc(p.nicknames.join(', '))}</p>` : ''
+    }
+    <div class="map-profile-actions"><button id="editSelected" type="button">Edit Person ↗</button><button id="sharePerson" type="button">Copy Person Link ↗</button></div>
+    <p class="label-context">Tree labels are relative to this person.</p>
+    <div class="person-view-actions tree-profile-tools"><button id="traceSelected" ${
+      !data.root || data.root === p.id ? 'hidden' : ''
+    }>Show Path from Starting Person</button><button id="centerSelected">◎ Center Person</button><button id="collapseSelected" ${
+    data.expanded.includes(p.id) ? '' : 'disabled'
+  }>− Collapse Branch</button></div>
+    <section class="map-profile-locations"><h3>Locations</h3><dl><div><dt>Current Location</dt><dd>${esc(
+      p.location || 'Not added yet',
+    )}</dd></div><div><dt>Birthplace</dt><dd>${esc(
+    p.birthplace?.location || 'Not added yet',
+  )}</dd></div><div><dt>Places Lived</dt><dd>${homes} ${
+    homes === 1 ? 'past home' : 'past homes'
+  }</dd></div></dl><button type="button" id="treePersonPlaces">View Places Lived ↗</button></section>
+    <section class="map-profile-family"><h3>Family Connections <span>${
+      relatives.length
+    }</span></h3>${grouped || '<p class="hint">No connections added yet.</p>'}</section>
+    ${
+      p.bio?.trim()
+        ? `<section class="map-profile-story"><h3>About</h3><p>${esc(p.bio)}</p></section>`
+        : ''
+    }
+    <section class="tree-profile-add"><h3>Add to ${esc(
+      p.firstName || p.name.split(/\s+/)[0],
+    )}’s Family</h3><div class="quick-add">${['parent', 'sibling', 'spouse', 'child']
+    .map((type) => `<button type="button" data-add-family="${type}">＋ Add ${type}</button>`)
+    .join('')}</div></section>
+`;
+  $('#treePersonPlaces').onclick = () => {
+    rememberMapCamera();
+    mapCameraReady = false;
+    migrationPersonId = p.id;
+    showSection('map');
+    if (familyMapMode === 'history') renderMigrationView();
+    else setFamilyMapMode('history');
+  };
   document.querySelectorAll('.connection').forEach((b) => (b.onclick = () => expand(b.dataset.id)));
   $('#editSelected').onclick = () => {
     tab(true);
@@ -99,6 +160,12 @@ function renderSuggestions(reshuffle = false) {
 function setupSuggestionSearch() {
   const input = $('#suggestionSearch'),
     list = $('#suggestionMatches');
+  const clear = document.createElement('button');
+  clear.type = 'button'; clear.className = 'search-clear-button'; clear.textContent = '×';
+  clear.setAttribute('aria-label', 'Clear search'); clear.hidden = !input.value;
+  input.parentElement.classList.add('clearable-suggestion-search');
+  input.insertAdjacentElement('afterend', clear);
+  clear.onclick = () => { input.value = ''; search(); input.focus(); };
   let matches = [],
     active = -1;
   function close() {
@@ -118,6 +185,7 @@ function setupSuggestionSearch() {
     }
   }
   function search() {
+    clear.hidden = !input.value;
     const query = input.value.trim().toLocaleLowerCase();
     active = -1;
     input.removeAttribute('aria-activedescendant');
@@ -305,6 +373,7 @@ function savedSection() {
       'tree',
       'people',
       'timeline',
+      'families',
       'relationships',
       'map',
       'albums',
@@ -335,6 +404,7 @@ function showSection(section, { replace = false } = {}) {
       'tree',
       'people',
       'timeline',
+      'families',
       'relationships',
       'map',
       'albums',
@@ -345,6 +415,8 @@ function showSection(section, { replace = false } = {}) {
   rememberSection(section);
   ui.setSection(section);
   if (!restoringPageHistory) updatePageUrl(section, { replace });
+  $('#familiesPage').hidden = section !== 'families';
+  $('#familiesTab').classList.toggle('active', section === 'families');
   $('#overviewPage').hidden = section !== 'overview';
   $('#overviewTab').classList.toggle('active', section === 'overview');
   $('#recipesPage').hidden = section !== 'recipes';
@@ -370,6 +442,7 @@ function showSection(section, { replace = false } = {}) {
   } else if (section === 'recipes') renderRecipes();
   else if (section === 'albums') renderAlbums();
   else if (section === 'map') renderFamilyMap();
+  else if (section === 'families') ui.sync(data);
   else {
     render();
     fitGraph();
@@ -403,7 +476,16 @@ function sectionFromUrl(url = new URL(location.href)) {
     if (params.has(key)) return section;
   const page = params.get('page');
   if (page === 'reports') return 'overview';
-  return ['tree', 'people', 'timeline', 'relationships', 'map', 'albums', 'recipes'].includes(page)
+  return [
+    'tree',
+    'families',
+    'people',
+    'timeline',
+    'relationships',
+    'map',
+    'albums',
+    'recipes',
+  ].includes(page)
     ? page
     : null;
 }

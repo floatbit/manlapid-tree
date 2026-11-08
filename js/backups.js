@@ -18,6 +18,7 @@ async function exportFamily() {
     const backup = JSON.parse(
         JSON.stringify({
           format: 'kinfolk-v1',
+          familyGroups: data.familyGroups || [],
           people: data.people,
           links: data.links,
           milestones: data.milestones || [],
@@ -96,6 +97,14 @@ $('#familyBackup').onchange = async (e) => {
         data.people.push(p);
         ids.add(p.id);
       }
+    }
+    if (incoming.familyGroups !== undefined) {
+      if (!Array.isArray(incoming.familyGroups)) throw new Error('Invalid family groups.');
+      const existing = new Set((data.familyGroups || []).map((g) => g.id));
+      data.familyGroups = [
+        ...(data.familyGroups || []),
+        ...incoming.familyGroups.filter((g) => !existing.has(g.id)),
+      ];
     }
     const pairs = new Set(data.links.map((l) => [l.a, l.b].sort().join('|')));
     for (const l of incoming.links) {

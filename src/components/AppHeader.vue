@@ -1,6 +1,8 @@
 <script setup lang="js">
+import SearchField from './SearchField.vue';
+import { Search } from '@lucide/vue';
 import { activePage, ready, useRuntime } from '../ui/runtime.js';
-const links=[['treeTab','tree','Tree'],['timelineTab','timeline','Timeline'],['peopleTab','people','People'],['mapTab','map','Map'],['albumsTab','albums','Album'],['recipesTab','recipes','Recipes'],['overviewTab','overview','Reports']];
+const links=[['treeTab','tree','Tree'],['familiesTab','families','Family'],['peopleTab','people','People'],['timelineTab','timeline','Timeline'],['mapTab','map','Map'],['albumsTab','albums','Album'],['recipesTab','recipes','Recipes'],['overviewTab','overview','Reports']];
 </script>
 <template>
   <header>
@@ -20,8 +22,8 @@ const links=[['treeTab','tree','Tree'],['timelineTab','timeline','Timeline'],['p
     <div class="search">
       <label for="search">Find someone in your family</label>
       <div class="searchbox">
-        <span>⌕</span
-        ><input
+        <Search class="main-search-icon" :size="20" aria-hidden="true" />
+        <SearchField><input
           role="combobox"
           aria-autocomplete="list"
           aria-controls="searchMatches"
@@ -29,7 +31,7 @@ const links=[['treeTab','tree','Tree'],['timelineTab','timeline','Timeline'],['p
           id="search"
           placeholder="Type a name to begin…"
           autocomplete="off"
-        /><button id="searchGo">Search ↗</button>
+        /></SearchField><button id="searchGo">Search ↗</button>
       </div>
       <div id="results"></div>
     </div>

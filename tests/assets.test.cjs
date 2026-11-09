@@ -11,7 +11,7 @@ for (const file of scripts)
   new vm.Script(fs.readFileSync(path.join(root, file), 'utf8'), { filename: file });
 new vm.Script(require('./frontend-source.cjs')(), { filename: 'combined-runtime.js' });
 assert(scripts.indexOf('js/core.js') < scripts.indexOf('js/tree.js'));
-assert(html.includes('type="module" src="frontend/app.js"'));
+assert(/type="module" src="frontend\/app\.js(?:\?[^"]*)?"/.test(html));
 assert(
   fs.existsSync(path.join(root, 'frontend/app.js')),
   'Run npm run build before testing public assets',

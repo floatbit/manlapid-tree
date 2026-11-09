@@ -38,7 +38,7 @@ export const runtime = {
         );
       },
       transformIndexHtml(html) {
-        return html.replace('src="frontend/app.js"', 'src="/src/main.js"');
+        return html.replace(/src="frontend\/app\.js(?:\?[^"]*)?"/, 'src="/src/main.js"');
       },
     },
   ],

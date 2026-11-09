@@ -59,7 +59,6 @@ function startTreeDrag(event) {
   if (
     event.button !== 0 ||
     event.isPrimary === false ||
-    event.pointerType === 'touch' ||
     !graphLayout ||
     event.target.closest('button,a,input,textarea,select')
   )

@@ -1,20 +1,24 @@
 <script setup lang="js">
 import SearchField from './SearchField.vue';
-import { Search } from '@lucide/vue';
+import { Search, Menu, X } from '@lucide/vue';
+import { ref, watch } from 'vue';
 import { activePage, ready, useRuntime } from '../ui/runtime.js';
 const links=[['treeTab','tree','Tree'],['familiesTab','families','Family'],['peopleTab','people','People'],['timelineTab','timeline','Timeline'],['mapTab','map','Map'],['albumsTab','albums','Album'],['recipesTab','recipes','Recipes'],['overviewTab','overview','Reports']];
+const menuOpen = ref(false);
+watch(activePage, () => { menuOpen.value = false; });
 </script>
 <template>
   <header>
     <a class="brand" href="#" aria-label="Family tree home">✳</a>
-    <nav>
+    <button class="mobile-menu-toggle" type="button" :aria-expanded="menuOpen" aria-controls="mainNavigation" @click="menuOpen = !menuOpen"><component :is="menuOpen ? X : Menu" :size="20" aria-hidden="true" />{{ links.find(link => link[1] === activePage)?.[2] || 'Menu' }}</button>
+    <nav id="mainNavigation" aria-label="Main navigation" :class="{ 'mobile-menu-open': menuOpen }" @keydown.esc="menuOpen = false">
       <button
         v-for="[id, page, label] in links"
         :id="id"
         :disabled="!ready"
         :key="id"
         :class="{ active: activePage === page }"
-        @click="useRuntime()?.showSection(page)"
+        @click="menuOpen = false; useRuntime()?.showSection(page)"
       >
         {{ label }}
       </button>

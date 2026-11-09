@@ -4,6 +4,7 @@ import SearchField from '../components/SearchField.vue';
 import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import { family, activePage, useRuntime } from '../ui/runtime.js';
 import { defaultFamilyView, familyGenerationBands, familyGenerationTitle } from '../domain/family-view.js';
+import PersonPhotos from '../components/PersonPhotos.vue';
 import PersonAvatar from '../components/PersonAvatar.vue';
 import PersonAutocomplete from '../components/PersonAutocomplete.vue';
 const FAMILY_LAST_VIEW_KEY = 'kinfolk-family-last-view-v1';
@@ -321,6 +322,7 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
               </dl>
             </section>
             <p v-if="selectedPerson.bio">{{ selectedPerson.bio }}</p>
+            <PersonPhotos :person-id="selectedPerson.id" />
             <div class="family-person-actions">
               <button type="button" @click="api.openSavedFamilyTree(selected, visibleIds)">
                 Open Family Tree ↗</button

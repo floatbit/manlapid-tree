@@ -19,6 +19,8 @@ function renderDetails() {
   if (addFamily) $('#details').append(addFamily);
 }
 function renderDetailsContent() {
+  ui.unmountPersonPhotos('tree');
+  ui.sync(data);
   const p = person(data.selected);
   if (!p) {
     renderSuggestions();
@@ -92,6 +94,7 @@ function renderDetailsContent() {
   )}</dd></div><div><dt>Places Lived</dt><dd>${homes} ${
     homes === 1 ? 'past home' : 'past homes'
   }</dd></div></dl><button type="button" id="treePersonPlaces">View Places Lived ↗</button></section>
+    <div id="treePersonPhotos"></div>
     <section class="map-profile-family"><h3>Family Connections <span>${
       relatives.length
     }</span></h3>${grouped || '<p class="hint">No connections added yet.</p>'}</section>
@@ -106,6 +109,7 @@ function renderDetailsContent() {
     .map((type) => `<button type="button" data-add-family="${type}">＋ Add ${type}</button>`)
     .join('')}</div></section>
 `;
+  ui.mountPersonPhotos($('#treePersonPhotos'),p.id,'tree');
   $('#treePersonPlaces').onclick = () => {
     rememberMapCamera();
     mapCameraReady = false;

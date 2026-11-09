@@ -1,5 +1,6 @@
 import { shallowRef, createApp, nextTick } from 'vue';
 import PersonAutocomplete from '../components/PersonAutocomplete.vue';
+import PersonPhotos from '../components/PersonPhotos.vue';
 import ConnectionRow from '../components/ConnectionRow.vue';
 export const ready = shallowRef(false);
 export const family = shallowRef({
@@ -178,4 +179,15 @@ ui.setMilestonePeople = (ids, onChange) => {
 ui.changeMilestonePeople = (ids) => {
   milestoneParticipants.value = ids;
   onMilestonePeopleChange(ids);
+};
+
+const personPhotoApps=new Map();
+ui.unmountPersonPhotos = key => {
+  const app=personPhotoApps.get(key);
+  if(app){app.unmount();personPhotoApps.delete(key);}
+};
+ui.mountPersonPhotos = (host,personId,key) => {
+  ui.unmountPersonPhotos(key);
+  if(!host)return;
+  const app=createApp(PersonPhotos,{personId});app.mount(host);personPhotoApps.set(key,app);
 };

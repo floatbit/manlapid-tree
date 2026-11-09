@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { mount, flushPromises } from './mount-component.mjs';
 import { nextTick } from 'vue';
+import PersonPhotos from '../src/components/PersonPhotos.vue';
 import PersonAutocomplete from '../src/components/PersonAutocomplete.vue';
 import NicknameTags from '../src/components/NicknameTags.vue';
 import ReportsPage from '../src/pages/ReportsPage.vue';
@@ -293,6 +294,23 @@ ui.sync({
   assert.equal(lightbox.value.photos.length,0);
   assert(!wrapper.element.open,'Deleting the last photo closes the lightbox');
   globalThis.confirm=originalConfirm;wrapper.unmount();
+}
+{
+  const tagged=Object.fromEntries(Array.from({length:8},(_,index)=>['person-photo-'+index+'.jpg',['melissa']]));
+  tagged['someone-else.jpg']=['chris'];
+  ui.sync({...family.value,people,photoTags:tagged});
+  const wrapper=mount(PersonPhotos,{props:{personId:'melissa'}});
+  assert.equal(wrapper.findAll('.person-photos-grid img').length,6);
+  assert(wrapper.text().includes('Photos of Melissa'));
+  assert(wrapper.text().includes('View All Photos (8)'));
+  await wrapper.findAll('.person-photos-grid button')[1].trigger('click');await flushPromises();
+  assert.equal(calls.at(-1)[0].length,8);
+  assert.equal(calls.at(-1)[1],1);
+  assert(!calls.at(-1)[0].includes('someone-else.jpg'));
+  ui.sync({...family.value,photoTags:{'remaining.jpg':['melissa']}});await nextTick();
+  assert.equal(wrapper.findAll('.person-photos-grid img').length,1);
+  assert(wrapper.text().includes('View All Photos (1)'));
+  wrapper.unmount();
 }
 console.log(
   'Passed: Vue keyboard autocomplete, repeated selection, nickname tags, reports, and lightbox navigation/share.',

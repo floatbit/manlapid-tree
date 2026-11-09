@@ -245,6 +245,8 @@ function openFamilyMapGroup(group, marker, { restore = false } = {}) {
   persistMapView();
 }
 function showMapPerson(id) {
+  ui.unmountPersonPhotos('map');
+  ui.sync(data);
   if (familyMapMode === 'history') {
     migrationPersonId = id;
     renderMigrationView();
@@ -322,6 +324,7 @@ function showMapPerson(id) {
   )}</dd></div><div><dt>Places Lived</dt><dd>${homes} ${
     homes === 1 ? 'past home' : 'past homes'
   }</dd></div></dl><button type="button" id="mapPersonPlaces">View Places Lived ↗</button></section>
+    <div id="mapPersonPhotos"></div>
     <section class="map-profile-shared"><h3>At This Location <span>${shared.length}</span></h3>${
     shared
       .map((member) =>
@@ -337,6 +340,7 @@ function showMapPerson(id) {
         ? `<section class="map-profile-story"><h3>About</h3><p>${esc(p.bio)}</p></section>`
         : ''
     }`;
+  ui.mountPersonPhotos($('#mapPersonPhotos'),id,'map');
   $('#mapPersonPlaces').onclick = () => {
     migrationPersonId = id;
     setFamilyMapMode('history');
@@ -362,6 +366,7 @@ function showMapPerson(id) {
   $('#familyMapPeople').scrollTop = 0;
 }
 function closeMapPerson() {
+  ui.unmountPersonPhotos('map');
   mapSelectedPersonId = null;
   $('#familyMapPeople').classList.remove('showing-person');
   $('#mapSelectedPerson').hidden = true;
@@ -569,6 +574,7 @@ function fitMigrationPath() {
   familyMap.fitBounds(bounds, 60);
 }
 async function renderMigrationView() {
+  ui.unmountPersonPhotos('map');
   $('#familyMapPeople').classList.add('showing-person');
   if (migrationPersonId && !person(migrationPersonId)) migrationPersonId = null;
   const savedCamera = historyMapCameras.get(migrationPersonId);

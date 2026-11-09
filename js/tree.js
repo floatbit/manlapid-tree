@@ -859,7 +859,8 @@ function render({ expanding = false, centerId = null, fit = false } = {}) {
       kind = isRoot ? 'self' : branches.get(id) || 'sibling';
     const relation = labels.get(id) || 'Extended family';
     const existing = sameTree ? oldNodes.get(id) : null,
-      node = existing || document.createElement('button');
+      node = existing || document.createElement('div');
+    node.setAttribute('role', 'group');
     // Reuse cards to keep focus and avoid replaying entrances when selection changes.
     const currentMatrix = existing ? new DOMMatrixReadOnly(getComputedStyle(node).transform) : null;
     const before = existing
@@ -892,16 +893,20 @@ function render({ expanding = false, centerId = null, fit = false } = {}) {
         hiddenConnections ? `${hiddenConnections} more immediate family members. ` : ''
       }Reveal connections`,
     );
-    const contents = `${avatar(p)}${
+    const contents = `<button type="button" class="node-open" aria-label="${esc(displayName(p))}, ${esc(relation)}. Reveal connections">${avatar(p)}${
       p.deceased ? '<span class="node-deceased" aria-label="Deceased">Deceased</span>' : ''
     }${
       hiddenConnections
         ? `<span class="node-more-connections" aria-hidden="true">+${hiddenConnections}</span>`
         : ''
-    }<strong>${esc(displayName(p))}</strong><small>${relation}</small>`;
+    }<strong>${esc(displayName(p))}</strong><small>${relation}</small></button>${['parent','child','sibling','spouse'].map(type => `<button type="button" class="node-add-connection node-add-${type}" data-node-add="${type}" title="Add ${type} to ${esc(displayName(p))}" aria-label="Add ${type} to ${esc(displayName(p))}">＋</button>`).join('')}`;
     if (node.innerHTML !== contents) node.innerHTML = contents;
-    node.onclick = () => expand(id);
-    node.ondblclick = () => centerPerson(id);
+    node.onclick = (event) => {
+      const add=event.target.closest('[data-node-add]');
+      if(add) {event.stopPropagation();openFamilyDialog(id,add.dataset.nodeAdd);return;}
+      expand(id);
+    };
+    node.ondblclick = (event) => {if(!event.target.closest('[data-node-add]'))centerPerson(id);};
     node.title = hiddenConnections
       ? `Click to reveal ${hiddenConnections} more immediate family ${
           hiddenConnections === 1 ? 'member' : 'members'

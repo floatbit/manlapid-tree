@@ -2932,3 +2932,69 @@ input[type='search']:not(#search),
 #reportRandomPhoto [role=option].search-active,
 #reportRandomPhoto [role=option][aria-selected='true'] { background: #e0ead7; color: var(--green); box-shadow: inset 3px 0 0 #527e60; }
 #photoLightbox .lightbox-people [role=option][aria-selected='true'] { background: #405e4d; color: white; box-shadow: inset 3px 0 0 #9fc9ac; }
+
+/* Directional connection actions sit outside the card without affecting layout. */
+.node .node-open { display: contents; color: inherit; font: inherit; }
+.node .node-add-connection {
+  position: absolute; z-index: 5; width: 26px; height: 26px; min-width: 0;
+  display: grid; place-items: center; padding: 0; margin: 0;
+  border: 1px solid #c1ceba; border-radius: 50%; background: #fffefa;
+  color: #38634e; font: 600 18px/1 Manrope,sans-serif; box-shadow: 0 2px 8px #263c3620;
+  opacity: 0; pointer-events: none; transition: opacity .12s, background .12s;
+}
+.node:hover, .node:focus-within { z-index: 8; }
+.node:hover .node-add-connection, .node:focus-within .node-add-connection { opacity: 1; pointer-events: auto; }
+.node .node-add-parent { top: 67px; left: calc(50% - 13px); }
+.node .node-add-child { bottom: -13px; left: calc(50% - 13px); }
+.node .node-add-sibling { top: 99px; left: -13px; }
+.node .node-add-spouse { top: 99px; right: -13px; }
+.node .node-add-connection:hover, .node .node-add-connection:focus-visible { color: white; background: #38634e; outline: 2px solid #b5c6aa; outline-offset: 2px; }
+.node .node-open:focus-visible ~ .node-add-connection { opacity: 1; }
+@media (hover: none) { .node.selected .node-add-connection { opacity: 1; pointer-events: auto; } }
+.node .node-open { display: flex; position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; margin: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; flex-direction: column; align-items: center; justify-content: flex-start; }
+.node .node-open:hover { background: transparent; }
+.node .node-open:focus-visible { outline: 2px solid #8ca677; outline-offset: 4px; border-radius: 12px; }
+
+.node .node-add-connection {
+  width: 20px; height: 20px;
+  border-color: #c9d2c3;
+  background: #f7f8f2;
+  color: #85937c;
+  font-size: 14px; font-weight: 400;
+  box-shadow: none;
+}
+.node .node-add-parent { top: 70px; left: calc(50% - 10px); }
+.node .node-add-child { bottom: -10px; left: calc(50% - 10px); }
+.node .node-add-sibling { top: 102px; left: -10px; }
+.node .node-add-spouse { top: 102px; right: -10px; }
+.node:hover .node-add-connection { opacity: .7; }
+.node .node-add-connection:hover,
+.node .node-add-connection:focus-visible { opacity: 1; background: #e6edde; color: #38634e; border-color: #91a584; outline: none; }
+
+.person-tagged-photos { margin: 24px 0; }
+.person-tagged-photos h3 { font-size: 14px; line-height: 1.5; margin: 0 0 12px; }
+.person-tagged-photos h3 > span { font-size: 12px; font-weight: 400; color: var(--muted); margin-left: 5px; }
+.person-photos-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 7px; }
+:is(#details,#familyMapPeople,.family-person-sidebar) .person-photos-grid > button { display: block; width: 100%; aspect-ratio: 1; padding: 0; margin: 0; border: 0; border-radius: 8px; background: #edf2e8; overflow: hidden; }
+.person-photos-grid img { display: block; width: 100%; height: 100%; object-fit: cover; transition: opacity .15s; }
+.person-photos-grid button:hover img { opacity: .85; }
+:is(#details,#familyMapPeople,.family-person-sidebar) .person-photos-all { display: inline-block; width: auto; padding: 0; margin: 10px 0 0; border: 0; background: transparent; font-size: 12px; color: var(--green); }
+.person-photos-all:hover { text-decoration: underline; text-underline-offset: 3px; }
+.node .node-add-connection { width: 14px; height: 14px; font-size: 10px; }
+.node .node-add-parent { top: 73px; left: calc(50% - 7px); }
+.node .node-add-child { bottom: -7px; left: calc(50% - 7px); }
+.node .node-add-sibling { top: 105px; left: -7px; }
+.node .node-add-spouse { top: 105px; right: -7px; }
+#photoLightbox .lightbox-people {
+  width: min(1280px, calc(100% - 48px));
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+}
+#photoLightbox .lightbox-tag-editor { width: 100%; }
+#photoLightbox .lightbox-tag-field { flex: 1 1 auto; width: 100%; justify-content: flex-start; }
+#photoLightbox .lightbox-tag-field > .person-autocomplete { flex: 0 0 240px; width: 240px; max-width: 100%; }
+@media (max-width: 600px) {
+  #photoLightbox .lightbox-people { width: calc(100% - 20px); }
+}

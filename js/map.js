@@ -324,7 +324,6 @@ function showMapPerson(id) {
   )}</dd></div><div><dt>Places Lived</dt><dd>${homes} ${
     homes === 1 ? 'past home' : 'past homes'
   }</dd></div></dl><button type="button" id="mapPersonPlaces">View Places Lived ↗</button></section>
-    <div id="mapPersonPhotos"></div>
     <section class="map-profile-shared"><h3>At This Location <span>${shared.length}</span></h3>${
     shared
       .map((member) =>
@@ -335,6 +334,7 @@ function showMapPerson(id) {
     <section class="map-profile-family"><h3>Family Connections <span>${
       relatives.length
     }</span></h3>${grouped || '<p class="hint">No connections added yet.</p>'}</section>
+    <div id="mapPersonPhotos"></div>
     ${
       p.bio?.trim()
         ? `<section class="map-profile-story"><h3>About</h3><p>${esc(p.bio)}</p></section>`

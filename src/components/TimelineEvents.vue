@@ -1,10 +1,43 @@
 <script setup lang="js">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { family, timelineView, timelineQuery, useRuntime } from '../ui/runtime.js';
 import PersonAvatar from './PersonAvatar.vue';
 import MediaPreview from './MediaPreview.vue';
 import { ageAtPassing } from '../ui/age.js';
 const api=computed(useRuntime);
+const albumDialog = ref(null), albumPerson = ref(null), selectedAlbum = ref(''), albumBusy = ref(false), albumError = ref('');
+function birthAlbum(event) { return (family.value.albums || []).find(a => a.id === event.person.birthAlbumId); }
+const availableAlbums = computed(() => (family.value.albums || []).filter(a => !a.milestoneId && !(family.value.people || []).some(p => p.id !== albumPerson.value?.id && p.birthAlbumId === a.id)));
+async function openBirthAlbum(event) {
+  albumPerson.value = event.person;
+  selectedAlbum.value = event.person.birthAlbumId || '';
+  albumError.value = '';
+  try {
+    await api.value.loadFamilyAlbums();
+    albumDialog.value.showModal();
+  } catch { api.value.notify('Albums could not be loaded. Please try again.'); }
+}
+async function saveBirthAlbum() {
+  albumBusy.value = true;
+  try {
+    if (await api.value.attachBirthEventAlbum(albumPerson.value.id, selectedAlbum.value)) {
+      albumDialog.value.close();
+      api.value.notify(selectedAlbum.value ? 'Birth album attached' : 'Birth album removed');
+    }
+    else albumError.value = 'Album could not be attached. Please try again.';
+  } finally { albumBusy.value = false; }
+}
+function createBirthAlbum() {
+  const id = albumPerson.value.id;
+  albumDialog.value.close();
+  api.value.createBirthEventAlbum(id);
+}
+async function viewBirthAlbum(event) {
+  await api.value.loadFamilyAlbums();
+  const album = birthAlbum(event);
+  if (album?.photos.length) api.value.openPhotoLightbox(album.photos, 0, album.title);
+  else if (album) api.value.openAlbum(album.id);
+}
 const years=computed(()=>{
  const groups=new Map();
  for(const event of timelineView.value){const year=api.value.familyDateYear(event.date) || 'Date Unknown';if(!groups.has(year))groups.set(year,[]);groups.get(year).push(event);}
@@ -31,13 +64,15 @@ function marriagePeople(event) {
         <h2>{{ year }}</h2>
         <div class="birth-cards">
           <template v-for="event in items" :key="event.id">
-            <button
+            <article
               v-if="event.kind === 'birth' || event.kind === 'death'"
               class="birth-event"
               :id="event.kind === 'birth' ? 'timeline-birth-' + event.person.id : undefined"
               :data-timeline-icon="event.kind === 'birth' ? '🌱' : '🕯️'"
               :class="{ 'welcome-birth-event': event.kind === 'birth' }"
               @click="api.start(event.person.id)"
+              role="link" tabindex="0"
+              @keydown.enter.self="api.start(event.person.id)"
             >
               <PersonAvatar :person="event.person" /><span
                 ><small>{{
@@ -46,9 +81,13 @@ function marriagePeople(event) {
                 ><strong
                   >{{ api.displayName(event.person) }}
                   {{ event.kind === 'death' ? 'passed away' : 'was born' }}</strong
-                ><time>{{ api.familyDateLabel(event.date) }}<template v-if="event.kind === 'death' && ageAtPassing(event.person.dateDetails?.birth || event.person.birthday, event.date)"> · {{ ageAtPassing(event.person.dateDetails?.birth || event.person.birthday, event.date) }}</template></time></span
+                ><time>{{ api.familyDateLabel(event.date) }}<template v-if="event.kind === 'death' && ageAtPassing(event.person.dateDetails?.birth || event.person.birthday, event.date)"> · {{ ageAtPassing(event.person.dateDetails?.birth || event.person.birthday, event.date) }}</template></time>
+                <span v-if="event.kind === 'birth'" class="birth-album-actions" @click.stop>
+                  <button v-if="event.person.birthAlbumId" type="button" @click="viewBirthAlbum(event)">View Album<span v-if="birthAlbum(event)"> · {{ birthAlbum(event).photos.length }} photos</span> ↗</button>
+                  <button type="button" class="birth-album-edit" @click="openBirthAlbum(event)">{{ event.person.birthAlbumId ? 'Change Album' : 'Attach Album' }}</button>
+                </span></span
               ><span class="birth-arrow" aria-hidden="true">↗</span>
-            </button>
+            </article>
             <article
               v-else
               class="birth-event milestone-event"
@@ -68,7 +107,7 @@ function marriagePeople(event) {
               :data-timeline-icon="api.milestoneIcons[event.type] || '★'"
             >
               <span v-if="marriagePeople(event).length === 2" class="marriage-portraits">
-                <PersonAvatar v-for="person in marriagePeople(event)" :key="person.id" :person="person" />
+                <button v-for="person in marriagePeople(event)" :key="person.id" type="button" :aria-label="'Open ' + api.displayName(person) + ' in Tree'" @click="api.start(person.id)"><PersonAvatar :person="person" /></button>
               </span>
               <button
                 v-else-if="event.photos?.length"
@@ -107,4 +146,14 @@ function marriagePeople(event) {
       <p>{{ timelineQuery ? 'Try another name, event, place, or year.' : 'Add birthdays in People or record your first family milestone.' }}</p>
     </div>
   </div>
+  <dialog ref="albumDialog" class="birth-album-dialog" @cancel="albumBusy && $event.preventDefault()">
+    <form @submit.prevent="saveBirthAlbum">
+      <h2>Attach Birth Album</h2>
+      <p>{{ albumPerson ? api.displayName(albumPerson) : '' }} — Welcome to the Family</p>
+      <label>Album<select v-model="selectedAlbum" :disabled="albumBusy"><option value="">No Album</option><option v-for="album in availableAlbums" :key="album.id" :value="album.id">{{ album.title }}</option></select></label>
+      <button type="button" @click="createBirthAlbum" :disabled="albumBusy">＋ Create Album with Photos</button>
+      <p v-if="albumError" role="alert">{{ albumError }}</p>
+      <div class="birth-album-dialog-actions"><button type="submit" class="primary" :disabled="albumBusy">{{ albumBusy ? 'Saving…' : 'Save' }}</button><button type="button" @click="albumDialog.close()" :disabled="albumBusy">Cancel</button></div>
+    </form>
+  </dialog>
 </template>

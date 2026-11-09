@@ -414,3 +414,18 @@ console.log('Passed: newly revealed siblings expand away from the existing spous
   for (const [id, position] of after.positions) assert.deepEqual(again.positions.get(id), position);
 }
 console.log('Passed: a spouse sibling stays with the family during unrelated expansion.');
+// Two spouses connect to the shared person, never to each other.
+{
+  const links = [spouse('rosenda','zacarias'),spouse('rosenda','roberto'),parent('rosenda','ruby'),parent('zacarias','ruby')];
+  const tree = layout(['rosenda','zacarias','roberto','ruby'],links,'rosenda');
+  pair(tree,'rosenda','zacarias');
+  pair(tree,'rosenda','roberto');
+  const center=tree.positions.get('rosenda').x;
+  assert((tree.positions.get('zacarias').x-center)*(tree.positions.get('roberto').x-center)<0);
+  context.data.people.find(p=>p.id==='rosenda').currentSpouseId='zacarias';
+  const incremental=vm.runInContext('layoutFamily(data.visible)',context);
+  context.heartLayout=incremental;
+  const hearts=vm.runInContext('spouseHearts(heartLayout)',context);
+  assert.equal((hearts.match(/class="spouse-heart"/g)||[]).length,1,'Only the current spouse gets a heart');
+}
+console.log('Passed: shared spouse centered between two partners and heart shown only for current spouse.');

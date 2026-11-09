@@ -104,6 +104,7 @@ import NicknameTags from '../components/NicknameTags.vue';
                   add more later.
                 </p>
                 <div id="relations"></div>
+                <label>Current Spouse (Heart in Tree)<select id="currentSpouse"><option value="">Automatic</option></select></label>
                 <button type="button" id="addRelation">＋ Add connection</button
                 ><button type="button" id="editSiblingGroup">Manage sibling group</button>
               </details>

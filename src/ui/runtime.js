@@ -75,9 +75,9 @@ export const lightbox = shallowRef({
   title: 'Family Pictures',
   returnFocus: null,
 });
-ui.openLightbox = async (photos, index, title) => {
+ui.openLightbox = async (photos, index, title, personId = null) => {
   if (!photos?.length) return;
-  lightbox.value = { photos: [...photos], index, title, returnFocus: document.activeElement };
+  lightbox.value = { photos: [...photos], index, title, personId, returnFocus: document.activeElement };
   await nextTick();
   const dialog = document.querySelector('#photoLightbox');
   if (!dialog.open) dialog.showModal();

@@ -14,6 +14,20 @@ async function copyDirectLink(values) {
 }
 async function openSharedLink() {
   const params = new URLSearchParams(location.hash.slice(1));
+  if (params.has('photosOf')) {
+    const id = params.get('photosOf'), p = person(id);
+    if (!p) { notify('This person is no longer available.'); return; }
+    try {
+      await loadFamilyAlbums();
+      const photos = Object.entries(data.photoTags || {}).filter(([photo, ids]) => ids.includes(id) && !/\.(mp4|mov)$/i.test(photo)).map(([photo]) => photo);
+      start(id);
+      if (!photos.length) { notify('No tagged photos are available for this person.'); return; }
+      const index = photos.indexOf(params.get('media'));
+      openPhotoLightbox(photos, Math.max(0,index), 'Photos of ' + displayName(p), id);
+      if (params.has('media') && index < 0) notify('The linked photo is no longer available. Showing their other photos.');
+    } catch (error) { notify(error.message); }
+    return;
+  }
   if (params.has('recipe')) {
     try {
       await ensureCollection('recipes');

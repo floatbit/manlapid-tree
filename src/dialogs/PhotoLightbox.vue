@@ -9,6 +9,7 @@ const isVideo=computed(()=>/\.(mp4|mov)$/i.test(media.value || '') || /^data:vid
 function openPerson(id) {if(canLeave())useRuntime().openTaggedPerson(id);}
 function canLeave() {return !deleting.value && !tagPicker.value?.saving;}
 const owner=computed(()=>{
+  if(lightbox.value.personId) return {photosOf:lightbox.value.personId,media:media.value};
   const album=(family.value.albums || []).find((a)=>a.photos?.includes(media.value));
   if(album) return {album:album.id,media:media.value};
   const recipe=(family.value.recipes || []).find((r)=>r.photos?.includes(media.value));

@@ -32,7 +32,7 @@ export const runtime = {
  upcomingAnniversaries, sortedAlbums, milestoneMediaCount,
  isMilestoneVideo, showSection, edit, selectPersonFromDirectory, openMilestone,
  deletePhotoFromLightbox, savePhotoPeople, openTaggedPerson, openAlbum, openRecipe, closeRecipe, editRecipe, recipeCategories, openPhotoLightbox, copyDirectLink, notify,
- updatePersonUnsaved, loadFamilyAlbums, resizePhoto, saveFamilyGroup, deleteFamilyGroup, openSavedFamilyTree, openFamilyMapLocation,
+ updatePersonUnsaved, loadFamilyAlbums, attachBirthEventAlbum, createBirthEventAlbum, resizePhoto, saveFamilyGroup, deleteFamilyGroup, openSavedFamilyTree, openFamilyMapLocation,
  initialize: connectDatabase,
 };\n`
         );

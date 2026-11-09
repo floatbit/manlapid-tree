@@ -1,3 +1,18 @@
+let birthAlbumPersonId = null;
+async function attachBirthEventAlbum(personId, albumId) {
+  return albumRequest({ action: 'attach_birth_album', personId, albumId });
+}
+async function createBirthEventAlbum(personId) {
+  await loadFamilyAlbums();
+  const p = person(personId);
+  if (!p) return;
+  openAlbum();
+  birthAlbumPersonId = personId;
+  $('#albumTitle').value = displayName(p) + ' — Welcome to the Family';
+  const birth = p.dateDetails?.birth || p.birthday || '';
+  $('#albumDate').value = /^\d{4}-\d{2}-\d{2}$/.test(birth) ? birth : '';
+  $('#albumMilestoneLink').textContent = 'Birth album for ' + displayName(p);
+}
 let albumDraftPhotos = [],
   albumUploadSession = 0,
   albumUploading = false;
@@ -35,6 +50,7 @@ function openAlbum(id) {
   if (collectionRevisions.get('albums') !== sharedRevision)
     return withCollection('albums', () => openAlbum(id));
   const album = (data.albums || []).find((a) => a.id === id);
+  birthAlbumPersonId = null;
   albumUploadSession++;
   albumUploading = false;
   $('#albumForm').reset();
@@ -62,6 +78,8 @@ function openAlbum(id) {
       openMilestone(event.id);
     };
     link.append(button);
+  } else if (album?.birthPersonId && person(album.birthPersonId)) {
+    link.textContent = 'Birth album for ' + displayName(person(album.birthPersonId));
   } else if ((data.familyGroups || []).some(g => g.albumId === album?.id)) {
     link.textContent = 'Family album: ' + data.familyGroups.filter(g => g.albumId === album.id).map(g => g.name).join(', ');
   } else
@@ -108,7 +126,7 @@ $('#albumForm').onsubmit = async (event) => {
     description: $('#albumDescription').value.trim(),
     photos: [...albumDraftPhotos],
   };
-  if (await albumRequest({ action: 'save_album', album })) {
+  if (await albumRequest({ action: 'save_album', album, ...(birthAlbumPersonId ? { birthPersonId: birthAlbumPersonId } : {}) })) {
     $('#albumDialog').close();
     notify('Album saved');
   }
@@ -214,7 +232,7 @@ function populateMilestoneAlbums(event) {
   $('#milestoneAlbum').innerHTML =
     '<option value="">No album / create one from uploaded photos</option>' +
     (data.albums || [])
-      .filter((a) => !a.milestoneId || a.milestoneId === event?.id)
+      .filter((a) => !a.birthPersonId && (!a.milestoneId || a.milestoneId === event?.id))
       .map((a) => `<option value="${esc(a.id)}">${esc(a.title)}</option>`)
       .join('');
   $('#milestoneAlbum').value = event?.albumId || '';

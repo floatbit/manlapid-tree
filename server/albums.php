@@ -1,10 +1,24 @@
 <?php
 require_once __DIR__.'/media.php';
+function attachBirthAlbum(PDO $db,string $personId,string $albumId): void {
+    $query=$db->prepare('SELECT 1 FROM family_people WHERE id=?');$query->execute([$personId]);
+    if(!$query->fetchColumn())throw new InvalidArgumentException('This person no longer exists.');
+    if($albumId!==''){
+        $query=$db->prepare('SELECT 1 FROM family_albums WHERE id=?');$query->execute([$albumId]);
+        if(!$query->fetchColumn())throw new InvalidArgumentException('This album no longer exists.');
+        $query=$db->prepare('SELECT 1 FROM family_milestones WHERE album_id=?');$query->execute([$albumId]);
+        $used=$query->fetchColumn();
+        $query=$db->prepare('SELECT 1 FROM family_people WHERE birth_album_id=? AND id<>?');$query->execute([$albumId,$personId]);
+        if($used||$query->fetchColumn())throw new InvalidArgumentException('This album is already attached to another timeline entry.');
+    }
+    $db->prepare('UPDATE family_people SET birth_album_id=? WHERE id=?')->execute([$albumId?:null,$personId]);
+}
 function familyAlbums(PDO $db): array {
     $albums=$db->query("SELECT id,title,COALESCE(album_date,'') AS date,description FROM family_albums ORDER BY album_date DESC,title,id")->fetchAll();$photos=[];
     foreach(familyMediaRows($db) as $row)if($row['owner_type']==='album')$photos[$row['owner_id']][]=$row['file_path'];
+    $birthLinks=[];foreach($db->query('SELECT id,birth_album_id FROM family_people WHERE birth_album_id IS NOT NULL')->fetchAll() as $person)$birthLinks[$person['birth_album_id']]=$person['id'];
     $links=[];foreach($db->query('SELECT id,album_id FROM family_milestones WHERE album_id IS NOT NULL')->fetchAll() as $event)$links[$event['album_id']]=$event['id'];
-    foreach($albums as &$album){$album['photos']=$photos[$album['id']]??[];$album['milestoneId']=$links[$album['id']]??null;}unset($album);return $albums;
+    foreach($albums as &$album){$album['photos']=$photos[$album['id']]??[];$album['milestoneId']=$links[$album['id']]??null;$album['birthPersonId']=$birthLinks[$album['id']]??null;}unset($album);return $albums;
 }
 function validateAlbumReference(PDO $db,string $path,string $albumId): void {
     if(!str_starts_with($path,'uploads/')){validateStoredImage($path,'albums',$albumId);return;}

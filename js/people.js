@@ -91,6 +91,8 @@ function edit(id, { updateUrl = true } = {}) {
   portraitPreviewVersion++;
   const p = person(id);
   $('#personForm').reset();
+  $('#currentSpouse').innerHTML = '<option value="">Automatic</option>' + (p ? connectionsDirect(id).filter(c => c.type === 'spouse').map(c => `<option value="${esc(c.id)}">${esc(displayName(person(c.id)))}</option>`).join('') : '');
+  $('#currentSpouse').value = p?.currentSpouseId || '';
   $('#personId').value = p?.id || '';
   $('#deceased').checked = !!p?.deceased;
   $('#nicknames').value = JSON.stringify(p?.nicknames || []);
@@ -167,6 +169,8 @@ $('#personForm').onsubmit = async (event) => {
     name,
     firstName,
     nicknames: readPersonNicknames(),
+    birthAlbumId: person(id)?.birthAlbumId || '',
+    currentSpouseId: $('#currentSpouse').value,
     middleName,
     lastName,
     photo,

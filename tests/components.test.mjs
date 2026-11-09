@@ -137,6 +137,15 @@ ui.sync({
   assert.equal(wrapper.find('#lightboxCounter').text(), '1 / 2');
   await wrapper.find('#shareLightbox').trigger('click');
   assert.equal(calls.at(-1).album, 'a');
+  await ui.openLightbox(['photo1.jpg','photo2.jpg'],1,'Photos of Melissa','melissa');
+  await flushPromises();
+  await wrapper.find('#shareLightbox').trigger('click');
+  assert.deepEqual(calls.at(-1),{photosOf:'melissa',media:'photo2.jpg'});
+  await wrapper.find('#lightboxPrevious').trigger('click');
+  await wrapper.find('#shareLightbox').trigger('click');
+  assert.deepEqual(calls.at(-1),{photosOf:'melissa',media:'photo1.jpg'});
+  await ui.openLightbox(['photo1.jpg','photo2.jpg'],0,'Christmas');
+  await flushPromises();
   assert(wrapper.find('#photoPeopleSearch').element,'Tag search is available immediately');
   await wrapper.find('#photoPeopleSearch').setValue('mimi');
   await wrapper.find('#photoPeopleSearch').trigger('keydown',{key:'ArrowRight'});
@@ -296,16 +305,17 @@ ui.sync({
   globalThis.confirm=originalConfirm;wrapper.unmount();
 }
 {
-  const tagged=Object.fromEntries(Array.from({length:8},(_,index)=>['person-photo-'+index+'.jpg',['melissa']]));
+  const tagged=Object.fromEntries(Array.from({length:11},(_,index)=>['person-photo-'+index+'.jpg',['melissa']]));
   tagged['someone-else.jpg']=['chris'];
   ui.sync({...family.value,people,photoTags:tagged});
   const wrapper=mount(PersonPhotos,{props:{personId:'melissa'}});
-  assert.equal(wrapper.findAll('.person-photos-grid img').length,6);
+  assert.equal(wrapper.findAll('.person-photos-grid img').length,9);
   assert(wrapper.text().includes('Photos of Melissa'));
-  assert(wrapper.text().includes('View All Photos (8)'));
+  assert(wrapper.text().includes('View All Photos (11)'));
   await wrapper.findAll('.person-photos-grid button')[1].trigger('click');await flushPromises();
-  assert.equal(calls.at(-1)[0].length,8);
+  assert.equal(calls.at(-1)[0].length,11);
   assert.equal(calls.at(-1)[1],1);
+  assert.equal(calls.at(-1)[3],'melissa','Photo collection retains person context');
   assert(!calls.at(-1)[0].includes('someone-else.jpg'));
   ui.sync({...family.value,photoTags:{'remaining.jpg':['melissa']}});await nextTick();
   assert.equal(wrapper.findAll('.person-photos-grid img').length,1);

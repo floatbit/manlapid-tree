@@ -1,8 +1,8 @@
 function wrappedPhotoIndex(index, total) {
   return total ? ((index % total) + total) % total : 0;
 }
-function openPhotoLightbox(photos, index = 0, title = 'Family pictures') {
-  ui.openLightbox(photos, wrappedPhotoIndex(index, photos?.length || 0), title);
+function openPhotoLightbox(photos, index = 0, title = 'Family pictures', personId = null) {
+  ui.openLightbox(photos, wrappedPhotoIndex(index, photos?.length || 0), title, personId);
 }
 
 async function savePhotoPeople(photo, people) {

@@ -61,6 +61,8 @@ function familyDatabase(): PDO {
     if(!$db->query("SHOW COLUMNS FROM family_people LIKE 'nicknames'")->fetch())$db->exec("ALTER TABLE family_people ADD nicknames TEXT NULL");
     if(!$db->query("SHOW COLUMNS FROM family_people LIKE 'date_details'")->fetch())$db->exec("ALTER TABLE family_people ADD date_details TEXT NULL");
     if(!$db->query("SHOW COLUMNS FROM family_people LIKE 'deceased'")->fetch())$db->exec("ALTER TABLE family_people ADD deceased TINYINT(1) NOT NULL DEFAULT 0");
+    if(!$db->query("SHOW COLUMNS FROM family_people LIKE 'birth_album_id'")->fetch())$db->exec("ALTER TABLE family_people ADD birth_album_id VARCHAR(64) NULL");
+    if(!$db->query("SHOW COLUMNS FROM family_people LIKE 'current_spouse_id'")->fetch())$db->exec("ALTER TABLE family_people ADD current_spouse_id VARCHAR(64) NULL");
     require_once __DIR__.'/media.php';
     initializeFamilyMedia($db);
     require_once __DIR__.'/albums.php';

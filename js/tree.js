@@ -20,6 +20,7 @@ function expand(id, { fit = false } = {}) {
   if (!data.expanded.includes(id)) data.expanded.push(id);
   save();
   render({ expanding: !fit, centerId: fit ? null : id, fit });
+  $('#details').scrollTop = 0;
 }
 function start(id) {
   $('#familiesPage').hidden = true;
@@ -132,6 +133,16 @@ reducedMotion.addEventListener('change', () => {
   if (reducedMotion.matches) for (const animation of treeAnimations) animation.cancel();
 });
 function layoutFamily(ids, previous = null) {
+  // Keep a person with two spouses between them, rather than implying a spouse chain.
+  const orderSpouses = (unit) => {
+    if (unit.length !== 3) return unit;
+    const center = unit.find(id => connectionsDirect(id).filter(c => c.type === 'spouse' && unit.includes(c.id)).length === 2);
+    if (!center) return unit;
+    const others = unit.filter(id => id !== center);
+    if (person(center)?.currentSpouseId === others[1]) others.reverse();
+    unit.splice(0, unit.length, others[0], center, others[1]);
+    return unit;
+  };
   const root = ids.includes(data.root) ? data.root : ids[0],
     visible = new Set(ids),
     levels = new Map([[root, 0]]),
@@ -247,7 +258,7 @@ function layoutFamily(ids, previous = null) {
           }
         if (!changed) break;
       }
-      group.splice(0, group.length, ...units.flat());
+      group.splice(0, group.length, ...units.map(orderSpouses).flat());
     }
     blocks.set(level, sets);
   }
@@ -386,6 +397,7 @@ function layoutFamily(ids, previous = null) {
                 Number(previous.positions.has(b)) - Number(previous.positions.has(a)) ||
                 anchor(a) - anchor(b),
             );
+          couples.forEach(orderSpouses);
           couples.sort((a, b) => anchor(a[0]) - anchor(b[0]));
           const members = couples.flat();
           const established = members.filter((id) => previous.positions.has(id));
@@ -670,6 +682,8 @@ function spouseHearts(layout) {
     for (const connection of connectionsDirect(id)) {
       const b = layout.positions.get(connection.id);
       if (connection.type !== 'spouse' || !b) continue;
+      const currentA = person(id)?.currentSpouseId, currentB = person(connection.id)?.currentSpouseId;
+      if ((currentA && currentA !== connection.id) || (currentB && currentB !== id)) continue;
       const key = [id, connection.id].sort().join('|');
       if (seen.has(key)) continue;
       seen.add(key);

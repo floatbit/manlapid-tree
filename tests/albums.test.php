@@ -12,6 +12,14 @@ try{
  $db->beginTransaction();$events=[['id'=>'event','title'=>'Christmas 2024','date'=>'2024-12-25','description'=>'','albumId'=>$album['id'],'photos'=>[$photo]]];prepareMilestoneAlbums($db,$events);syncFamilyMedia($db,[['id'=>'p','photo'=>'']],$events);$db->commit();verifyAlbum(count(familyMediaRows($db))===1,'Milestone editor updates linked album');
  $people=[];$events=[['id'=>'event','albumId'=>$album['id']]];hydrateFamilyMedia($db,$people,$events);verifyAlbum($events[0]['photos']===[$photo],'Timeline reads linked album');
  $db->exec("DELETE FROM family_milestones WHERE id='event'");syncFamilyMedia($db,[['id'=>'p','photo'=>'']],[]);$albums=familyAlbums($db);$preserved=array_values(array_filter($albums,fn($a)=>$a['id']===$album['id']))[0];verifyAlbum($preserved['milestoneId']===null&&count($preserved['photos'])===1,'Deleting milestone preserves independent album');
+ attachBirthAlbum($db,'p','independent');
+ verifyAlbum($db->query("SELECT birth_album_id FROM family_people WHERE id='p'")->fetchColumn()==='independent','Birth album persisted');
+ verifyAlbum(array_values(array_filter(familyAlbums($db),fn($a)=>$a['id']==='independent'))[0]['birthPersonId']==='p','Birth link in album snapshot');
+ $db->exec("INSERT INTO family_people (id,name,photo,bio,location) VALUES ('q','Other','','','')");
+ try{attachBirthAlbum($db,'q','independent');throw new RuntimeException('Reused birth album accepted');}catch(InvalidArgumentException $expected){}
+ $db->exec("UPDATE family_people SET name='Renamed',birthday='1940-01-01' WHERE id='p'");
+ verifyAlbum($db->query("SELECT birth_album_id FROM family_people WHERE id='p'")->fetchColumn()==='independent','Name/date changes keep birth album');
+ attachBirthAlbum($db,'p','');verifyAlbum($db->query("SELECT birth_album_id FROM family_people WHERE id='p'")->fetchColumn()===null,'Detach birth album');
  $before=count($albums);initializeFamilyAlbums($db);verifyAlbum(count(familyAlbums($db))===$before,'Migration idempotent');
  echo "Passed: migration titles/dates/links, stable media IDs/captions/order, duplicate images, legacy paths, undated independent albums, milestone editing and timeline reads, milestone deletion and migration idempotence.\n";
 }finally{if($db)$db->exec("DROP DATABASE `$name`");if(is_dir($root)){$files=new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root,FilesystemIterator::SKIP_DOTS),RecursiveIteratorIterator::CHILD_FIRST);foreach($files as $f)$f->isDir()?rmdir($f->getPathname()):unlink($f->getPathname());rmdir($root);}}

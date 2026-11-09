@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { family, timelineView, timelineQuery, useRuntime } from '../ui/runtime.js';
 import PersonAvatar from './PersonAvatar.vue';
 import MediaPreview from './MediaPreview.vue';
+import { ageAtPassing } from '../ui/age.js';
 const api=computed(useRuntime);
 const years=computed(()=>{
  const groups=new Map();
@@ -14,6 +15,11 @@ function yearGap(index) {
   return typeof current === 'number' && typeof previous === 'number' ? current - previous : 0;
 }
 function names(event) {return (event.participants || []).map((id)=>family.value.people.find((p)=>p.id === id)).filter(Boolean).map((p)=>api.value.displayName(p)).join(', ');}
+function marriagePeople(event) {
+  return event.type === 'marriage'
+    ? (event.participants || []).map(id => family.value.people.find(p => p.id === id)).filter(Boolean).slice(0, 2)
+    : [];
+}
 </script>
 <template>
   <div id="timelineEvents">
@@ -29,7 +35,7 @@ function names(event) {return (event.participants || []).map((id)=>family.value.
               v-if="event.kind === 'birth' || event.kind === 'death'"
               class="birth-event"
               :id="event.kind === 'birth' ? 'timeline-birth-' + event.person.id : undefined"
-              :data-timeline-icon="event.kind === 'birth' ? '🌱' : '✧'"
+              :data-timeline-icon="event.kind === 'birth' ? '🌱' : '🕯️'"
               :class="{ 'welcome-birth-event': event.kind === 'birth' }"
               @click="api.start(event.person.id)"
             >
@@ -40,7 +46,7 @@ function names(event) {return (event.participants || []).map((id)=>family.value.
                 ><strong
                   >{{ api.displayName(event.person) }}
                   {{ event.kind === 'death' ? 'passed away' : 'was born' }}</strong
-                ><time>{{ api.familyDateLabel(event.date) }}</time></span
+                ><time>{{ api.familyDateLabel(event.date) }}<template v-if="event.kind === 'death' && ageAtPassing(event.person.dateDetails?.birth || event.person.birthday, event.date)"> · {{ ageAtPassing(event.person.dateDetails?.birth || event.person.birthday, event.date) }}</template></time></span
               ><span class="birth-arrow" aria-hidden="true">↗</span>
             </button>
             <article
@@ -61,8 +67,11 @@ function names(event) {return (event.participants || []).map((id)=>family.value.
               }"
               :data-timeline-icon="api.milestoneIcons[event.type] || '★'"
             >
+              <span v-if="marriagePeople(event).length === 2" class="marriage-portraits">
+                <PersonAvatar v-for="person in marriagePeople(event)" :key="person.id" :person="person" />
+              </span>
               <button
-                v-if="event.photos?.length"
+                v-else-if="event.photos?.length"
                 class="milestone-gallery"
                 :aria-label="`View ${event.photos.length} media items from ${event.title}`"
                 @click="api.openPhotoLightbox(event.photos, 0, event.title)"

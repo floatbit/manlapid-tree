@@ -1832,6 +1832,26 @@ gmp-place-autocomplete {
 #timeline .birth-event.marriage-event::before {
   font-size: 23px;
 }
+#timeline .marriage-portraits { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; width: 74px; }
+#timeline .marriage-portraits .avatar { width: 68px; height: 68px; flex-shrink: 0; border: 3px solid var(--paper); object-fit: cover; }
+#timeline .marriage-portraits .avatar + .avatar { margin-top: -18px; }
+#timeline .birth-event {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr) auto;
+  column-gap: 20px;
+  padding: 22px;
+}
+#timeline .birth-event > :first-child { justify-self: center; }
+#timeline .birth-event > .milestone-details { width: 100%; }
+@media (max-width: 650px) {
+  #timeline .marriage-portraits { width: 52px; }
+  #timeline .marriage-portraits .avatar { width: 50px; height: 50px; }
+  #timeline .birth-event {
+    grid-template-columns: 52px minmax(0, 1fr) auto;
+    column-gap: 12px;
+    padding: 15px;
+  }
+}
 
 #timeline .birth-event.welcome-birth-event::before {
   font-size: 12.512px;
@@ -2940,17 +2960,19 @@ input[type='search']:not(#search),
   display: grid; place-items: center; padding: 0; margin: 0;
   border: 1px solid #c1ceba; border-radius: 50%; background: #fffefa;
   color: #38634e; font: 600 18px/1 Manrope,sans-serif; box-shadow: 0 2px 8px #263c3620;
-  opacity: 0; pointer-events: none; transition: opacity .12s, background .12s;
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: opacity .12s, visibility 0s, background .12s;
 }
 .node:hover, .node:focus-within { z-index: 8; }
-.node:hover .node-add-connection, .node:focus-within .node-add-connection { opacity: 1; pointer-events: auto; }
+.node:hover .node-add-connection { opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 2s, 2s, 0s; }
+.node:has(:focus-visible) .node-add-connection { opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; }
 .node .node-add-parent { top: 67px; left: calc(50% - 13px); }
 .node .node-add-child { bottom: -13px; left: calc(50% - 13px); }
 .node .node-add-sibling { top: 99px; left: -13px; }
 .node .node-add-spouse { top: 99px; right: -13px; }
 .node .node-add-connection:hover, .node .node-add-connection:focus-visible { color: white; background: #38634e; outline: 2px solid #b5c6aa; outline-offset: 2px; }
 .node .node-open:focus-visible ~ .node-add-connection { opacity: 1; }
-@media (hover: none) { .node.selected .node-add-connection { opacity: 1; pointer-events: auto; } }
+@media (hover: none) { .node.selected .node-add-connection { opacity: 1; visibility: visible; pointer-events: auto; transition-delay: 0s; } }
 .node .node-open { display: flex; position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; margin: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; flex-direction: column; align-items: center; justify-content: flex-start; }
 .node .node-open:hover { background: transparent; }
 .node .node-open:focus-visible { outline: 2px solid #8ca677; outline-offset: 4px; border-radius: 12px; }

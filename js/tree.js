@@ -662,6 +662,23 @@ function familyLines(layout) {
     )
     .join('');
 }
+function spouseHearts(layout) {
+  const seen = new Set(), hearts = [];
+  for (const id of data.visible) {
+    const a = layout.positions.get(id);
+    if (!a) continue;
+    for (const connection of connectionsDirect(id)) {
+      const b = layout.positions.get(connection.id);
+      if (connection.type !== 'spouse' || !b) continue;
+      const key = [id, connection.id].sort().join('|');
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const x = (a.x + b.x) / 2, y = Math.max(a.y, b.y) + 36;
+      hearts.push(`<g class="spouse-heart" transform="translate(${x} ${y})" pointer-events="none" aria-label="Spouse connection"><circle r="9" fill="#faf9f6"/><text text-anchor="middle" dominant-baseline="central" fill="#587653" font-size="16" font-family="Arial, sans-serif">♥</text></g>`);
+    }
+  }
+  return hearts.join('');
+}
 function setGraphScale(scale, { animate = true, fromTransform = null, manual = false } = {}) {
   if (!graphLayout) return;
   const g = $('#graph'),
@@ -950,7 +967,7 @@ function render({ expanding = false, centerId = null, fit = false } = {}) {
   const svg = $('#lines');
   svg.setAttribute('width', width);
   svg.setAttribute('height', height);
-  svg.innerHTML = familyLines(graphLayout) + relationshipPathLines(graphLayout);
+  svg.innerHTML = familyLines(graphLayout) + relationshipPathLines(graphLayout) + spouseHearts(graphLayout);
   animateFamilyLines(sameTree ? oldLines : new Map());
   const layoutChanged =
     !sameTree ||

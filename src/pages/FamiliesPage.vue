@@ -2,7 +2,7 @@
 import MediaPreview from '../components/MediaPreview.vue';
 import SearchField from '../components/SearchField.vue';
 import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue';
-import { family, activePage, useRuntime } from '../ui/runtime.js';
+import { family, activePage, useRuntime, canEdit } from '../ui/runtime.js';
 import { defaultFamilyView, familyGenerationBands, familyGenerationTitle } from '../domain/family-view.js';
 import PersonPhotos from '../components/PersonPhotos.vue';
 import PersonAvatar from '../components/PersonAvatar.vue';
@@ -69,6 +69,7 @@ function addParent(p) {
   children.value = [...new Set([...children.value, ...recordedChildren(parents.value)])];
 }
 function edit(group = null) {
+  if (!canEdit.value) return;
   editSession.value++;
   draftId.value = group?.id || ''; name.value = group?.name || ''; albumId.value = group?.albumId || '';
   draftPhotos.value=[];photosDirty.value=false;processingPhotos.value=false;
@@ -95,6 +96,7 @@ watch(activePage, readRoute);
 onMounted(() => {readRoute(); window.addEventListener('popstate',readRoute); window.addEventListener('hashchange',readRoute);});
 onBeforeUnmount(() => {window.removeEventListener('popstate',readRoute); window.removeEventListener('hashchange',readRoute);});
 async function save() {
+  if (!canEdit.value) return;
   if (saving.value || processingPhotos.value || loadingPhotos.value) return;
   if (!parents.value.length) {error.value='Choose at least one parent.';return;}
   saving.value=true; error.value='';
@@ -110,6 +112,7 @@ async function save() {
   } catch(e) {error.value=e.message;} finally {saving.value=false;}
 }
 async function remove() {
+  if (!canEdit.value) return;
   if (!selected.value || !confirm('Delete this saved family group? People and relationships will remain.')) return;
   try {await api.value.deleteFamilyGroup(selected.value.id);select(null);api.value.notify('Family deleted');}catch(e){api.value.notify(e.message);}
 }
@@ -127,7 +130,7 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
         <h1>Our Families.</h1>
         <p>Parents, children, and the generations that connect them.</p>
       </div>
-      <button type="button" class="primary" @click="edit()" :disabled="!api">
+      <button v-if="canEdit" type="button" class="primary" @click="edit()" :disabled="!api">
         ＋ Create Family
       </button>
     </div>
@@ -171,7 +174,7 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
         <span aria-hidden="true">⌂</span>
         <h2>Every Family Has a Story.</h2>
         <p>Create a family group by choosing its parents and children.</p>
-        <button type="button" @click="edit()">Create Your First Family ↗</button>
+        <button v-if="canEdit" type="button" @click="edit()">Create Your First Family ↗</button>
       </div>
       <p v-else-if="!filtered.length" class="hint">No families match that search.</p>
     </template>
@@ -186,14 +189,14 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
         <div class="family-detail-actions">
           <button type="button" @click="api.openSavedFamilyTree(selected, visibleIds)">
             Open in Tree ↗</button
-          ><button type="button" @click="edit(selected)">Edit Family</button
-          ><button type="button" @click="remove()">Delete Group</button>
+          ><button v-if="canEdit" type="button" @click="edit(selected)">Edit Family</button
+          ><button v-if="canEdit" type="button" @click="remove()">Delete Group</button>
         </div>
       </div>
       <p v-if="newChildren.length" class="family-new-children">
         {{ newChildren.length }} recorded
         {{ newChildren.length === 1 ? 'child is' : 'children are' }} available to include.
-        <button type="button" @click="edit(selected)">Review Family ↗</button>
+        <button v-if="canEdit" type="button" @click="edit(selected)">Review Family ↗</button>
       </p>
       <div class="family-detail-layout">
         <div class="family-generations">
@@ -273,7 +276,7 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
           </p>
           <section class="family-photos">
             <div class="family-photos-heading"><h3>Family Photos <span v-if="selected.photoCount">({{ selected.photoCount }})</span></h3>
-              <button type="button" @click="edit(selected)">{{ selected.albumId ? 'Add / Manage Photos' : 'Create Family Album' }} ↗</button>
+              <button v-if="canEdit" type="button" @click="edit(selected)">{{ selected.albumId ? 'Add / Manage Photos' : 'Create Family Album' }} ↗</button>
             </div>
             <p v-if="!selected.photoCount" class="hint">Keep family photos together in an album. Its cover also appears on this family.</p>
             <div v-if="album?.photos.length" class="family-photo-grid">
@@ -326,7 +329,7 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
             <div class="family-person-actions">
               <button type="button" @click="api.openSavedFamilyTree(selected, visibleIds)">
                 Open Family Tree ↗</button
-              ><button type="button" @click="editPerson">Edit Person ↗</button>
+              ><button v-if="canEdit" type="button" @click="editPerson">Edit Person ↗</button>
             </div></template
           ><template v-else
             ><span class="family-sidebar-symbol" aria-hidden="true">♡</span>

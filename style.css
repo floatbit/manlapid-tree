@@ -443,9 +443,6 @@ textarea {
   .directory {
     grid-template-columns: 1fr;
   }
-  h1 {
-    font-size: 31px;
-  }
 }
 
 .optional {
@@ -714,7 +711,6 @@ dialog .form-actions {
   .canvas-bottom {
     left: 15px;
     right: 15px;
-    font-size: 10px;
   }
 }
 /* Traditional generations: parents above, partners together, children below. */
@@ -1011,9 +1007,6 @@ dialog[open] {
   #canvas .searchbox button {
     padding: 10px;
   }
-  .canvas-heading {
-    font-size: 9px;
-  }
 }
 
 #canvas .searchbox button {
@@ -1134,7 +1127,6 @@ dialog[open] {
     right: 12px;
     bottom: 68px;
     height: 40px;
-    font-size: 12px;
   }
   #graphTools {
     right: 12px;
@@ -1144,7 +1136,6 @@ dialog[open] {
     left: 12px;
     bottom: 16px;
     padding: 7px;
-    font-size: 10px;
   }
   #explore #details {
     right: 12px;
@@ -1215,9 +1206,6 @@ dialog[open] {
   #details .quick-add {
     grid-template-columns: 1fr;
   }
-  #details h2 {
-    font-size: 18px;
-  }
   #explore .canvas-top {
     left: 10px;
     width: calc(100% - 20px);
@@ -1227,10 +1215,6 @@ dialog[open] {
   }
   #canvas .searchbox button {
     padding: 8px;
-    font-size: 10px;
-  }
-  #canvas .searchbox input {
-    font-size: 11px;
   }
   #graphTools {
     right: 8px;
@@ -1407,7 +1391,6 @@ header {
   #backToStart {
     left: 10px;
     top: 12px;
-    font-size: 10px;
     padding: 8px;
   }
   .suggested-people button {
@@ -1418,10 +1401,6 @@ header {
     width: 28px;
     height: 28px;
     min-width: 28px;
-    font-size: 10px;
-  }
-  .suggested-people button > span:nth-child(2) {
-    font-size: 11px;
   }
 }
 #graph {
@@ -1559,14 +1538,12 @@ header {
 }
 @media (max-width: 600px) {
   #openRelationshipFinder {
-    font-size: 10px;
     padding: 8px;
   }
   #relationshipBanner {
     left: 10px;
     top: 54px;
     max-width: calc(100% - 20px);
-    font-size: 10px;
   }
 }
 /* Keep dark controls readable in every interactive state. */
@@ -1722,16 +1699,12 @@ header {
     flex-direction: column;
     gap: 6px;
   }
-  .timeline-heading h1 {
-    font-size: 30px;
-  }
   .birth-year {
     grid-template-columns: 1fr;
     gap: 8px;
     padding-left: 10px;
   }
   .birth-year h2 {
-    font-size: 26px;
     margin: 10px 0 8px;
   }
   .birth-cards {
@@ -1748,13 +1721,6 @@ header {
   .birth-event .avatar {
     width: 44px;
     height: 44px;
-    font-size: 16px;
-  }
-  .birth-event strong {
-    font-size: 15px;
-  }
-  .birth-event small {
-    font-size: 8px;
   }
 }
 .timeline-actions {
@@ -2082,16 +2048,12 @@ header {
     right: 12px;
     gap: 12px;
   }
-  .lightbox-heading h2 {
-    font-size: 14px;
-  }
   #photoLightbox figure {
     inset: 80px 45px 60px;
   }
   .lightbox-arrow {
     width: 34px;
     height: 48px;
-    font-size: 32px;
   }
   #lightboxPrevious {
     left: 5px;
@@ -2163,9 +2125,6 @@ header nav {
 @media (max-width: 650px) {
   #relationships {
     padding: 25px 20px;
-  }
-  nav #openRelationshipFinder {
-    font-size: 12px;
   }
   .relationship-steps {
     grid-template-columns: 1fr 1fr;
@@ -2379,7 +2338,6 @@ header nav {
     max-width: calc(100% - 20px);
   }
   .tree-view-actions button {
-    font-size: 10px;
     padding: 8px;
   }
 }

@@ -203,6 +203,7 @@ $('#clearMilestoneLocation').onclick = () => {
 function openMilestone(id) {
   if (collectionRevisions.get('albums') !== sharedRevision)
     return withCollection('albums', () => openMilestone(id));
+  if (!document.body.classList.contains('is-editor')) { const event=(data.milestones || []).find(e=>e.id===id);if(event?.photos?.length)openPhotoLightbox(event.photos,0,event.title);return; }
   milestonePhotoSession++;
   processingMilestonePhotos = false;
   $('#milestoneSave').disabled = false;

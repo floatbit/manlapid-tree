@@ -93,9 +93,6 @@
     max-height: none;
     min-height: 0;
   }
-  .family-map-heading h1 {
-    font-size: 30px;
-  }
 }
 
 /* Map uses the same full-height canvas and persistent sidebar as the tree. */
@@ -166,7 +163,6 @@
   #fitFamilyMap {
     left: 10px;
     top: 12px;
-    font-size: 11px;
   }
 }
 
@@ -294,7 +290,6 @@
     max-width: calc(100% - 20px);
   }
   .map-view-controls button {
-    font-size: 11px;
     padding: 9px;
   }
 }
@@ -738,9 +733,6 @@ gmp-place-autocomplete {
   .albums-heading {
     align-items: flex-start;
   }
-  .albums-heading h1 {
-    font-size: 28px;
-  }
 }
 
 #albumsPage {
@@ -957,9 +949,6 @@ gmp-place-autocomplete {
   }
   .recipes-heading {
     align-items: flex-start;
-  }
-  .recipes-heading h1 {
-    font-size: 28px;
   }
   #recipesGrid,
   .recipe-cooking-columns,
@@ -1796,9 +1785,6 @@ gmp-place-autocomplete {
     width: 52px;
     height: 52px;
   }
-  #timeline .welcome-birth-event strong {
-    font-size: 16px;
-  }
 }
 
 /* Event icons sit on the date rail, centered over the original marker. */
@@ -1825,7 +1811,6 @@ gmp-place-autocomplete {
     top: 18px;
     width: 30px;
     height: 30px;
-    font-size: 14px;
   }
 }
 
@@ -1871,12 +1856,6 @@ gmp-place-autocomplete {
 #timeline .birth-event.birthday-party-event::before,
 #timeline .birth-event.smaller-holiday-icon::before {
   font-size: 12px;
-}
-@media (max-width: 650px) {
-  #timeline .birth-event.birthday-party-event::before,
-  #timeline .birth-event.smaller-holiday-icon::before {
-    font-size: 11.2px;
-  }
 }
 
 /* Center each year label on its first 32px event marker (26px from the card top). */
@@ -2830,7 +2809,7 @@ input[type='search']:not(#search),
 .family-photo-actions button { font-size: 11px; padding: 6px 8px; background: #fffefaf2; }
 .family-edit-photo .cover-badge { position: absolute; top: 7px; left: 7px; font-size: 10px; padding: 4px 7px; border-radius: 5px; background: var(--green); color: white; }
 @media (hover: none) { .family-photo-actions { opacity: 1; } }
-@media (max-width: 600px) { .family-generation-choice button { font-size: 11px; padding: 9px 8px; } .family-edit-photo-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media (max-width: 600px) { .family-generation-choice button { padding: 9px 8px; } .family-edit-photo-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
 
 .map-location-card { border: 1px solid var(--line); border-radius: 12px; background: #fffefa; padding: 15px; margin-bottom: 10px; }
 #familyMapPeople .map-location-card > [data-map-group] { padding: 0; border: 0; background: transparent; border-radius: 0; margin: 0; }
@@ -2965,6 +2944,15 @@ input[type='search']:not(#search),
 #photoLightbox .lightbox-people [role=option][aria-selected='true'] { background: #405e4d; color: white; box-shadow: inset 3px 0 0 #9fc9ac; }
 
 /* Directional connection actions sit outside the card without affecting layout. */
+body:not(.is-editor) [data-editor-only],
+body:not(.is-editor) :is(#editor, #peopleTab, #newPerson, #addFirst, #addBirthdays, #addMilestone, #newAlbum, #newRecipe, #editSelected, #mapPersonEdit, #setupNotice, .tree-profile-add, .node-add-connection, .birth-album-edit, .lightbox-delete, .multiple-people-tools) { display: none !important; }
+.dialog-close-x { position: absolute; right: 12px; top: 12px; width: 40px; height: 40px; min-height: 40px; display: grid; place-items: center; padding: 0; z-index: 5; font-size: 26px; line-height: 1; }
+dialog:has(.dialog-close-x) > form > h2 { padding-right: 42px; }
+.auth-link { color: var(--green); white-space: nowrap; text-decoration: none; }
+button:not(:disabled), button:not(:disabled) *, a[href], a[href] *, [role='button'], [role='link'], summary { cursor: pointer; }
+button:disabled, button:disabled * { cursor: default; }
+body:not(.is-editor) .family-new-children,
+body:not(.is-editor) .lightbox-people:not(:has(.lightbox-person-tag)) { display: none; }
 .node .node-open { display: contents; color: inherit; font: inherit; }
 .node .node-add-connection {
   position: absolute; z-index: 5; width: 26px; height: 26px; min-width: 0;

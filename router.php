@@ -15,6 +15,7 @@ if (str_starts_with($path,'/uploads/')) {
     header('Content-Length: '.($end-$start+1));if($_SERVER['REQUEST_METHOD']==='HEAD')return true;
     $stream=fopen($file,'rb');fseek($stream,$start);$remaining=$end-$start+1;while($remaining>0&&!feof($stream)){ $chunk=fread($stream,min(1048576,$remaining));echo $chunk;$remaining-=strlen($chunk); }fclose($stream);return true;
 }
+if (in_array($path,['/login','/login/','/login/index.php'],true)) { require __DIR__.'/login/index.php'; return true; }
 if ($path === '/api.php') { require __DIR__ . '/api.php'; return true; }
 if ($path === '/' || $path === '/index.html') { header('Content-Type: text/html; charset=utf-8'); readfile(__DIR__ . '/index.html'); return true; }
 // Vite production output contains only public frontend assets.
@@ -50,5 +51,6 @@ if (in_array($path, [
     '/js/tree-controls.js',
     '/js/tree.js',
     '/css/features.css',
+    '/css/mobile.css',
 ], true)) return false;
 http_response_code(404); echo 'Not found';

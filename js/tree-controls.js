@@ -1,5 +1,6 @@
 let addingFamily = null;
 function openFamilyDialog(id, type) {
+  if (!document.body.classList.contains('is-editor')) return;
   addingFamily = { id, type };
   const p = person(id);
   $('#familyTitle').textContent = `Add ${displayName(p)}’s ${type}`;

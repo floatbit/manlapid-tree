@@ -50,6 +50,7 @@ function openAlbum(id) {
   if (collectionRevisions.get('albums') !== sharedRevision)
     return withCollection('albums', () => openAlbum(id));
   const album = (data.albums || []).find((a) => a.id === id);
+  if (!document.body.classList.contains('is-editor')) { if(album?.photos.length)openPhotoLightbox(album.photos,0,album.title);return; }
   birthAlbumPersonId = null;
   albumUploadSession++;
   albumUploading = false;

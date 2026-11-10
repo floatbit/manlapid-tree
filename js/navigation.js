@@ -395,6 +395,7 @@ function rememberSection(section) {
   } catch {}
 }
 function showSection(section, { replace = false } = {}) {
+  if (section === 'people' && !document.body.classList.contains('is-editor')) section = 'tree';
   if (section === 'relationships') {
     showSection('tree', { replace });
     openRelationshipFinder();

@@ -40,6 +40,7 @@ ui.sync({
   ],
   familyGroups: [],
 });
+ui.setEditing(true);
 activePage.value = 'families';
 const header = mount(AppHeader);
 assert.deepEqual(
@@ -92,6 +93,7 @@ history.replaceState(null, '', '#page=tree');
 activePage.value = 'tree';
 await nextTick();
 history.replaceState(null, '', '#page=families');
+ui.setEditing(true);
 activePage.value = 'families';
 await nextTick();
 assert.equal(
@@ -124,6 +126,11 @@ assert.equal(savedAlbum.photos[0],'data:image/jpeg;base64,two.jpg');
 assert.equal(saved.albumId,savedAlbum.id);
 assert.equal(savedAlbum.title,'Example Family');
 reloaded.unmount();
+ui.setEditing(false);
+const visitor = mount(FamiliesPage,{attachTo:document.body});await nextTick();
+assert(!visitor.findAll('button').some(b=>/create|edit family|delete group|manage photos|review family/i.test(b.text())), 'Family editing controls are absent for visitors');
+assert(!visitor.find('#familyGroupDialog').element.open);
+visitor.unmount();ui.setEditing(true);
 console.log(
   'Passed: Family menu order, create form, direct-child suggestions, save, two generations, person sidebar and URL restoration.',
 );

@@ -23,6 +23,7 @@ function expand(id, { fit = false } = {}) {
   $('#details').scrollTop = 0;
 }
 function start(id) {
+  ui.closeMobileMenu?.();
   $('#familiesPage').hidden = true;
   $('#familiesTab').classList.remove('active');
   $('#overviewPage').hidden = true;
@@ -60,6 +61,7 @@ function start(id) {
   closeSearch();
   $('#search').value = displayName(person(id));
   expand(id, { fit: true });
+  if (window.matchMedia('(max-width: 760px)').matches) window.scrollTo({ top: 0, behavior: 'instant' });
 }
 const familyColors = {
   parent: '#d6b345',

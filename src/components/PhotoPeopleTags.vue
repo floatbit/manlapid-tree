@@ -1,6 +1,6 @@
 <script setup>
 import {computed,ref,watch} from 'vue';
-import {family,useRuntime} from '../ui/runtime.js';
+import {family,useRuntime,canEdit} from '../ui/runtime.js';
 import PersonAutocomplete from './PersonAutocomplete.vue';
 const props=defineProps({photo:String,prefix:{type:String,default:'photoPeople'}});
 const media=computed(()=>props.photo);
@@ -31,8 +31,8 @@ defineExpose({saving:savingTags,closeSearch});
       <div v-if="taggable" class="lightbox-tag-editor">
         <div class="lightbox-tag-field">
 
-          <PersonAutocomplete ref="picker" :key="media" :input-id="prefix + 'Search'" :list-id="prefix + 'Matches'" label="Find people in this photo" placeholder="Tag people" :options="()=>family.people.filter(p=>!draftPeople.includes(p.id))" :matches="useRuntime().personMatchesQuery" :display="useRuntime().displayName" keep-results clear-when-exhausted :validate-selection="false" @select="p=>updateTags([...draftPeople,p.id])" />
-          <div class="lightbox-person-tags"><span v-for="id in draftPeople" :key="id" class="lightbox-person-tag"><button type="button" @click="openPerson(id)">{{ useRuntime().displayName(family.people.find(p=>p.id===id)) }}</button><button type="button" :aria-label="'Remove ' + useRuntime().displayName(family.people.find(p=>p.id===id))" @click="updateTags(draftPeople.filter(value=>value!==id))">×</button></span></div>
+          <PersonAutocomplete v-if="canEdit" ref="picker" :key="media" :input-id="prefix + 'Search'" :list-id="prefix + 'Matches'" label="Find people in this photo" placeholder="Tag people" :options="()=>family.people.filter(p=>!draftPeople.includes(p.id))" :matches="useRuntime().personMatchesQuery" :display="useRuntime().displayName" keep-results clear-when-exhausted :validate-selection="false" @select="p=>updateTags([...draftPeople,p.id])" />
+          <div class="lightbox-person-tags"><span v-for="id in draftPeople" :key="id" class="lightbox-person-tag"><button type="button" @click="openPerson(id)">{{ useRuntime().displayName(family.people.find(p=>p.id===id)) }}</button><button v-if="canEdit" type="button" :aria-label="'Remove ' + useRuntime().displayName(family.people.find(p=>p.id===id))" @click="updateTags(draftPeople.filter(value=>value!==id))">×</button></span></div>
         </div>
         <span v-if="savingTags" class="lightbox-tag-status" role="status">Saving…</span>
         <p v-if="tagError" role="alert">{{ tagError }}</p>

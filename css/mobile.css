@@ -1,5 +1,10 @@
 /* Phone and compact tablet layouts. Desktop styles remain in features.css. */
 .mobile-menu-toggle { display: none; }
+#mobileMainMenu { padding: 24px; border: 1px solid var(--line); border-radius: 18px; background: var(--paper); color: var(--ink); }
+#mobileMainMenu::backdrop { background: #12251dd9; backdrop-filter: blur(5px); }
+.mobile-menu-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
+.mobile-menu-heading h2 { margin: 0; }
+.mobile-menu-heading button { display: grid; place-items: center; min-width: 44px; min-height: 44px; }
 @media (max-width: 760px) {
   html, body, #app { min-width: 0; }
   *, *::before, *::after { box-sizing: border-box; }
@@ -8,27 +13,26 @@
     display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
     gap: 8px; padding: 8px 12px; height: auto; min-height: 60px;
   }
-  header .brand { flex: none; font-size: 30px; margin: 0; }
+  header .brand { flex: none;  margin: 0; }
   .mobile-menu-toggle { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 12px; margin: 0; }
   #mainNavigation { display: none; order: 3; width: 100%; margin: 0; overflow: visible; white-space: normal; }
   #mainNavigation.mobile-menu-open { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; padding: 8px 0; }
-  #mainNavigation button { min-width: 0; min-height: 44px; padding: 8px 3px; margin: 0; font-size: 13px; border-radius: 8px; }
+  #mainNavigation button { min-width: 0; min-height: 44px; padding: 8px 3px; margin: 0;  border-radius: 8px; }
   header > .search { flex: 0 0 100%; order: 2; width: 100%; max-width: none; margin: 0; }
   header .searchbox { width: 100%; height: 46px; padding: 4px 5px 4px 12px; gap: 8px; }
-  header .searchbox input { font-size: 16px; min-width: 0; }
-  header .searchbox button { min-height: 36px; padding: 8px 12px; font-size: 13px; }
+  header .searchbox input {  min-width: 0; }
+  header .searchbox button { min-height: 36px; padding: 8px 12px;  }
   header #results { left: 0; right: 0; width: 100%; max-height: 55dvh; overflow-y: auto; }
-  input:not([type=checkbox]):not([type=radio]):not([type=range]), select, textarea { font-size: 16px; max-width: 100%; }
+  input:not([type=checkbox]):not([type=radio]):not([type=range]), select, textarea {  max-width: 100%; }
   button, summary { touch-action: manipulation; }
   h1 { overflow-wrap: anywhere; }
   #editor, #timeline, #albumsPage, #recipesPage, #overviewPage, #familiesPage {
     width: 100%; max-width: 100%; padding: 24px 16px 40px; margin: 0;
   }
   .intro, .timeline-heading, .albums-heading, .recipes-heading, .family-detail-heading, .report-photo-heading { flex-direction: column; align-items: flex-start; gap: 16px; }
-  .intro h1, .timeline-heading h1, .albums-heading h1, .recipes-heading h1, #familiesPage h1, #overviewPage h1 { font-size: 32px; line-height: 1.15; }
-  .intro p, .timeline-heading p { font-size: 14px; }
+  .intro h1, .timeline-heading h1, .albums-heading h1, .recipes-heading h1, #familiesPage h1, #overviewPage h1 {  line-height: 1.15; }
   .people-page-actions, .timeline-actions, .family-detail-actions { display: flex; flex-wrap: wrap; gap: 8px; width: 100%; }
-  .people-page-actions button, .people-page-actions summary, .timeline-actions button, .family-detail-actions button { min-height: 44px; font-size: 13px; padding: 10px 12px; }
+  .people-page-actions button, .people-page-actions summary, .timeline-actions button, .family-detail-actions button { min-height: 44px;  padding: 10px 12px; }
   #explore .workspace, #familyMapPage .family-map-workspace {
     display: grid; grid-template-columns: minmax(0, 1fr); height: auto; min-height: 0;
   }
@@ -40,19 +44,17 @@
   }
   #familyMapCanvas { height: 100%; min-height: 0; }
   .tree-view-actions { top: 10px; left: 10px; right: 10px; width: fit-content; max-width: calc(100% - 20px); flex-wrap: wrap; gap: 2px; padding: 4px; }
-  .tree-view-actions button { min-height: 40px; padding: 8px; font-size: 12px; }
+  .tree-view-actions button { min-height: 40px; padding: 8px;  }
   #graphTools { right: 10px; bottom: 12px; max-width: calc(100% - 20px); gap: 5px; padding: 5px; }
   #graphTools button, #graphTools label { min-height: 40px; padding: 8px; }
   #zoomSlider { width: 100px; min-width: 60px; }
   #explore .canvas-bottom { bottom: 68px; left: 10px; }
   #empty { width: 100%; padding: 90px 16px 75px; position: relative; top: auto; left: auto; transform: none; }
   #explore .canvas:has(#graph[hidden]) { height: auto; max-height: none; }
-  #empty h2 { font-size: 24px; }
-  #empty p { font-size: 13px; }
   .suggested-people { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-  .suggested-people button { min-width: 0; padding: 10px; font-size: 12px; min-height: 62px; }
+  .suggested-people button { min-width: 0; padding: 10px;  min-height: 62px; }
   .map-view-controls { left: 10px; top: 10px; right: 10px; flex-wrap: wrap; gap: 6px; }
-  .map-view-controls button { min-height: 40px; font-size: 12px; padding: 8px 10px; }
+  .map-view-controls button { min-height: 40px;  padding: 8px 10px; }
   .map-person-popup { max-width: min(320px, calc(100vw - 70px)); max-height: 45dvh; }
   .map-popup-person, .map-popup-person-content { min-width: 0; }
   .map-popup-person-actions { flex-wrap: wrap; white-space: normal; overflow: visible; grid-column: 1 / -1; gap: 4px 12px; }
@@ -64,7 +66,7 @@
   .person-name-fields, .person-form-columns { grid-template-columns: minmax(0, 1fr); }
   #personForm .profile-section { padding: 18px 14px; }
   #personForm .person-floating-actions { left: 0; right: 0; bottom: 0; width: 100%; padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); background: #fffefaf2; border-top: 1px solid var(--line); justify-content: flex-end; z-index: 30; }
-  #personForm .person-floating-actions button { min-height: 44px; padding: 10px 18px; font-size: 14px; }
+  #personForm .person-floating-actions button { min-height: 44px; padding: 10px 18px;  }
   .selected-location-row { flex-wrap: wrap; }
   #personForm .selected-location-row input { flex-basis: 100%; }
   .selected-location-row button { min-height: 40px; }
@@ -73,11 +75,9 @@
   .timeline-columns { grid-template-columns: minmax(0, 1fr); gap: 24px; }
   .upcoming-anniversaries { position: static; padding: 18px; }
   #timeline .birth-year { grid-template-columns: 50px minmax(0, 1fr); gap: 12px; }
-  #timeline .birth-year > h2 { font-size: 22px; }
   #timeline .birth-event { grid-template-columns: 48px minmax(0, 1fr); gap: 10px; padding: 14px 10px; }
   #timeline .birth-event > .birth-arrow, #timeline .milestone-details > .birth-arrow { display: none; }
-  #timeline .birth-event strong { font-size: 15px; overflow-wrap: anywhere; }
-  #timeline .birth-event time { font-size: 12px; }
+  #timeline .birth-event strong {  overflow-wrap: anywhere; }
   #timeline .birth-event .avatar, #timeline .welcome-birth-event .avatar { width: 44px; height: 44px; }
   #timeline .marriage-portraits { width: 48px; }
   #timeline .birth-event .marriage-portraits .avatar { width: 48px; height: 48px; }
@@ -97,19 +97,18 @@
   .report-random-photo .photo-people-picker { width: 100%; max-width: 100%; }
   dialog:not(#photoLightbox) { width: calc(100vw - 20px); max-width: calc(100vw - 20px); max-height: calc(100dvh - 20px); padding: 20px 16px; overflow-y: auto; }
   dialog:not(#photoLightbox) > form { padding: 0; min-width: 0; }
-  dialog h2 { font-size: 25px; }
   dialog .form-grid, dialog .recipe-field-row, dialog .milestone-fields { grid-template-columns: minmax(0, 1fr); }
   dialog button { min-height: 44px; }
   #photoLightbox { padding: 10px; gap: 8px; }
   #photoLightbox .lightbox-heading { flex-wrap: wrap; gap: 8px; padding: 0; }
-  #photoLightbox .lightbox-heading h2 { font-size: 15px; flex: 1 1 100%; padding-right: 42px; }
-  #photoLightbox .lightbox-heading button { min-height: 40px; padding: 8px 10px; font-size: 12px; }
+  #photoLightbox .lightbox-heading h2 {  flex: 1 1 100%; padding-right: 42px; }
+  #photoLightbox .lightbox-heading button { min-height: 40px; padding: 8px 10px;  }
   #photoLightbox #lightboxClose { position: absolute; right: 8px; top: 8px; width: 40px; }
   #photoLightbox figure { min-height: 0; margin: 0; }
   #photoLightbox .lightbox-people { width: 100%; max-width: 100%; margin: 0; padding: 10px; max-height: 30dvh; }
   #photoLightbox .lightbox-tag-editor { flex-wrap: wrap; justify-content: flex-start; }
   #photoLightbox .lightbox-tag-field > .person-autocomplete { flex: 1 1 100%; width: 100%; max-width: 100%; }
-  #photoLightbox #photoPeopleSearch { min-height: 44px; height: 44px; font-size: 16px; }
+  #photoLightbox #photoPeopleSearch { min-height: 44px; height: 44px;  }
   .report-random-photo .lightbox-tag-field { width: 100%; }
   .report-random-photo .lightbox-tag-field > .person-autocomplete { flex: 1 1 100%; width: 100%; }
   #photoLightbox .lightbox-arrow { width: 36px; min-height: 44px; padding: 4px; background: #14231caa; }
@@ -120,4 +119,94 @@
 @media (max-width: 420px) {
   .family-member-grid { grid-template-columns: minmax(0, 1fr); }
   #timeline .birth-year { grid-template-columns: 52px minmax(0, 1fr); gap: 18px; }
+}
+
+/* Mobile navigation, typography and rail geometry follow the desktop design. */
+@media (max-width: 760px) {
+  #mobileMainMenu { width: calc(100vw - 24px); max-height: calc(100dvh - 32px); margin: auto; padding: 20px; overflow: auto; }
+  #mobileMenuContent { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+  #mobileMainMenu #mainNavigation { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; order: 2; height: auto; padding: 0; }
+  #mobileMainMenu #mainNavigation button { min-height: 52px; padding: 14px; background: white; border: 1px solid var(--line); border-radius: 10px; text-align: left; color: var(--ink); }
+  #mobileMainMenu #mainNavigation button.active { background: var(--green); color: white; border-color: var(--green); }
+  #mobileMainMenu .search { display: block; width: 100%; margin: 0; order: 1; position: relative; }
+  #mobileMainMenu .search label { display: block; font-weight: 600; margin-bottom: 10px; }
+  #mobileMainMenu .searchbox { height: auto; min-height: 48px; padding: 5px 8px; gap: 8px; }
+  #mobileMainMenu .searchbox input { min-width: 0; width: 100%; margin: 0; padding: 8px 0; }
+  #mobileMainMenu .searchbox input, #mobileMainMenu .search-field { font-size: 13px; }
+  #mobileMainMenu .searchbox button { font-size: 12px; }
+  #mobileMainMenu .searchbox button { padding: 9px; white-space: nowrap; }
+  #mobileMainMenu #results { position: static; width: 100%; max-height: 40dvh; overflow: auto; margin-top: 8px; box-shadow: none; }
+  #mobileMainMenu #results:empty { display: none; }
+  #mobileMainMenu #results button { min-height: 44px; }
+  #app > header { min-height: 60px; flex-wrap: nowrap; }
+  #app > header > .search { display: none; }
+  #details .quick-add { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  #details .quick-add button { min-width: 0; min-height: 44px; padding: 10px 8px; }
+  #editor .settings { display: none; }
+  #personForm { scroll-margin-top: 76px; }
+  #albumsPage .album-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .album-card-details { padding: 12px; }
+
+  #explore .canvas { display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto auto; height: calc(100dvh - 60px); min-height: 520px; max-height: none; }
+  #explore #graph { grid-row: 3; min-height: 0; height: 100%; position: relative; inset: auto; }
+  #explore .tree-view-actions { grid-row: 1; position: static; width: auto; max-width: none; margin: 10px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 6px; box-shadow: none; }
+  #explore .tree-view-actions button { min-width: 0; min-height: 44px; padding: 9px 6px; justify-content: center; }
+  #explore #relationshipBanner { grid-row: 2; position: static; width: auto; max-width: none; margin: 0 10px 8px; padding: 10px 12px; transform: none; gap: 8px; align-items: center; }
+  #relationshipSummary { min-width: 0; overflow-wrap: anywhere; }
+  #clearRelationshipPath { flex: none; width: 40px; min-height: 40px; }
+  #explore #graphTools { grid-row: 4; position: static; margin: 8px 10px 0; width: auto; max-width: none; display: flex; gap: 8px; justify-content: space-between; box-shadow: none; padding: 6px; }
+  #explore #graphTools[hidden] { display: none; }
+  #zoomSlider { flex: 1 1 80px; min-width: 45px; width: 80px; }
+  #zoomLevel { flex: none; }
+  #explore .canvas-bottom { grid-row: 5; position: static; width: fit-content; margin: 8px 10px 10px; padding: 0; background: transparent; border: 0; box-shadow: none; }
+  #explore #empty { grid-row: 3; align-self: center; padding: 24px 16px; }
+
+  #timeline .birth-year { display: block; padding-bottom: 28px; }
+  #timeline .birth-year > h2 { margin: 0 0 14px 42px; line-height: 36px; }
+  #timeline .birth-cards { padding-left: 42px; gap: 16px; }
+  #timeline .birth-cards::before { left: 18px; bottom: -28px; }
+  #timeline .birth-year:last-child .birth-cards::before { bottom: 0; }
+  #timeline .birth-event::before { left: -40px; top: 26px; width: 32px; height: 32px; }
+  #timeline .birth-event.easter-event::after { left: -30px; top: 34px; width: 12px; height: 16px; }
+  #timeline .timeline-year-gap { display: block; margin: 0 0 18px; padding: 8px 0 8px 42px; }
+  #timeline .timeline-year-gap::before { left: 18px; top: -28px; bottom: -18px; }
+  #timeline .timeline-year-gap > span { display: inline-block; margin-left: 0; }
+  #timeline .birth-event { grid-template-columns: 62px minmax(0, 1fr); padding: 16px 12px; gap: 14px; }
+  #timeline .birth-event .avatar { width: 62px; height: 62px; }
+  #timeline .welcome-birth-event .avatar { width: 62px; height: 62px; }
+  #timeline .marriage-portraits { width: 62px; }
+  #timeline .birth-event .marriage-portraits .avatar { width: 62px; height: 62px; }
+  #timeline .birth-event strong { line-height: 1.4; }
+}
+@media (max-width: 420px) {
+  #explore .tree-view-actions button { flex-direction: column; gap: 5px; min-height: 60px; }
+}
+
+@media (max-width: 760px) {
+  dialog, #mobileMainMenu, #relationships, .birth-album-dialog, dialog:not(#photoLightbox) {
+    position: fixed; inset: 0; width: 100vw; max-width: 100vw; height: 100dvh; max-height: 100dvh; margin: 0; border: 0; border-radius: 0; box-shadow: none; padding: 24px 20px; background: var(--paper); overflow-y: auto;
+  }
+  dialog::backdrop, #mobileMainMenu::backdrop { background: var(--paper); backdrop-filter: none; }
+  #photoLightbox { background: #101d17; padding: 12px; }
+  #mobileMainMenu .auth-link { order: 3; padding: 12px 0; }
+  #explore .node-add-connection { display: none !important; }
+  #explore .tree-view-actions { display: flex; flex-wrap: wrap; }
+  #explore .tree-view-actions button { flex-direction: row; min-height: 40px; gap: 6px; padding: 8px 10px; }
+  #explore .canvas { height: 66dvh; min-height: 400px; }
+  #explore .canvas:has(#empty:not([hidden])) { height: auto; max-height: none; }
+  #explore #empty { top: auto; left: auto; transform: none; margin: 0; align-self: start; }
+  #empty .suggested-people { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #empty .suggested-people > button { width: 100%; min-width: 0; }
+  #editor > .intro { padding-left: 0; padding-right: 0; }
+  #timeline .birth-year { display: grid; grid-template-columns: 66px minmax(0, 1fr); gap: 24px; }
+  #timeline .birth-year > h2 { margin: 25px 0 0; line-height: 36px; }
+  #timeline .birth-cards { padding-left: 24px; }
+  #timeline .birth-cards::before { left: 0; }
+  #timeline .birth-event::before { left: -40px; }
+  #timeline .birth-event.easter-event::after { left: -30px; }
+  #timeline .timeline-year-gap { padding-left: 114px; }
+  #timeline .timeline-year-gap::before { left: 90px; }
+  #timeline .birth-event { display: flex; flex-wrap: wrap; gap: 12px; min-width: 0; }
+  #timeline .birth-event > .avatar, #timeline .birth-event > .milestone-gallery, #timeline .marriage-portraits { justify-self: start; }
+  #timeline .birth-event > span:not(.avatar):not(.marriage-portraits):not(.birth-arrow), #timeline .birth-event > .milestone-details { flex: 1 1 100%; min-width: 0; }
 }

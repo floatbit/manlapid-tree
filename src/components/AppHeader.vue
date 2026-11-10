@@ -1,16 +1,27 @@
 <script setup lang="js">
 import SearchField from './SearchField.vue';
 import { Search, Menu, X } from '@lucide/vue';
-import { ref, watch } from 'vue';
-import { activePage, ready, useRuntime } from '../ui/runtime.js';
+import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
+import { activePage, ready, useRuntime, ui } from '../ui/runtime.js';
 const links=[['treeTab','tree','Tree'],['familiesTab','families','Family'],['peopleTab','people','People'],['timelineTab','timeline','Timeline'],['mapTab','map','Map'],['albumsTab','albums','Album'],['recipesTab','recipes','Recipes'],['overviewTab','overview','Reports']];
-const menuOpen = ref(false);
-watch(activePage, () => { menuOpen.value = false; });
+const menuOpen = ref(false), menuDialog = ref(null), mobile = ref(false);
+function closeMenu() { menuDialog.value?.close(); menuOpen.value = false; }
+function openMenu() { menuOpen.value = true; menuDialog.value.showModal(); }
+watch(activePage, closeMenu);
+let media;
+function updateMobile() { mobile.value = media.matches; if (!mobile.value) closeMenu(); }
+onMounted(() => { media = window.matchMedia('(max-width: 760px)'); updateMobile(); media.addEventListener('change', updateMobile); ui.closeMobileMenu = closeMenu; });
+onBeforeUnmount(() => { media?.removeEventListener('change', updateMobile); delete ui.closeMobileMenu; });
 </script>
 <template>
+  <dialog id="mobileMainMenu" ref="menuDialog" aria-labelledby="mobileMenuTitle" @close="menuOpen = false" @click="$event.target === menuDialog && closeMenu()">
+    <div class="mobile-menu-heading"><h2 id="mobileMenuTitle">Explore Your Family</h2><button type="button" aria-label="Close menu" @click="closeMenu"><X :size="22" /></button></div>
+    <div id="mobileMenuContent"></div>
+  </dialog>
   <header>
     <a class="brand" href="#" aria-label="Family tree home">✳</a>
-    <button class="mobile-menu-toggle" type="button" :aria-expanded="menuOpen" aria-controls="mainNavigation" @click="menuOpen = !menuOpen"><component :is="menuOpen ? X : Menu" :size="20" aria-hidden="true" />{{ links.find(link => link[1] === activePage)?.[2] || 'Menu' }}</button>
+    <button class="mobile-menu-toggle" type="button" :aria-expanded="menuOpen" aria-haspopup="dialog" aria-controls="mobileMainMenu" @click="openMenu"><component :is="menuOpen ? X : Menu" :size="20" aria-hidden="true" />{{ links.find(link => link[1] === activePage)?.[2] || 'Menu' }}</button>
+    <Teleport to="#mobileMenuContent" :disabled="!mobile">
     <nav id="mainNavigation" aria-label="Main navigation" :class="{ 'mobile-menu-open': menuOpen }" @keydown.esc="menuOpen = false">
       <button
         v-for="[id, page, label] in links"
@@ -18,7 +29,7 @@ watch(activePage, () => { menuOpen.value = false; });
         :disabled="!ready"
         :key="id"
         :class="{ active: activePage === page }"
-        @click="menuOpen = false; useRuntime()?.showSection(page)"
+        @click="closeMenu(); useRuntime()?.showSection(page)"
       >
         {{ label }}
       </button>
@@ -39,6 +50,7 @@ watch(activePage, () => { menuOpen.value = false; });
       </div>
       <div id="results"></div>
     </div>
+    </Teleport>
     <span class="saved" hidden aria-live="polite"></span>
   </header>
 </template>

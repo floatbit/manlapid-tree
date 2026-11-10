@@ -5,8 +5,8 @@ ini_set('memory_limit','768M');
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 header('X-Content-Type-Options: nosniff');
-session_set_cookie_params(['httponly' => true, 'samesite' => 'Strict']);
-session_start();
+require_once __DIR__.'/server/auth.php';
+startFamilySession();
 if (empty($_SESSION['csrf'])) $_SESSION['csrf'] = bin2hex(random_bytes(24));
 $csrf = $_SESSION['csrf'];
 session_write_close();
@@ -31,7 +31,7 @@ function snapshot(PDO $db, string $csrf): array {
     unset($event);
     hydrateFamilyMedia($db,$people,$milestones);
     $collections=[];foreach(['albums','recipes'] as $kind)if(($_GET['view']??'')!=='core'||in_array($kind,explode(',',$_GET['include']??''),true))$collections[$kind]=$kind==='albums'?familyAlbums($db):familyRecipes($db);
-    return $collections + ['photoTags'=>(object)photoTags($db),'familyGroups'=>familyGroups($db), 'mapsApiKey'=>$mapsConfig['api_key']??'', 'personAliases' => $db->query('SELECT old_id,person_id FROM family_person_aliases')->fetchAll(), 'milestones' => $milestones, 'revision' => (int)$state['revision'], 'people' => $people, 'links' => $links, 'email' => $state['request_email'], 'csrf' => $csrf];
+    return $collections + ['canEdit'=>familyCanEdit(),'photoTags'=>(object)photoTags($db),'familyGroups'=>familyGroups($db), 'mapsApiKey'=>$mapsConfig['api_key']??'', 'personAliases' => $db->query('SELECT old_id,person_id FROM family_person_aliases')->fetchAll(), 'milestones' => $milestones, 'revision' => (int)$state['revision'], 'people' => $people, 'links' => $links, 'email' => $state['request_email'], 'csrf' => $csrf];
 }
 function field(array $row, string $key, int $max): string {
     $value = $row[$key] ?? '';
@@ -96,10 +96,10 @@ try {
     $db = familyDatabase();
     $method = $_SERVER['REQUEST_METHOD'];
     if ($method === 'GET') {
-        if (($_GET['view']??'') === 'revision') respond(200,['revision'=>(int)$db->query('SELECT revision FROM family_state WHERE id=1')->fetchColumn()]);
+        if (($_GET['view']??'') === 'revision') respond(200,['canEdit'=>familyCanEdit(),'revision'=>(int)$db->query('SELECT revision FROM family_state WHERE id=1')->fetchColumn()]);
         if (($_GET['view']??'') === 'collections') {
             $db->beginTransaction();
-            $result=['revision'=>(int)$db->query('SELECT revision FROM family_state WHERE id=1')->fetchColumn()];
+            $result=['canEdit'=>familyCanEdit(),'revision'=>(int)$db->query('SELECT revision FROM family_state WHERE id=1')->fetchColumn()];
             foreach(explode(',',$_GET['include']??'') as $kind)if(in_array($kind,['albums','recipes'],true))$result[$kind]=$kind==='albums'?familyAlbums($db):familyRecipes($db);
             $db->commit();respond(200,$result);
         }
@@ -107,6 +107,7 @@ try {
     }
     if (!in_array($method,['POST','PUT'],true)) { header('Allow: GET, POST, PUT'); respond(405,['error'=>'Method not allowed.']); }
     if (($_SERVER['HTTP_SEC_FETCH_SITE'] ?? '') === 'cross-site' || !hash_equals($csrf, $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '')) respond(403,['error'=>'Reload the page before saving.']);
+    if (!familyCanEdit()) respond(401,['error'=>'Log in to make changes.','canEdit'=>false]);
     if ((int)($_SERVER['CONTENT_LENGTH'] ?? 0) > 160000000) respond(413,['error'=>'This update is too large.']);
     $body = json_decode(file_get_contents('php://input'),true,512,JSON_THROW_ON_ERROR);
     if (!is_array($body) || !in_array($body['action'] ?? '',['save','bootstrap','attach_birth_album','save_album','delete_album','save_recipe','delete_recipe','save_family_group','delete_family_group','save_photo_tags','delete_photo'],true)) throw new InvalidArgumentException('Invalid request.');

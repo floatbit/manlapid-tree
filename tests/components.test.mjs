@@ -11,6 +11,7 @@ import MilestonePeople from '../src/components/MilestonePeople.vue';
 import RecipeDetail from '../src/components/RecipeDetail.vue';
 import RelationshipDialog from '../src/dialogs/RelationshipDialog.vue';
 import AppHeader from '../src/components/AppHeader.vue';
+import AccessControls from '../src/components/AccessControls.vue';
 import TreePage from '../src/pages/TreePage.vue';
 import { bindRuntime, ui, family, activePage, nicknameDraft, lightbox } from '../src/ui/runtime.js';
 const people = [
@@ -39,6 +40,7 @@ bindRuntime({
   openTaggedPerson: id => calls.push(id),
   deletePhotoFromLightbox: async photo => {calls.push(['delete',photo]);ui.sync({...family.value,albums:family.value.albums.map(a=>({...a,photos:a.photos.filter(item=>item!==photo)}))});},
 });
+ui.setEditing(true);
 ui.sync({
   people,
   links: [],
@@ -253,8 +255,21 @@ ui.sync({
 }
 {
   const header = mount(AppHeader);
+  assert.equal(header.findAll('.auth-link').length,0,'Login is accessed directly, not from the header');
   assert(!header.findAll('nav button').some((button) => button.text() === 'Relationships'));
   header.unmount();
+  const originalMatchMedia = window.matchMedia;
+  window.matchMedia = query => ({matches:true,media:query,addEventListener(){},removeEventListener(){}});
+  const mobileHeader = mount(AppHeader,{attachTo:document.body});
+  await nextTick();
+  assert.equal(document.querySelectorAll('#search').length,1,'Shared search keeps a single input');
+  assert(document.querySelector('#mobileMainMenu #search'),'Mobile search moves into the menu');
+  await mobileHeader.find('.mobile-menu-toggle').trigger('click');
+  assert(document.querySelector('#mobileMainMenu').open,'Mobile menu opens as a modal');
+  assert.equal(document.querySelectorAll('#mobileMainMenu nav button').length,8);
+  ui.closeMobileMenu();
+  assert(!document.querySelector('#mobileMainMenu').open,'Selecting a person can close the menu');
+  mobileHeader.unmount();window.matchMedia=originalMatchMedia;
   const tree = mount(TreePage);
   assert.equal(tree.find('#openRelationshipFinder').text(), 'Relationship');
   assert.equal(tree.find('#openRelationshipFinder').findAll('circle').length, 2);
@@ -321,6 +336,16 @@ ui.sync({
   assert.equal(wrapper.findAll('.person-photos-grid img').length,1);
   assert(wrapper.text().includes('View All Photos (1)'));
   wrapper.unmount();
+}
+{
+  const host=document.createElement('div');host.id='app';host.innerHTML='<button>Edit Person</button><button>Copy Link</button><dialog><h2>Example</h2></dialog>';document.body.append(host);
+  const controls=mount(AccessControls,{attachTo:document.body});await nextTick();
+  assert(host.querySelector('button').hasAttribute('data-editor-only'));
+  assert(!host.querySelectorAll('button')[1].hasAttribute('data-editor-only'));
+  const dialog=host.querySelector('dialog');dialog.showModal();dialog.querySelector('.dialog-close-x').click();
+  assert(!dialog.open,'Close X dismisses the dialog');
+  ui.setEditing(false);assert(!document.body.classList.contains('is-editor'));
+  controls.unmount();host.remove();ui.setEditing(true);
 }
 console.log(
   'Passed: Vue keyboard autocomplete, repeated selection, nickname tags, reports, and lightbox navigation/share.',

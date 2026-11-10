@@ -2,6 +2,7 @@ import { shallowRef, createApp, nextTick } from 'vue';
 import PersonAutocomplete from '../components/PersonAutocomplete.vue';
 import PersonPhotos from '../components/PersonPhotos.vue';
 import ConnectionRow from '../components/ConnectionRow.vue';
+export const canEdit = shallowRef(false);
 export const ready = shallowRef(false);
 export const family = shallowRef({
   people: [],
@@ -18,6 +19,11 @@ export function useRuntime() {
   return runtime.value;
 }
 export const ui = {
+  setEditing(allowed) {
+    canEdit.value = !!allowed;
+    document.body.classList.toggle('is-editor', !!allowed);
+    if (!allowed) for (const dialog of document.querySelectorAll('#albumDialog[open], #milestoneDialog[open], #recipeDialog[open], #familyDialog[open], #bulkLocationDialog[open], #siblingGroupDialog[open], #childrenGroupDialog[open], #familyGroupDialog[open], .birth-album-dialog[open]')) dialog.close();
+  },
   sync(data) {
     family.value = { ...data };
     ready.value = true;

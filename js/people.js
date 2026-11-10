@@ -39,10 +39,14 @@ $('#deceased').addEventListener('change', updateDeathDateVisibility);
 $('#personForm').addEventListener('input', updatePersonUnsaved);
 $('#personForm').addEventListener('change', updatePersonUnsaved);
 function selectPersonFromDirectory(id) {
+  if (!document.body.classList.contains('is-editor')) { start(id); return; }
   const selected = person(id);
   if (!selected) return;
   edit(id);
-  window.scrollTo({ top: 0, behavior: reducedMotion.matches ? 'instant' : 'smooth' });
+  if (window.matchMedia('(max-width: 760px)').matches) {
+    const top = $('#personForm').getBoundingClientRect().top + window.scrollY - document.querySelector('header').getBoundingClientRect().height - 12;
+    window.scrollTo({ top: Math.max(0, top), behavior: reducedMotion.matches ? 'instant' : 'smooth' });
+  } else window.scrollTo({ top: 0, behavior: reducedMotion.matches ? 'instant' : 'smooth' });
   notify(`Editing ${displayName(selected)}`);
 }
 
@@ -84,6 +88,7 @@ function relationRow(value = {}) {
 let droppedPortraitFile = null,
   portraitPreviewVersion = 0;
 function edit(id, { updateUrl = true } = {}) {
+  if (!document.body.classList.contains('is-editor')) return;
   personEditBaseline = '';
   clearTimeout(personPulseTimer);
   $('#personForm').classList.remove('has-unsaved-changes', 'save-person-pulse');

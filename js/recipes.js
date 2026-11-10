@@ -86,6 +86,7 @@ function closeRecipe() {
   }
 }
 function editRecipe(id) {
+  if (!document.body.classList.contains('is-editor')) return;
   if (collectionRevisions.get('recipes') !== sharedRevision)
     return withCollection('recipes', () => editRecipe(id));
   const r = (data.recipes || []).find((r) => r.id === id);

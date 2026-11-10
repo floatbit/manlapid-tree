@@ -14,6 +14,7 @@ for (const key of [
   'SVGElement',
   'Event',
   'CustomEvent',
+  'MutationObserver',
   'localStorage',
 ])
   Object.defineProperty(globalThis, key, { value: dom.window[key], configurable: true });
@@ -28,3 +29,5 @@ dom.window.HTMLDialogElement.prototype.close = function () {
 };
 dom.window.HTMLMediaElement.prototype.load = function () {};
 dom.window.HTMLMediaElement.prototype.pause = function () {};
+
+dom.window.matchMedia = query => ({matches:false,media:query,addEventListener(){},removeEventListener(){}});

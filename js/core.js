@@ -202,6 +202,7 @@ async function requestDatabase(body, view = 'core', include = [...collectionRevi
       'This app needs a PHP server. Open it through PHP or MAMP, rather than a static file server.',
     );
   }
+  if (typeof result.canEdit === 'boolean') ui.setEditing(result.canEdit);
   if (!response.ok) throw new Error(result.error || 'Could not save the family data.');
   return result;
 }

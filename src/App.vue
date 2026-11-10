@@ -1,5 +1,6 @@
 <script setup lang="js">
 import AppHeader from './components/AppHeader.vue';
+import AccessControls from './components/AccessControls.vue';
 import ReportsPage from './pages/ReportsPage.vue';
 import FamiliesPage from './pages/FamiliesPage.vue';
 import TreePage from './pages/TreePage.vue';
@@ -21,6 +22,7 @@ import SystemNotices from './components/SystemNotices.vue';
 </script>
 <template>
   <SystemNotices />
+  <AccessControls />
   <AppHeader />
   <ReportsPage />
   <TreePage />

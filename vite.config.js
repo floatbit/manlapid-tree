@@ -52,6 +52,7 @@ export const runtime = {
   },
   server: {
     proxy: {
+      '/login': { target: 'http://staging.localhost', changeOrigin: true, rewrite: p => '/manlapid-tree' + p },
       '/api.php': {
         target: 'http://staging.localhost',
         changeOrigin: true,

@@ -229,11 +229,16 @@ function openFamilyMapGroup(group, marker, { restore = false } = {}) {
       link.type = 'button';
       const text = document.createElement('span');
       text.textContent = label;
+      text.className = 'map-popup-action-full';
+      const compact = document.createElement('span');
+      compact.className = 'map-popup-action-short';
+      compact.setAttribute('aria-hidden', 'true');
+      compact.textContent = { 'View Places Lived': 'Places Lived', 'View Details': 'Details', 'Open Family Tree': 'Tree' }[label] || label;
       const arrow = document.createElement('span');
       arrow.className = 'map-popup-link-arrow';
       arrow.setAttribute('aria-hidden', 'true');
       arrow.textContent = '→';
-      link.append(text, arrow);
+      link.append(text, compact, arrow);
       link.setAttribute('aria-label', label + ' — ' + displayName(p));
       link.onclick = action;
       actions.append(link);
@@ -322,9 +327,9 @@ function showMapPerson(id) {
   }</div></div>
     <div class="map-profile-actions"><button type="button" id="mapPersonTree">Open Family Tree →</button><button type="button" id="mapPersonEdit">Edit Person →</button></div>
     <section class="map-profile-locations"><h3>Locations</h3><dl><div><dt>Current Location</dt><dd>${esc(
-      p.location || 'Not added yet',
+      (p.location || 'Not added yet') + (() => { const stop = migrationStopsForPerson(p).find(s => s.current || s.id === 'current-location'); const year = stop && familyDateYear(stop.date); return year ? ' · ' + year : ''; })(),
     )}</dd></div><div><dt>Birthplace</dt><dd>${esc(
-    p.birthplace?.location || 'Not added yet',
+    (p.birthplace?.location || 'Not added yet') + (familyDateYear(p.dateDetails?.birth || p.birthday) ? ' · ' + familyDateYear(p.dateDetails?.birth || p.birthday) : ''),
   )}</dd></div><div><dt>Places Lived</dt><dd>${homes} ${
     homes === 1 ? 'past home' : 'past homes'
   }</dd></div></dl><button type="button" id="mapPersonPlaces">View Places Lived →</button></section>
@@ -758,4 +763,20 @@ async function openFamilyMapLocation(personId) {
   );
   if (marker) openFamilyMapGroup(group, marker);
   rememberMapCamera();
+}
+
+function locationStopLabel(stop) {
+  const year = familyDateYear(stop.date);
+  const label = stop.id === 'birthplace' ? 'Birthplace' : stop.current || stop.id === 'current-location' ? 'Current Location' : 'Places Lived';
+  return label + (year ? ' · ' + year : '');
+}
+async function openPersonPlaces(personId, index) {
+  rememberMapCamera();
+  mapCameraReady = false;
+  migrationPersonId = personId;
+  familyMapMode = 'history';
+  showSection('map');
+  await renderFamilyMap();
+  if (index !== undefined) $('#mapSelectedPerson [data-migration-stop="' + index + '"]')?.click();
+  scrollToFamilyMap();
 }

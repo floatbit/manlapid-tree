@@ -392,3 +392,14 @@ console.log(
   window.scrollTo = originalScroll; window.matchMedia = originalMedia;
   console.log('Passed: remembrance focuses, scrolls to, and highlights the death entry.');
 }
+
+{
+  const directory = mount(PersonAutocomplete, { props: { options: () => people, display, matches, inputId: 'fullDirectory', listId: 'fullDirectoryMatches', showAll: true, keepResults: true, validateSelection: false } });
+  assert.equal(directory.findAll('[role="option"]').length, people.length, 'Directory lists everyone before searching');
+  await directory.find('input').setValue('Mimi');
+  assert.equal(directory.findAll('[role="option"]').length, 1, 'Directory filters by nickname');
+  await directory.find('input').setValue('');
+  assert.equal(directory.findAll('[role="option"]').length, people.length, 'Clearing restores everyone');
+  directory.unmount();
+  console.log('Passed: full directory shows everyone, filters searches, and restores the full list when cleared.');
+}

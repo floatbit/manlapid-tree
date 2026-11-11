@@ -12,6 +12,7 @@ const props = defineProps({
   inputClass: String,
   listClass: String,
   keepResults: Boolean,
+  showAll: Boolean,
   clearWhenExhausted: Boolean,
   showClear: { type: Boolean, default: true },
   validateSelection: { type: Boolean, default: true },
@@ -20,11 +21,11 @@ const props = defineProps({
   display: { type: Function, required: true },
 });
 const emit = defineEmits(['select', 'query']);
-const query = ref(props.initialQuery), open = ref(props.keepResults && !!props.initialQuery.trim()), active = ref(-1), input = ref(null), list = ref(null);
+const query = ref(props.initialQuery), open = ref(props.showAll || (props.keepResults && !!props.initialQuery.trim())), active = ref(-1), input = ref(null), list = ref(null);
 const optionsVersion=ref(0);
-const results = computed(() => { optionsVersion.value; return query.value.trim() ? props.options().filter((p) => props.matches(p,query.value)).sort((a,b) => a.name.localeCompare(b.name)) : []; });
-function close() { open.value=false;active.value=-1; }
-function search() { optionsVersion.value++; active.value=-1;open.value=!!query.value.trim();emit('query',query.value); }
+const results = computed(() => { optionsVersion.value; return query.value.trim() ? props.options().filter((p) => props.matches(p,query.value)).sort((a,b) => a.name.localeCompare(b.name)) : props.showAll ? [...props.options()].sort((a,b) => a.name.localeCompare(b.name)) : []; });
+function close() { open.value=props.showAll;active.value=-1; }
+function search() { optionsVersion.value++; active.value=-1;open.value=props.showAll || !!query.value.trim();emit('query',query.value); }
 function changed() {
   if(props.validateSelection) input.value.setCustomValidity(query.value.trim() ? 'Select a person from the matches.' : '');
   search();
@@ -47,7 +48,7 @@ function clear() { query.value='';input.value.setCustomValidity('');search();inp
 async function keydown(event) {
   if(event.isComposing) return;
   if(event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-    event.preventDefault(); event.stopPropagation(); open.value=!!query.value.trim();
+    event.preventDefault(); event.stopPropagation(); open.value=props.showAll || !!query.value.trim();
     if(!results.value.length) return;
     active.value=active.value<0 ? (event.key === 'ArrowDown' ? 0 : results.value.length-1) : (active.value+(event.key === 'ArrowDown' ? 1 : -1)+results.value.length)%results.value.length;
     await nextTick();list.value?.children[active.value]?.scrollIntoView?.({block:'nearest'});

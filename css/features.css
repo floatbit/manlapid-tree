@@ -3028,7 +3028,7 @@ body:not(.is-editor) .lightbox-people:not(:has(.lightbox-person-tag)) { display:
 /* Shared interactive feedback and compact Tree camera actions. */
 @media (hover: hover) {
   :where(button:not(:disabled), a, summary):hover { filter: brightness(.94); }
-  .map-profile-relative:hover, #details .connection:hover { background: #edf3e7; box-shadow: inset 3px 0 var(--green); }
+  .map-profile-relative:hover, #details .connection:hover { background: #edf3e7; box-shadow: none; }
 }
 :where(button, a, summary):focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
 #details .tree-profile-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; margin: 16px 0 24px; border: 1px solid var(--line); border-radius: 12px; background: white; }
@@ -3058,3 +3058,27 @@ body:not(.is-editor) .lightbox-people:not(:has(.lightbox-person-tag)) { display:
 #familiesPage .families-intro { justify-content: space-between; text-align: left; }
 #familiesPage .families-intro > div { flex: 1; margin: 0; text-align: left; }
 #familiesPage .families-intro :is(h1, p) { text-align: left; margin-left: 0; }
+
+/* Clear initials, roomy sidebar groups, and consistent page headings. */
+#empty .suggested-people > button, #emptySuggestions #shufflePeople { background: #edf2e6; }
+#empty .suggested-people .avatar { border-radius: 50%; background: #d5e1c9; border: 1px solid #afc19e; flex-shrink: 0; }
+:is(#details, #mapSelectedPerson, .family-person-sidebar) > section,
+:is(#details, #mapSelectedPerson, .family-person-sidebar) > div:has(> .person-tagged-photos) { margin-block: 44px; }
+#details .tree-location-history, .family-person-sidebar .tree-location-history { margin-top: 44px; }
+.family-person-sidebar .tree-location-history { padding: 0; border: 0; background: transparent; }
+.family-person-sidebar .migration-stops button { width: 100%; padding: 10px 0; border: 0; background: transparent; text-align: left; }
+#editor > .settings { display: none; }
+#editor > .intro { justify-content: space-between; text-align: left; }
+#editor > .intro > div:first-child { flex: 1; margin: 0; text-align: left; }
+#editor > .intro :is(h1,p) { margin-left: 0; text-align: left; }
+#timeline .birth-year > h2 { position: sticky; top: 100px; align-self: start; z-index: 2; background: var(--paper); }
+#timeline .timeline-actions button { min-height: 44px; padding: 12px 18px; font-size: 14px; border-radius: 8px; }
+#peopleList { display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+#peopleList > .person-autocomplete { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+#peopleList #directoryMatches { position: static; flex: 1; min-height: 0; max-height: none; overflow-y: auto; }
+@media (min-width: 851px) { #peopleList { height: calc(100dvh - var(--people-header-offset, 100px) - 12px); } }
+.family-member-photos { margin-top: 32px; }
+.family-member-photo-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px; }
+.family-member-photo-grid > .person-tagged-photos { margin: 0; padding: 20px; border: 1px solid var(--line); border-radius: 12px; background: #fffefa; }
+
+.map-popup-action-short { display: none; }

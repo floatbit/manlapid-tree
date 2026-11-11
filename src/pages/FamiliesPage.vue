@@ -284,6 +284,9 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
             </div>
             <button v-if="album?.photos.length" type="button" @click="api.openPhotoLightbox(album.photos,0,album.title)">View Album →</button>
           </section>
+          <section class="family-member-photos"><h3>Photos by Family Member</h3>
+            <div class="family-member-photo-grid"><PersonPhotos v-for="member in members([...selected.parents, ...selected.children])" :key="member.id" :person-id="member.id" show-empty /></div>
+          </section>
           <section v-if="locations.length" class="family-locations">
             <h3>Family Locations</h3>
             <button
@@ -311,18 +314,9 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
                 api.familyDateLabel(selectedPerson.dateDetails?.birth || selectedPerson.birthday)
               }}
             </p>
-            <section class="map-profile-locations">
+            <section class="map-profile-locations tree-location-history">
               <h3>Locations</h3>
-              <dl>
-                <div>
-                  <dt>Current Location</dt>
-                  <dd>{{ selectedPerson.location || 'Not added yet' }}</dd>
-                </div>
-                <div>
-                  <dt>Birthplace</dt>
-                  <dd>{{ selectedPerson.birthplace?.location || 'Not added yet' }}</dd>
-                </div>
-              </dl>
+              <ol class="migration-stops"><li v-for="(stop,index) in api.migrationStopsForPerson?.(selectedPerson) || []" :key="stop.id || index"><button type="button" @click="api.openPersonPlaces(selectedPerson.id,index)"><strong>{{ api.locationStopLabel(stop) }}</strong><span>{{ stop.location }}</span></button></li></ol>
             </section>
             <p v-if="selectedPerson.bio">{{ selectedPerson.bio }}</p>
             <PersonPhotos :person-id="selectedPerson.id" />

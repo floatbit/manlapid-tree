@@ -31,6 +31,7 @@ function remember(value) {try {localStorage.setItem('kinfolk-people-search-v1',v
       :options="() => family.people"
       :matches="api.personMatchesQuery"
       :display="api.displayName"
+      show-all
       keep-results
       show-clear
       :validate-selection="false"

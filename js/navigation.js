@@ -89,7 +89,7 @@ function renderDetailsContent() {
     <section class="map-profile-family"><h3>Family Connections <span>${
       relatives.length
     }</span></h3>${grouped || '<p class="hint">No connections added yet.</p>'}</section>
-    <section class="map-profile-locations tree-location-history"><h3>Locations</h3><ol class="migration-stops">${migrationStopsForPerson(p).map((stop, i) => `<li><button type="button" data-tree-stop="${i}"><strong>${esc(stop.note || familyDateLabel(stop.date))}</strong><span>${esc(stop.location)}</span></button></li>`).join('')}</ol><button type="button" id="treePersonPlaces">View Places Lived →</button></section>
+    <section class="map-profile-locations tree-location-history"><h3>Locations</h3><ol class="migration-stops">${migrationStopsForPerson(p).map((stop, i) => `<li><button type="button" data-tree-stop="${i}"><strong>${esc(locationStopLabel(stop))}</strong><span>${esc(stop.location)}</span></button></li>`).join('')}</ol><button type="button" id="treePersonPlaces">View Places Lived →</button></section>
     <div id="treePersonPhotos"></div>
     ${
       p.bio?.trim()
@@ -103,16 +103,7 @@ function renderDetailsContent() {
     .join('')}</div></section>
 `;
   ui.mountPersonPhotos($('#treePersonPhotos'),p.id,'tree');
-  async function openPlaces(index) {
-    rememberMapCamera();
-    mapCameraReady = false;
-    migrationPersonId = p.id;
-    familyMapMode = 'history';
-    showSection('map');
-    await renderFamilyMap();
-    if (index !== undefined) $('#mapSelectedPerson [data-migration-stop="' + index + '"]')?.click();
-    scrollToFamilyMap();
-  }
+  const openPlaces = index => openPersonPlaces(p.id, index);
   $('#treePersonPlaces').onclick = () => openPlaces();
   document.querySelectorAll('[data-tree-stop]').forEach(button => button.onclick = () => openPlaces(Number(button.dataset.treeStop)));
   document.querySelectorAll('#details .connection').forEach((b) => (b.onclick = () => { expand(b.dataset.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }));

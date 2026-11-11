@@ -1,4 +1,5 @@
 <script setup lang="js">
+import { PhX, PhCaretLeft, PhCaretRight, PhLink, PhTrash } from '@phosphor-icons/vue';
 import { computed, nextTick, ref, watch } from 'vue';
 import PhotoPeopleTags from '../components/PhotoPeopleTags.vue';
 import { family, lightbox, useRuntime } from '../ui/runtime.js';
@@ -59,11 +60,11 @@ function closed() {video.value?.pause();const focus=lightbox.value.returnFocus;l
         :hidden="!owner"
         @click="useRuntime().copyDirectLink(owner)"
       >
-        Copy link</button
-      ><button v-if="!isVideo && media?.startsWith('uploads/')" type="button" class="lightbox-delete" :disabled="deleting || tagPicker?.saving" @click="deletePhoto">{{ deleting ? 'Deleting…' : 'Delete Photo' }}</button><span id="lightboxCounter" aria-live="polite" aria-atomic="true"
+        <PhLink :size="16" aria-hidden="true" /> Copy link</button
+      ><button v-if="!isVideo && media?.startsWith('uploads/')" type="button" class="lightbox-delete" :disabled="deleting || tagPicker?.saving" @click="deletePhoto"><PhTrash :size="16" aria-hidden="true" /> {{ deleting ? 'Deleting…' : 'Delete Photo' }}</button><span id="lightboxCounter" aria-live="polite" aria-atomic="true"
         >{{ lightbox.index + 1 }} / {{ lightbox.photos.length }}</span
       ><button id="lightboxClose" type="button" aria-label="Close photo viewer" @click="close">
-        ×
+        <PhX :size="20" aria-hidden="true" />
       </button>
     </div>
     <button
@@ -74,7 +75,7 @@ function closed() {video.value?.pause();const focus=lightbox.value.returnFocus;l
       :hidden="lightbox.photos.length < 2"
       @click="step(-1)"
     >
-      ‹
+      <PhCaretLeft :size="28" aria-hidden="true" />
     </button>
     <figure>
       <img
@@ -114,7 +115,7 @@ function closed() {video.value?.pause();const focus=lightbox.value.returnFocus;l
       :hidden="lightbox.photos.length < 2"
       @click="step(1)"
     >
-      ›
+      <PhCaretRight :size="28" aria-hidden="true" />
     </button>
     <p v-if="deleteError" class="lightbox-delete-error" role="alert">{{ deleteError }}</p>
     <PhotoPeopleTags v-if="!isVideo && media" :inert="deleting" ref="tagPicker" :photo="media" />

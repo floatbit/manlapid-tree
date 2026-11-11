@@ -168,7 +168,6 @@
   #timeline .birth-cards::before { left: 18px; bottom: -28px; }
   #timeline .birth-year:last-child .birth-cards::before { bottom: 0; }
   #timeline .birth-event::before { left: -40px; top: 26px; width: 32px; height: 32px; }
-  #timeline .birth-event.easter-event::after { left: -30px; top: 34px; width: 12px; height: 16px; }
   #timeline .timeline-year-gap { display: block; margin: 0 0 18px; padding: 8px 0 8px 42px; }
   #timeline .timeline-year-gap::before { left: 18px; top: -28px; bottom: -18px; }
   #timeline .timeline-year-gap > span { display: inline-block; margin-left: 0; }
@@ -204,7 +203,6 @@
   #timeline .birth-cards { padding-left: 24px; }
   #timeline .birth-cards::before { left: 0; }
   #timeline .birth-event::before { left: -40px; }
-  #timeline .birth-event.easter-event::after { left: -30px; }
   #timeline .timeline-year-gap { padding-left: 114px; }
   #timeline .timeline-year-gap::before { left: 90px; }
   #timeline .birth-event { display: grid; grid-template-columns: 62px minmax(0, 1fr); gap: 12px; min-width: 0; }
@@ -344,7 +342,7 @@
 }
 
 @media (max-width: 760px) {
-  #familyMapPage .map-popup-person { padding: 10px; row-gap: 6px; }
+  #familyMapPage .map-popup-person { padding: 10px; row-gap: 0px; }
   .map-person-popup .map-popup-person-actions { display: flex; grid-column: 1 / -1; flex-wrap: wrap; gap: 4px 14px; margin-top: 4px; }
   .map-person-popup .map-popup-person-actions button { min-height: 32px; padding: 2px 0; line-height: 1.3; }
   .map-popup-person-actions button > span { margin: 0; }
@@ -358,4 +356,20 @@
   .map-person-popup .map-popup-action-full { display: none; }
   .map-person-popup .map-popup-action-short { display: inline; }
   .map-person-popup .map-popup-person-actions { flex-wrap: nowrap; gap: 10px; }
+}
+
+@media (max-width: 760px) {
+  .map-person-popup .map-popup-person-heading .avatar { grid-row: 1 / 3; }
+  .map-person-popup .map-popup-person-actions { grid-column: 2; grid-row: 2; gap: 8px; margin-top: 2px; }
+  .map-person-popup .map-popup-person-actions button { min-height: 28px; padding: 0; font-size: 10px; }
+}
+
+@media (max-width: 760px) {
+  #familyMapPage .map-person-popup { width: 270px; max-width: 100%; }
+  #familyMapPage .map-popup-person-actions { min-width: 0; max-width: 100%; flex-wrap: wrap; overflow: hidden; }
+}
+
+@media (max-width: 760px) {
+  #timeline .birth-event { --timeline-marker-left: -40px; --timeline-marker-top: 26px; }
+  #timeline .birth-event::before { left: var(--timeline-marker-left); top: var(--timeline-marker-top); width: 32px; height: 32px; }
 }

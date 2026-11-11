@@ -1,7 +1,8 @@
 <script setup>
+import { PhArrowRight } from '@phosphor-icons/vue';
 import {computed,ref} from 'vue';
 import {family,useRuntime} from '../ui/runtime.js';
-const props=defineProps({personId:{type:String,required:true},showEmpty:Boolean});
+const props=defineProps({personId:{type:String,required:true},showEmpty:Boolean,showName:Boolean,limit:{type:Number,default:6},columns:{type:Number,default:3}});
 const loading=ref(false);
 const person=computed(()=>family.value.people.find(p=>p.id===props.personId));
 const name=computed(()=>person.value ? useRuntime()?.displayName(person.value) || person.value.name : 'This Person');
@@ -18,11 +19,11 @@ async function open(photo) {
 </script>
 <template>
   <section v-if="photos.length || showEmpty" class="person-tagged-photos" :aria-label="'Photos of ' + name">
-    <h3>Photos of {{ name }} <span>{{ photos.length }}</span></h3>
+    <h3>{{ showName ? name + ' · Photos' : 'PHOTOS' }} <span>{{ photos.length }}</span></h3>
     <p v-if="!photos.length" class="hint">No photos tagged yet.</p>
-    <div class="person-photos-grid">
-      <button v-for="(photo,index) in photos.slice(0,6)" :key="photo" type="button" :disabled="loading" :aria-label="'View photo ' + (index+1) + ' of ' + name" @click="open(photo)"><img :src="photo" loading="lazy" :alt="'Tagged photo of ' + name" /></button>
+    <div class="person-photos-grid" :style="{gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`}">
+      <button v-for="(photo,index) in photos.slice(0,limit)" :key="photo" type="button" :disabled="loading" :aria-label="'View photo ' + (index+1) + ' of ' + name" @click="open(photo)"><img :src="photo" loading="lazy" :alt="'Tagged photo of ' + name" /></button>
     </div>
-    <button v-if="photos.length" class="person-photos-all" type="button" :disabled="loading" @click="open(photos[0])">{{ loading ? 'Loading…' : 'View All Photos (' + photos.length + ') →' }}</button>
+    <button v-if="photos.length" class="person-photos-all" type="button" :disabled="loading" @click="open(photos[0])">{{ loading ? 'Loading…' : 'View All Photos (' + photos.length + ')' }} <PhArrowRight :size="14" class="ui-icon" aria-hidden="true" /></button>
   </section>
 </template>

@@ -48,7 +48,7 @@ assert.deepEqual(
     .findAll('nav button')
     .slice(0, 4)
     .map((b) => b.text()),
-  ['Tree', 'Families', 'People', 'Timeline'],
+  ['Tree', 'Timeline', 'Families', 'People'],
 );
 header.unmount();
 const page = mount(FamiliesPage, { attachTo: document.body });

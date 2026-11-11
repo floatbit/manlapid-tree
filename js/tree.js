@@ -690,7 +690,7 @@ function spouseHearts(layout) {
       if (seen.has(key)) continue;
       seen.add(key);
       const x = (a.x + b.x) / 2, y = Math.max(a.y, b.y) + 36;
-      hearts.push(`<g class="spouse-heart" transform="translate(${x} ${y})" pointer-events="none" aria-label="Spouse connection"><circle r="9" fill="#faf9f6"/><text text-anchor="middle" dominant-baseline="central" fill="#587653" font-size="16" font-family="Arial, sans-serif">♥</text></g>`);
+      hearts.push(`<g class="spouse-heart" transform="translate(${x} ${y})" pointer-events="none" aria-label="Spouse connection"><circle r="9" fill="#faf9f6"/><g transform="translate(-8 -8)" color="#587653">${uiIcon('heart')}</g></g>`);
     }
   }
   return hearts.join('');

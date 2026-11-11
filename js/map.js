@@ -190,7 +190,7 @@ function openFamilyMapGroup(group, marker, { restore = false } = {}) {
   const addPeople = document.createElement('button');
   addPeople.type = 'button';
   addPeople.className = 'map-add-people';
-  addPeople.textContent = 'Update People →';
+  addPeople.innerHTML = 'Update People ' + uiIcon('arrowRight');
   addPeople.onclick = () => {
     const source = group.people[0];
     openBulkLocation('current', { location: source.location, locationPlaceId: source.locationPlaceId || '', locationLat: group.position.lat, locationLng: group.position.lng });
@@ -237,7 +237,7 @@ function openFamilyMapGroup(group, marker, { restore = false } = {}) {
       const arrow = document.createElement('span');
       arrow.className = 'map-popup-link-arrow';
       arrow.setAttribute('aria-hidden', 'true');
-      arrow.textContent = '→';
+      arrow.innerHTML = uiIcon('arrowRight');
       link.append(text, compact, arrow);
       link.setAttribute('aria-label', label + ' — ' + displayName(p));
       link.onclick = action;
@@ -248,7 +248,7 @@ function openFamilyMapGroup(group, marker, { restore = false } = {}) {
   }
   if (!restore && group.people.length === 1) showMapPerson(group.people[0].id);
   familyMapPopup.setContent(content);
-  familyMapPopup.setOptions({ disableAutoPan: restore });
+  familyMapPopup.setOptions({ disableAutoPan: restore, maxWidth: Math.max(180, Math.min(302, $('#familyMapCanvas').clientWidth - 24)) });
   familyMapPopup.open({ map: familyMap, anchor: marker, shouldFocus: !restore });
   if (!restore) { familyMap.panTo(group.position); scrollToFamilyMap(); }
   persistMapView();
@@ -294,7 +294,7 @@ function showMapPerson(id) {
       member.id,
     )}">${avatar(member)}<span><strong>${esc(displayName(member))}</strong>${
       label ? `<small>${esc(label)}</small>` : ''
-    }</span><span class="map-profile-arrow" aria-hidden="true">→</span></button>`;
+    }</span><span class="map-profile-arrow" aria-hidden="true">${uiIcon('arrowRight')}</span></button>`;
   const grouped = [
     ['parent', 'Parents'],
     ['sibling', 'Siblings'],
@@ -325,14 +325,8 @@ function showMapPerson(id) {
       ? `<p>Died · ${esc(familyDateLabel(p.dateDetails.death))}</p>`
       : ''
   }</div></div>
-    <div class="map-profile-actions"><button type="button" id="mapPersonTree">Open Family Tree →</button><button type="button" id="mapPersonEdit">Edit Person →</button></div>
-    <section class="map-profile-locations"><h3>Locations</h3><dl><div><dt>Current Location</dt><dd>${esc(
-      (p.location || 'Not added yet') + (() => { const stop = migrationStopsForPerson(p).find(s => s.current || s.id === 'current-location'); const year = stop && familyDateYear(stop.date); return year ? ' · ' + year : ''; })(),
-    )}</dd></div><div><dt>Birthplace</dt><dd>${esc(
-    (p.birthplace?.location || 'Not added yet') + (familyDateYear(p.dateDetails?.birth || p.birthday) ? ' · ' + familyDateYear(p.dateDetails?.birth || p.birthday) : ''),
-  )}</dd></div><div><dt>Places Lived</dt><dd>${homes} ${
-    homes === 1 ? 'past home' : 'past homes'
-  }</dd></div></dl><button type="button" id="mapPersonPlaces">View Places Lived →</button></section>
+    <div class="map-profile-actions"><button type="button" id="mapPersonTree">Open Family Tree ${uiIcon('arrowRight')}</button><button type="button" id="mapPersonEdit">Edit Person ${uiIcon('arrowRight')}</button></div>
+    <section class="map-profile-locations tree-location-history"><h3>Locations</h3><ol class="migration-stops">${migrationStopsForPerson(p).map((stop,i) => `<li><button type="button" data-map-person-stop="${i}"><strong>${esc(locationStopLabel(stop))}</strong><span>${esc(stop.location)}</span></button></li>`).join('')}</ol><button type="button" id="mapPersonPlaces">View Places Lived ${uiIcon('arrowRight')}</button></section>
     <section class="map-profile-shared"><h3>At This Location <span>${shared.length}</span></h3>${
     shared
       .map((member) =>
@@ -354,6 +348,7 @@ function showMapPerson(id) {
     migrationPersonId = id;
     setFamilyMapMode('history');
   };
+  details.querySelectorAll('[data-map-person-stop]').forEach(button => button.onclick = () => openPersonPlaces(id, Number(button.dataset.mapPersonStop)));
   $('#mapBackToLocations').onclick = closeMapPerson;
   $('#mapPersonTree').onclick = () => start(id);
   $('#mapPersonEdit').onclick = () => {
@@ -411,7 +406,8 @@ async function renderFamilyMap({ fit = true } = {}) {
   missingReport.className = 'map-missing-report';
   missingReport.textContent = `${missing.length} ${
     missing.length === 1 ? 'person needs' : 'people need'
-  } locations — View Report →`;
+  } locations — View Report`;
+  missingReport.insertAdjacentHTML('beforeend', uiIcon('arrowRight'));
   missingReport.onclick = (event) => {
     event.preventDefault();
     showSection('overview');
@@ -447,7 +443,7 @@ async function renderFamilyMap({ fit = true } = {}) {
         ),
       );
       familyMap.setMapTypeId('family');
-      familyMapPopup = new InfoWindow({ maxHeight: 560 });
+      familyMapPopup = new InfoWindow({ maxHeight: 560, maxWidth: 302 });
       familyMapPopup.addListener('closeclick', () => {
         if (familyMapMode === 'current') {
           currentLocationsPopupPersonId = null;
@@ -635,7 +631,7 @@ async function renderMigrationView() {
           )
           .join('')}</ol>${
           !stops.length ? '<p>No places lived recorded yet.</p>' : ''
-        }<button type="button" id="editMigrationPerson">Edit places lived →</button>`
+        }<button type="button" id="editMigrationPerson">Edit places lived ${uiIcon('arrowRight')}</button>`
       : '<p>Choose a person to explore their moves.</p>'
   }`;
   $('#migrationPerson').onchange = (e) => {
@@ -767,8 +763,9 @@ async function openFamilyMapLocation(personId) {
 
 function locationStopLabel(stop) {
   const year = familyDateYear(stop.date);
-  const label = stop.id === 'birthplace' ? 'Birthplace' : stop.current || stop.id === 'current-location' ? 'Current Location' : 'Places Lived';
-  return label + (year ? ' · ' + year : '');
+  if (stop.current || stop.id === 'current-location') return year ? year + ' - Present' : 'Present';
+  if (stop.id === 'birthplace') return year ? year + ' · Birthplace' : 'Birthplace';
+  return year ? String(year) : 'Date unknown';
 }
 async function openPersonPlaces(personId, index) {
   rememberMapCamera();

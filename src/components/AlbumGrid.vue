@@ -1,4 +1,5 @@
 <script setup lang="js">
+import { PhArrowRight } from '@phosphor-icons/vue';
 import { computed } from 'vue';
 import { albumView, useRuntime } from '../ui/runtime.js';
 import MediaPreview from './MediaPreview.vue';
@@ -37,7 +38,7 @@ function view(album) { if(album.photos.length) api.value.openPhotoLightbox(album
               }}{{ api.milestoneMediaCount(album.photos) || 'No photos yet' }}
             </p>
             <small>{{ album.milestoneId ? 'Linked to a milestone' : 'Independent album' }}</small
-            ><button type="button" @click="api.openAlbum(album.id)">Edit Album →</button>
+            ><button type="button" @click="api.openAlbum(album.id)">Edit Album <PhArrowRight :size="16" class="ui-icon" aria-hidden="true" /></button>
           </div>
         </article>
       </div>

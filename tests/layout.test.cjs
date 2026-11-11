@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const source = require('./frontend-source.cjs')();
 const context = vm.createContext({});
+vm.runInContext(fs.readFileSync('js/icons.js', 'utf8'), context);
 vm.runInContext(
   `var data;const person=id=>data.people.find(p=>p.id===id);const inverse={parent:'child',child:'parent',sibling:'sibling',spouse:'spouse'};`,
   context,

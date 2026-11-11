@@ -1789,13 +1789,13 @@ gmp-place-autocomplete {
 
 /* Event icons sit on the date rail, centered over the original marker. */
 #timeline .birth-event::before {
-  content: attr(data-timeline-icon);
+  content: '';
   display: flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  left: -46px;
-  top: 26px;
+  left: var(--timeline-marker-left);
+  top: var(--timeline-marker-top);
   width: 32px;
   height: 32px;
   border: 3px solid var(--paper);
@@ -1814,12 +1814,7 @@ gmp-place-autocomplete {
   }
 }
 
-#timeline .birth-event.marriage-event::before {
-  content: '♥';
-  font-family: Arial, sans-serif;
-  font-size: 20px;
-  color: #587653;
-}
+
 #timeline .marriage-portraits { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; width: 74px; }
 #timeline .marriage-portraits .avatar { width: 68px; height: 68px; flex-shrink: 0; border: 3px solid var(--paper); object-fit: cover; }
 #timeline .marriage-portraits > button { display: block; width: auto; padding: 0; margin: 0; border: 0; background: transparent; border-radius: 50%; line-height: 0; }
@@ -2048,27 +2043,6 @@ gmp-place-autocomplete {
   }
 }
 
-/* A decorated blue Easter egg. */
-#timeline .birth-event.easter-event::before {
-  content: '';
-}
-#timeline .birth-event.easter-event::after {
-  content: '';
-  position: absolute;
-  left: -36px;
-  top: 34px;
-  width: 12px;
-  height: 16px;
-  pointer-events: none;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 24'%3E%3Cdefs%3E%3CclipPath id='e'%3E%3Cpath d='M9 1C5 1 1 10 1 15a8 8 0 0 0 16 0C17 10 13 1 9 1Z'/%3E%3C/clipPath%3E%3C/defs%3E%3Cpath d='M9 1C5 1 1 10 1 15a8 8 0 0 0 16 0C17 10 13 1 9 1Z' fill='%2379add3' stroke='%235989b0'/%3E%3Cg clip-path='url(%23e)' fill='none' stroke='%23deeffb' stroke-width='2'%3E%3Cpath d='m0 10 3-2 3 2 3-2 3 2 3-2 3 2M0 17h18'/%3E%3C/g%3E%3C/svg%3E")
-    center / contain no-repeat;
-}
-@media (max-width: 650px) {
-  #timeline .birth-event.easter-event::after {
-    left: -30px;
-    top: 25px;
-  }
-}
 
 .map-popup-person {
   display: grid;
@@ -2298,7 +2272,7 @@ gmp-place-autocomplete {
 /* Search affordance shared by directory, map, autocomplete, album and recipe fields. */
 input[type='search']:not(#search),
 #milestonePeople #milestonePersonSearch {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23738179' stroke-width='1.8' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='m16 16 4.5 4.5'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20256%20256%22%20width%3D%2220%22%20height%3D%2220%22%20fill%3D%22%23738179%22%3E%3C!--%5B--%3E%3C!--%5D--%3E%3Cg%3E%3Cpath%20d%3D%22M229.66%2C218.34l-50.07-50.06a88.11%2C88.11%2C0%2C1%2C0-11.31%2C11.31l50.06%2C50.07a8%2C8%2C0%2C0%2C0%2C11.32-11.32ZM40%2C112a72%2C72%2C0%2C1%2C1%2C72%2C72A72.08%2C72.08%2C0%2C0%2C1%2C40%2C112Z%22%3E%3C%2Fpath%3E%3C%2Fg%3E%3C%2Fsvg%3E");
   background-repeat: no-repeat;
   background-position: 12px center;
   background-size: 18px 18px;
@@ -3082,3 +3056,50 @@ body:not(.is-editor) .lightbox-people:not(:has(.lightbox-person-tag)) { display:
 .family-member-photo-grid > .person-tagged-photos { margin: 0; padding: 20px; border: 1px solid var(--line); border-radius: 12px; background: #fffefa; }
 
 .map-popup-action-short { display: none; }
+
+#mapSelectedPerson .tree-location-history { padding: 0; border: 0; background: transparent; }
+#mapSelectedPerson .tree-location-history .migration-stops button { width: 100%; padding: 10px 0; border: 0; background: transparent; text-align: left; }
+.map-person-popup { width: 270px; max-width: 100%; box-sizing: border-box; overflow-x: hidden; }
+.map-person-popup .map-popup-action-full { display: none; }
+.map-person-popup .map-popup-action-short { display: inline; }
+.map-person-popup .map-popup-person { align-items: start; row-gap: 0; }
+.map-person-popup .map-popup-person-actions { grid-column: 2; grid-row: 2; margin-top: 2px; gap: 8px; }
+.map-person-popup .map-popup-person-actions button { font-size: 10px; min-height: 28px; padding: 0; }
+
+.map-person-popup .map-popup-person { min-width: 0; box-sizing: border-box; }
+.map-person-popup .map-popup-person-heading > span:not(.avatar) { min-width: 0; overflow-wrap: anywhere; }
+
+/* Consistent Phosphor icons for legacy close buttons and inline actions. */
+.dialog-close-x { font-size: 0; }
+.dialog-close-x::before { content: ''; display: block; width: 20px; height: 20px; margin: auto; background: currentColor; mask: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20256%20256%22%20width%3D%2220%22%20height%3D%2220%22%20fill%3D%22black%22%3E%3C!--%5B--%3E%3C!--%5D--%3E%3Cg%3E%3Cpath%20d%3D%22M205.66%2C194.34a8%2C8%2C0%2C0%2C1-11.32%2C11.32L128%2C139.31%2C61.66%2C205.66a8%2C8%2C0%2C0%2C1-11.32-11.32L116.69%2C128%2C50.34%2C61.66A8%2C8%2C0%2C0%2C1%2C61.66%2C50.34L128%2C116.69l66.34-66.35a8%2C8%2C0%2C0%2C1%2C11.32%2C11.32L139.31%2C128Z%22%3E%3C%2Fpath%3E%3C%2Fg%3E%3C%2Fsvg%3E") center / contain no-repeat; }
+#shareLightbox, .lightbox-delete { display: inline-flex; align-items: center; gap: 6px; }
+.search-clear-button svg { display: block; margin: auto; }
+
+/* Phosphor event icons share the date marker's center on every screen. */
+#timeline .birth-event { --timeline-marker-left: -46px; --timeline-marker-top: 26px; }
+#timeline .birth-event::before { left: var(--timeline-marker-left); top: var(--timeline-marker-top); width: 32px; height: 32px; }
+#timeline .timeline-rail-icon { position: absolute; left: var(--timeline-marker-left); top: var(--timeline-marker-top); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: #587347; pointer-events: none; }
+#timeline .timeline-rail-icon .event-icon-birth { width: 13px; height: 13px; }
+#timeline .timeline-rail-icon .event-icon-marriage { width: 20px; height: 20px; }
+#timeline .timeline-rail-icon .event-icon-birthday_party,
+#timeline .timeline-rail-icon .event-icon-thanksgiving,
+#timeline .timeline-rail-icon .event-icon-christmas,
+#timeline .timeline-rail-icon .event-icon-easter,
+#timeline .timeline-rail-icon .event-icon-halloween { width: 14px; height: 14px; }
+.timeline-event-icon { flex-shrink: 0; vertical-align: middle; }
+#timeline .timeline-event-icon { transform: scale(1.2); transform-origin: center; }
+.timeline-event-icon.event-icon-easter { color: #79add3; }
+.anniversary-event-icon { display: inline-flex; align-items: center; }
+@media (max-width: 650px) { #timeline .birth-event { --timeline-marker-left: -39px; --timeline-marker-top: 18px; } }
+
+.ui-icon { display: inline-block; flex-shrink: 0; vertical-align: middle; }
+.welcome-heart > .ui-icon { width: 42px; height: 42px; }
+#shufflePeople { display: inline-flex; align-items: center; justify-content: center; gap: 10px; }
+.family-photo-grid img, .family-photo-grid .video-preview { height: auto; aspect-ratio: 200 / 110; }
+.family-photo-grid video { width: 100%; height: 100%; object-fit: cover; }
+.person-photos-grid > button { display: block; width: 100%; aspect-ratio: 1; padding: 0; margin: 0; border: 0; border-radius: 8px; background: #edf2e8; overflow: hidden; }
+.family-member-photo-grid > .person-tagged-photos { padding: 0; border: 0; background: transparent; }
+.overview-reports .directory-missing-list button { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.overview-reports .directory-missing-list button > span { min-width: 0; }
+.report-photo-actions > button { display: inline-flex; align-items: center; gap: 8px; }
+.family-back, .family-generation-choice > span { display: inline-flex; align-items: center; gap: 6px; }

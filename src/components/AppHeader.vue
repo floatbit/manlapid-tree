@@ -1,9 +1,9 @@
 <script setup lang="js">
 import SearchField from './SearchField.vue';
-import { Search, Menu, X } from '@lucide/vue';
+import { PhMagnifyingGlass as Search, PhList as Menu, PhX as X } from '@phosphor-icons/vue';
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import { activePage, ready, useRuntime, ui } from '../ui/runtime.js';
-const links=[['treeTab','tree','Tree'],['familiesTab','families','Families'],['peopleTab','people','People'],['timelineTab','timeline','Timeline'],['mapTab','map','Map'],['albumsTab','albums','Albums'],['recipesTab','recipes','Recipes'],['overviewTab','overview','Reports']];
+const links=[['treeTab','tree','Tree'],['timelineTab','timeline','Timeline'],['familiesTab','families','Families'],['peopleTab','people','People'],['mapTab','map','Map'],['albumsTab','albums','Albums'],['recipesTab','recipes','Recipes'],['overviewTab','overview','Reports']];
 const menuOpen = ref(false), menuDialog = ref(null), mobile = ref(false);
 function closeMenu() { menuDialog.value?.close(); menuOpen.value = false; }
 function openMenu() { menuOpen.value = true; menuDialog.value.showModal(); }

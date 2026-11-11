@@ -1,4 +1,5 @@
 <script setup lang="js">
+import { PhX } from '@phosphor-icons/vue';
 import { computed, nextTick, ref } from 'vue';
 const props = defineProps({
   options: { type: Function, required: true },
@@ -101,7 +102,7 @@ defineExpose({input,close});
         :hidden="!query"
         @click="clear"
       >
-        ×
+        <PhX :size="16" aria-hidden="true" />
       </button>
     </div>
     <div :id="listId" ref="list" :class="listClass" role="listbox" :hidden="!open">

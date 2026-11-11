@@ -273,7 +273,7 @@ ui.sync({
   mobileHeader.unmount();window.matchMedia=originalMatchMedia;
   const tree = mount(TreePage);
   assert.equal(tree.find('#openRelationshipFinder').text(), 'Relationship');
-  assert.equal(tree.find('#openRelationshipFinder').findAll('circle').length, 2);
+  assert.equal(tree.find('#openRelationshipFinder').findAll('svg[aria-hidden="true"]').length, 1);
   tree.unmount();
   const modal = mount(RelationshipDialog);
   modal.element.showModal();
@@ -321,15 +321,20 @@ ui.sync({
   globalThis.confirm=originalConfirm;wrapper.unmount();
 }
 {
-  const tagged=Object.fromEntries(Array.from({length:11},(_,index)=>['person-photo-'+index+'.jpg',['melissa']]));
+  const tagged=Object.fromEntries(Array.from({length:13},(_,index)=>['person-photo-'+index+'.jpg',['melissa']]));
   tagged['someone-else.jpg']=['chris'];
   ui.sync({...family.value,people,photoTags:tagged});
   const wrapper=mount(PersonPhotos,{props:{personId:'melissa'}});
   assert.equal(wrapper.findAll('.person-photos-grid img').length,6);
-  assert(wrapper.text().includes('Photos of Melissa'));
-  assert(wrapper.text().includes('View All Photos (11)'));
+  const familyPhotos=mount(PersonPhotos,{props:{personId:'melissa',limit:12,columns:4}});
+  assert.equal(familyPhotos.findAll('.person-photos-grid img').length,12);
+  assert.match(familyPhotos.find('.person-photos-grid').element.style.gridTemplateColumns,/repeat\(4,/);
+  familyPhotos.unmount();
+  assert(wrapper.find('h3').text().includes('PHOTOS'));
+  assert(!wrapper.find('h3').text().includes('Melissa'));
+  assert(wrapper.text().includes('View All Photos (13)'));
   await wrapper.findAll('.person-photos-grid button')[1].trigger('click');await flushPromises();
-  assert.equal(calls.at(-1)[0].length,11);
+  assert.equal(calls.at(-1)[0].length,13);
   assert.equal(calls.at(-1)[1],1);
   assert.equal(calls.at(-1)[3],'melissa','Photo collection retains person context');
   assert(!calls.at(-1)[0].includes('someone-else.jpg'));

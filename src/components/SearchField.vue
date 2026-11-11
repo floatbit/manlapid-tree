@@ -1,4 +1,5 @@
 <script setup>
+import { PhX } from '@phosphor-icons/vue';
 import { onMounted, onBeforeUnmount, ref } from 'vue';
 const root = ref(null), hasText = ref(false);
 let input, timer;
@@ -20,6 +21,6 @@ onBeforeUnmount(() => { clearInterval(timer); input?.removeEventListener('input'
 <template>
   <span ref="root" class="clearable-search">
     <slot />
-    <button v-if="hasText" type="button" class="search-clear-button" aria-label="Clear search" @click="clear">×</button>
+    <button v-if="hasText" type="button" class="search-clear-button" aria-label="Clear search" @click="clear"><PhX :size="16" aria-hidden="true" /></button>
   </span>
 </template>

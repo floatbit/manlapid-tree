@@ -1,4 +1,5 @@
 <script setup lang="js">
+import { PhX } from '@phosphor-icons/vue';
 import { ref } from 'vue';
 const dialog = ref(null);
 </script>
@@ -11,7 +12,7 @@ const dialog = ref(null);
       title="Close"
       @click="dialog.close()"
     >
-      ×
+      <PhX :size="20" aria-hidden="true" />
     </button>
     <section class="finder-page">
       <form id="relationshipForm">

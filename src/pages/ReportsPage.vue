@@ -1,4 +1,5 @@
 <script setup lang="js">
+import { PhArrowRight, PhShuffle } from '@phosphor-icons/vue';
 import { computed, nextTick, ref, watch } from 'vue';
 import { family, activePage, useRuntime } from '../ui/runtime.js';
 import { overviewGenerations } from '../domain/reports.js';
@@ -105,7 +106,7 @@ function album(item) {
         </button>
       </div>
       <section id="reportRandomPhoto" class="report-random-photo" tabindex="-1" @keydown.capture="photoKeyboard">
-        <div class="report-photo-heading"><div><h2>Who’s in This Photo?</h2><p class="hint">Help identify people in an untagged family photo.</p></div><div class="report-photo-actions"><span v-if="randomPhoto">{{ randomPhoto.album.title }}</span><button type="button" :disabled="loadingRandomPhoto || randomPhotoTagger?.saving" @click="chooseRandomPhoto">Load Another Photo ↻</button></div></div>
+        <div class="report-photo-heading"><div><h2>Who’s in This Photo?</h2><p class="hint">Help identify people in an untagged family photo.</p></div><div class="report-photo-actions"><span v-if="randomPhoto">{{ randomPhoto.album.title }}</span><button type="button" :disabled="loadingRandomPhoto || randomPhotoTagger?.saving" @click="chooseRandomPhoto">Load Another Photo <PhShuffle :size="16" class="ui-icon" aria-hidden="true" /></button></div></div>
         <p v-if="loadingRandomPhoto" role="status">Loading a photo…</p>
         <p v-else-if="randomPhotoError" role="alert">{{ randomPhotoError }}</p>
         <template v-else-if="randomPhoto"><PhotoPeopleTags ref="randomPhotoTagger" :key="randomPhoto.photo" :photo="randomPhoto.photo" prefix="reportPhotoPeople" /><button class="report-random-image" type="button" aria-label="Open photo in lightbox" @click="api.openPhotoLightbox(randomPhoto.album.photos,randomPhoto.album.photos.indexOf(randomPhoto.photo),randomPhoto.album.title)"><img :src="randomPhoto.photo" :alt="randomPhoto.album.title" /></button></template>
@@ -124,7 +125,7 @@ function album(item) {
               type="button"
               @click="editPerson(p, report.kind)"
             >
-              {{ api?.displayName(p) || p.name }} →
+              <span>{{ api?.displayName(p) || p.name }}</span> <PhArrowRight :size="16" class="ui-icon" aria-hidden="true" />
             </button>
             <p v-if="!report.people.length">Everyone is up to date.</p>
           </div>
@@ -149,7 +150,7 @@ function album(item) {
             }}</span>
           </button>
           <p v-if="!upcoming.length">No upcoming anniversaries with known dates.</p>
-          <button type="button" @click="api.showSection('timeline')">View Timeline →</button>
+          <button type="button" @click="api.showSection('timeline')">View Timeline <PhArrowRight :size="16" class="ui-icon" aria-hidden="true" /></button>
         </section>
         <section>
           <h2>Family Locations</h2>
@@ -167,7 +168,7 @@ function album(item) {
             ><span>{{ count }} {{ count === 1 ? 'person' : 'people' }}</span>
           </button>
           <p v-if="!locations.length">Add current locations to explore your family on the map.</p>
-          <button type="button" @click="api.showSection('map')">Explore Map →</button>
+          <button type="button" @click="api.showSection('map')">Explore Map <PhArrowRight :size="16" class="ui-icon" aria-hidden="true" /></button>
         </section>
         <section>
           <h2>Latest Milestones</h2>
@@ -183,7 +184,7 @@ function album(item) {
             ><span>{{ api.familyDateLabel(event.date) }}</span>
           </button>
           <p v-if="!recent.length">No dated milestones yet.</p>
-          <button type="button" @click="api.showSection('timeline')">View Timeline →</button>
+          <button type="button" @click="api.showSection('timeline')">View Timeline <PhArrowRight :size="16" class="ui-icon" aria-hidden="true" /></button>
         </section>
         <section>
           <h2>Latest Albums</h2>
@@ -209,7 +210,7 @@ function album(item) {
             >
           </button>
           <p v-if="!recentAlbums.length">No albums yet.</p>
-          <button type="button" @click="api.showSection('albums')">View Albums →</button>
+          <button type="button" @click="api.showSection('albums')">View Albums <PhArrowRight :size="16" class="ui-icon" aria-hidden="true" /></button>
         </section>
       </div>
     </div>

@@ -1,8 +1,10 @@
 <script setup lang="js">
+import { PhArrowRight } from '@phosphor-icons/vue';
 import { computed, ref } from 'vue';
 import { family, timelineView, timelineQuery, useRuntime } from '../ui/runtime.js';
 import PersonAvatar from './PersonAvatar.vue';
 import MediaPreview from './MediaPreview.vue';
+import TimelineIcon from './TimelineIcon.vue';
 import { ageAtPassing } from '../ui/age.js';
 const api=computed(useRuntime);
 const albumDialog = ref(null), albumPerson = ref(null), selectedAlbum = ref(''), albumBusy = ref(false), albumError = ref('');
@@ -68,7 +70,6 @@ function marriagePeople(event) {
               v-if="event.kind === 'birth' || event.kind === 'death'"
               class="birth-event"
               :id="'timeline-' + event.kind + '-' + event.person.id"
-              :data-timeline-icon="event.kind === 'birth' ? '🌱' : '🕯️'"
               :class="{ 'welcome-birth-event': event.kind === 'birth' }"
               @click="api.start(event.person.id)"
               role="link" tabindex="0"
@@ -83,10 +84,11 @@ function marriagePeople(event) {
                   {{ event.kind === 'death' ? 'passed away' : 'was born' }}</strong
                 ><time>{{ api.familyDateLabel(event.date) }}<template v-if="event.kind === 'death' && ageAtPassing(event.person.dateDetails?.birth || event.person.birthday, event.date)"> · {{ ageAtPassing(event.person.dateDetails?.birth || event.person.birthday, event.date) }}</template></time>
                 <span v-if="event.kind === 'birth'" class="birth-album-actions" @click.stop>
-                  <button v-if="event.person.birthAlbumId" type="button" @click="viewBirthAlbum(event)">View Album<span v-if="birthAlbum(event)"> · {{ birthAlbum(event).photos.length }} photos</span> →</button>
+                  <button v-if="event.person.birthAlbumId" type="button" @click="viewBirthAlbum(event)">View Album<span v-if="birthAlbum(event)"> · {{ birthAlbum(event).photos.length }} photos</span> <PhArrowRight :size="16" class="ui-icon" aria-hidden="true" /></button>
                   <button type="button" class="birth-album-edit" @click="openBirthAlbum(event)">{{ event.person.birthAlbumId ? 'Change Album' : 'Attach Album' }}</button>
                 </span></span
-              ><span class="birth-arrow" aria-hidden="true">→</span>
+              ><span class="birth-arrow" aria-hidden="true"><PhArrowRight :size="16" class="ui-icon" aria-hidden="true" /></span>
+              <span class="timeline-rail-icon"><TimelineIcon :type="event.kind" /></span>
             </article>
             <article
               v-else
@@ -104,7 +106,6 @@ function marriagePeople(event) {
                   'halloween',
                 ].includes(event.type),
               }"
-              :data-timeline-icon="api.milestoneIcons[event.type] || '★'"
             >
               <span v-if="marriagePeople(event).length === 2" class="marriage-portraits">
                 <button v-for="person in marriagePeople(event)" :key="person.id" type="button" :aria-label="'Open ' + api.displayName(person) + ' in Tree'" @click="api.start(person.id)"><PersonAvatar :person="person" /></button>
@@ -120,9 +121,7 @@ function marriagePeople(event) {
                   class-name="avatar milestone-cover"
                   :alt="event.title"
                 /></button
-              ><span v-else class="avatar milestone-icon">{{
-                api.milestoneIcons[event.type] || '★'
-              }}</span
+              ><span v-else class="avatar milestone-icon"><TimelineIcon :type="event.type" :size="28" /></span
               ><button class="milestone-details" @click="api.openMilestone(event.id)">
                 <span
                   ><strong>{{ event.title }}</strong
@@ -133,8 +132,9 @@ function marriagePeople(event) {
                   ><span v-if="event.photos?.length" class="milestone-photo-count"
                     >▧ {{ api.milestoneMediaCount(event.photos) }}</span
                   ></span
-                ><span class="birth-arrow" aria-hidden="true">→</span>
+                ><span class="birth-arrow" aria-hidden="true"><PhArrowRight :size="16" class="ui-icon" aria-hidden="true" /></span>
               </button>
+              <span class="timeline-rail-icon"><TimelineIcon :type="event.type" /></span>
             </article>
           </template>
         </div>

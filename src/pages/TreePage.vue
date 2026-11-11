@@ -1,16 +1,16 @@
 <script setup lang="js">
-import { LockKeyhole, LockKeyholeOpen, Scan, Eraser, Network, RefreshCw } from '@lucide/vue';
+import { PhArrowRight } from '@phosphor-icons/vue';
+import { PhLock as LockKeyhole, PhLockOpen as LockKeyholeOpen, PhCornersOut as Scan, PhEraser as Eraser, PhTreeStructure as Network, PhArrowsClockwise as RefreshCw, PhLink, PhArrowUUpLeft, PhX, PhHeart } from '@phosphor-icons/vue';
 </script>
 <template>
   <main id="explore">
     <div class="workspace">
       <section class="canvas" id="canvas">
         <div id="empty">
-          <div class="empty-art">✳</div>
-          <h2>A Family Starts with Someone.</h2>
-          <p>Search for a person above to discover their connections.</p>
+          <h2>Discover Your Roots.</h2>
+          <p>Choose a person to explore your family.</p>
           <div id="emptySuggestions"></div>
-          <button id="addFirst">Add person →</button>
+          <button id="addFirst">Add person <PhArrowRight :size="16" class="ui-icon" aria-hidden="true" /></button>
         </div>
         <div id="graph">
           <div id="graphSpace">
@@ -23,7 +23,7 @@ import { LockKeyhole, LockKeyholeOpen, Scan, Eraser, Network, RefreshCw } from '
         <div id="relationshipBanner" hidden>
           <span id="relationshipSummary"></span
           ><button id="clearRelationshipPath" aria-label="Clear highlighted relationship path">
-            ×
+            <PhX :size="16" aria-hidden="true" />
           </button>
         </div>
         <div class="tree-view-actions">
@@ -33,7 +33,7 @@ import { LockKeyhole, LockKeyholeOpen, Scan, Eraser, Network, RefreshCw } from '
             aria-label="Back to starting person"
             hidden
           >
-            ↩ Start
+            <PhArrowUUpLeft :size="18" aria-hidden="true" /> <span>Start</span>
           </button>
           <button id="showEntireTree" title="Show entire tree" aria-label="Show entire tree">
             <Network :size="18" aria-hidden="true" />
@@ -45,19 +45,7 @@ import { LockKeyhole, LockKeyholeOpen, Scan, Eraser, Network, RefreshCw } from '
             title="Find a relationship between two people"
             aria-label="Relationship"
           >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              aria-hidden="true"
-            >
-              <circle cx="6" cy="12" r="4" />
-              <path d="M10 12h4" />
-              <circle cx="18" cy="12" r="4" />
-            </svg>
+            <PhLink :size="18" aria-hidden="true" />
             <span>Relationship</span>
           </button>
           <button
@@ -113,7 +101,7 @@ import { LockKeyhole, LockKeyholeOpen, Scan, Eraser, Network, RefreshCw } from '
       <aside id="details" aria-label="Selected person details">
         <p class="eyebrow">A CLOSER LOOK</p>
         <div class="aside-empty">
-          <span>♡</span>
+          <span><PhHeart :size="42" aria-hidden="true" /></span>
           <h2>Meet Your People.</h2>
           <p>Select a person to see their story and family connections.</p>
         </div>

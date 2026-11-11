@@ -72,7 +72,8 @@ function openAlbum(id) {
   if (event) {
     const button = document.createElement('button');
     button.type = 'button';
-    button.textContent = 'Linked milestone: ' + event.title + ' →';
+    button.textContent = 'Linked milestone: ' + event.title;
+    button.insertAdjacentHTML('beforeend', uiIcon('arrowRight'));
     button.onclick = () => {
       $('#albumDialog').close();
       showSection('timeline');

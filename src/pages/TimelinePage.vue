@@ -1,4 +1,5 @@
 <script setup lang="js">
+import { PhArrowRight } from '@phosphor-icons/vue';
 import SearchField from '../components/SearchField.vue';
 import TimelineEvents from '../components/TimelineEvents.vue';
 import UpcomingAnniversaries from '../components/UpcomingAnniversaries.vue';
@@ -15,7 +16,7 @@ import UpcomingAnniversaries from '../components/UpcomingAnniversaries.vue';
         </p>
       </div>
       <div class="timeline-actions">
-        <button id="addBirthdays">Add birthdays →</button
+        <button id="addBirthdays">Add birthdays <PhArrowRight :size="16" class="ui-icon" aria-hidden="true" /></button
         ><button id="addMilestone" class="primary">＋ Add milestone</button>
       </div>
     </div>

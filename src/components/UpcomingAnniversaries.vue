@@ -1,12 +1,14 @@
 <script setup lang="js">
+import { PhArrowRight } from '@phosphor-icons/vue';
+import TimelineIcon from './TimelineIcon.vue';
 import { computed, nextTick, ref } from 'vue';
-import { CalendarDays } from '@lucide/vue';
+import { PhCalendarDots as CalendarDays } from '@phosphor-icons/vue';
 import { family, useRuntime } from '../ui/runtime.js';
 const expanded = ref(window.sessionStorage.getItem('anniversaries-expanded') === 'true');
 function toggle() { expanded.value = !expanded.value; window.sessionStorage.setItem('anniversaries-expanded', String(expanded.value)); }
 const api = computed(useRuntime);
 const events = computed(() => api.value?.upcomingAnniversaries(family.value.people, family.value.milestones || []) || []);
-const icon = (event) => event.kind === 'Birthday' ? '🎂' : event.kind === 'Wedding Anniversary' ? '♡' : '🕯';
+const iconType = (event) => event.kind === 'Birthday' ? 'birthday_party' : event.kind === 'Wedding Anniversary' ? 'marriage' : 'remembrance';
 async function open(event) {
   if (event.personId || event.milestoneId) {
     const search = document.getElementById('timelineSearch');
@@ -39,7 +41,7 @@ async function open(event) {
         <span class="anniversaries-toggle-title">Upcoming Anniversaries</span>
         <span class="anniversaries-toggle-count">{{ events.length }} {{ events.length === 1 ? 'occasion' : 'occasions' }}</span>
       </span>
-      <span class="anniversaries-toggle-arrow" aria-hidden="true">→</span>
+      <span class="anniversaries-toggle-arrow" aria-hidden="true"><PhArrowRight :size="16" class="ui-icon" aria-hidden="true" /></span>
     </button>
     <div class="anniversaries-desktop-heading anniversaries-heading">
       <span class="anniversaries-heading-icon" aria-hidden="true"><CalendarDays :size="21" /></span>
@@ -77,7 +79,7 @@ async function open(event) {
       </span>
       <span class="anniversary-info">
         <span class="anniversary-kind"
-          ><span aria-hidden="true" class="anniversary-event-icon">{{ icon(event) }}</span
+          ><span aria-hidden="true" class="anniversary-event-icon"><TimelineIcon :type="iconType(event)" :size="14" /></span
           >{{ event.kind }}</span
         >
         <strong class="anniversary-name">{{ event.title }}</strong>

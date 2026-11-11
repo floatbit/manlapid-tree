@@ -45,7 +45,7 @@ function renderDetailsContent() {
       member.id,
     )}">${avatar(member)}<span><strong>${esc(displayName(member))}</strong>${
       label ? `<small>${esc(label)}</small>` : ''
-    }</span><span class="map-profile-arrow" aria-hidden="true">→</span></button>`;
+    }</span><span class="map-profile-arrow" aria-hidden="true">${uiIcon('arrowRight')}</span></button>`;
   const grouped = [
     ['parent', 'Parents'],
     ['sibling', 'Siblings'],
@@ -79,7 +79,7 @@ function renderDetailsContent() {
     ${
       p.nicknames?.length ? `<p class="hint">Also known as: ${esc(p.nicknames.join(', '))}</p>` : ''
     }
-    <div class="map-profile-actions"><button id="editSelected" type="button">Edit Person →</button><button id="sharePerson" type="button">Copy Person Link →</button></div>
+    <div class="map-profile-actions"><button id="editSelected" type="button">Edit Person ${uiIcon('arrowRight')}</button><button id="sharePerson" type="button">Copy Person Link ${uiIcon('arrowRight')}</button></div>
     <p class="label-context">Tree labels are relative to this person.</p>
     <div class="person-view-actions tree-profile-tools"><button id="traceSelected" ${
       !data.root || data.root === p.id ? 'hidden' : ''
@@ -89,7 +89,7 @@ function renderDetailsContent() {
     <section class="map-profile-family"><h3>Family Connections <span>${
       relatives.length
     }</span></h3>${grouped || '<p class="hint">No connections added yet.</p>'}</section>
-    <section class="map-profile-locations tree-location-history"><h3>Locations</h3><ol class="migration-stops">${migrationStopsForPerson(p).map((stop, i) => `<li><button type="button" data-tree-stop="${i}"><strong>${esc(locationStopLabel(stop))}</strong><span>${esc(stop.location)}</span></button></li>`).join('')}</ol><button type="button" id="treePersonPlaces">View Places Lived →</button></section>
+    <section class="map-profile-locations tree-location-history"><h3>Locations</h3><ol class="migration-stops">${migrationStopsForPerson(p).map((stop, i) => `<li><button type="button" data-tree-stop="${i}"><strong>${esc(locationStopLabel(stop))}</strong><span>${esc(stop.location)}</span></button></li>`).join('')}</ol><button type="button" id="treePersonPlaces">View Places Lived ${uiIcon('arrowRight')}</button></section>
     <div id="treePersonPhotos"></div>
     ${
       p.bio?.trim()
@@ -131,17 +131,17 @@ function renderSuggestions(reshuffle = false) {
     suggestedPeople = ids.slice(0, 17);
   }
   $('#details').innerHTML =
-    '<p class="eyebrow">A CLOSER LOOK</p><div class="sidebar-welcome"><div class="welcome-heart" aria-hidden="true">♡</div><h2>Meet Your People.</h2><p>Select a person to see their story and family connections.</p></div>';
+    '<p class="eyebrow">A CLOSER LOOK</p><div class="sidebar-welcome"><div class="welcome-heart" aria-hidden="true">' + uiIcon('heart') + '</div><h2>Meet Your People.</h2><p>Select a person to see their story and family connections.</p></div>';
   $('#emptySuggestions').innerHTML = `<div class="suggested-people">${
     suggestedPeople
       .map((id) => {
         const p = person(id);
         return `<button data-suggested="${id}">${avatar(p)}<span>${esc(
           displayName(p),
-        )}</span><span aria-hidden="true">→</span></button>`;
+        )}</span><span aria-hidden="true">${uiIcon('arrowRight')}</span></button>`;
       })
       .join('') || '<p>Add a person to begin your family tree.</p>'
-  }${data.people.length ? '<button id="shufflePeople" type="button"><span aria-hidden="true">↻</span><span>Show other people</span></button>' : ''}</div>`;
+  }${data.people.length ? `<button id="shufflePeople" type="button"><span>Show other people</span>${uiIcon('shuffle')}</button>` : ''}</div>`;
   document
     .querySelectorAll('[data-suggested]')
     .forEach((button) => (button.onclick = () => start(button.dataset.suggested)));
@@ -328,13 +328,13 @@ function search() {
         (m, i) =>
           `<button id="search-option-${i}" role="option" aria-selected="false" tabindex="-1" data-match="${
             m.p.id
-          }">${esc(m.p.name)} →</button>`,
+          }">${esc(m.p.name)} ${uiIcon('arrowRight')}</button>`,
       )
       .join('') +
     '</div>' +
     `<p>${
       matches.length ? 'Someone missing?' : 'No matching people yet.'
-    }</p><button id="request">Request “${esc(query)}” by email →</button>`;
+    }</p><button id="request">Request “${esc(query)}” by email ${uiIcon('arrowRight')}</button>`;
   document.querySelectorAll('[data-match]').forEach((b, i) => {
     b.onclick = () => start(b.dataset.match);
     b.onmouseenter = () => highlightSearch(i);

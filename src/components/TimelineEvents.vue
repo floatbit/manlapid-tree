@@ -67,7 +67,7 @@ function marriagePeople(event) {
             <article
               v-if="event.kind === 'birth' || event.kind === 'death'"
               class="birth-event"
-              :id="event.kind === 'birth' ? 'timeline-birth-' + event.person.id : undefined"
+              :id="'timeline-' + event.kind + '-' + event.person.id"
               :data-timeline-icon="event.kind === 'birth' ? '🌱' : '🕯️'"
               :class="{ 'welcome-birth-event': event.kind === 'birth' }"
               @click="api.start(event.person.id)"
@@ -83,10 +83,10 @@ function marriagePeople(event) {
                   {{ event.kind === 'death' ? 'passed away' : 'was born' }}</strong
                 ><time>{{ api.familyDateLabel(event.date) }}<template v-if="event.kind === 'death' && ageAtPassing(event.person.dateDetails?.birth || event.person.birthday, event.date)"> · {{ ageAtPassing(event.person.dateDetails?.birth || event.person.birthday, event.date) }}</template></time>
                 <span v-if="event.kind === 'birth'" class="birth-album-actions" @click.stop>
-                  <button v-if="event.person.birthAlbumId" type="button" @click="viewBirthAlbum(event)">View Album<span v-if="birthAlbum(event)"> · {{ birthAlbum(event).photos.length }} photos</span> ↗</button>
+                  <button v-if="event.person.birthAlbumId" type="button" @click="viewBirthAlbum(event)">View Album<span v-if="birthAlbum(event)"> · {{ birthAlbum(event).photos.length }} photos</span> →</button>
                   <button type="button" class="birth-album-edit" @click="openBirthAlbum(event)">{{ event.person.birthAlbumId ? 'Change Album' : 'Attach Album' }}</button>
                 </span></span
-              ><span class="birth-arrow" aria-hidden="true">↗</span>
+              ><span class="birth-arrow" aria-hidden="true">→</span>
             </article>
             <article
               v-else
@@ -133,7 +133,7 @@ function marriagePeople(event) {
                   ><span v-if="event.photos?.length" class="milestone-photo-count"
                     >▧ {{ api.milestoneMediaCount(event.photos) }}</span
                   ></span
-                ><span class="birth-arrow" aria-hidden="true">↗</span>
+                ><span class="birth-arrow" aria-hidden="true">→</span>
               </button>
             </article>
           </template>

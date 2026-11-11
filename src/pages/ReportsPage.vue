@@ -124,7 +124,7 @@ function album(item) {
               type="button"
               @click="editPerson(p, report.kind)"
             >
-              {{ api?.displayName(p) || p.name }} ↗
+              {{ api?.displayName(p) || p.name }} →
             </button>
             <p v-if="!report.people.length">Everyone is up to date.</p>
           </div>
@@ -149,7 +149,7 @@ function album(item) {
             }}</span>
           </button>
           <p v-if="!upcoming.length">No upcoming anniversaries with known dates.</p>
-          <button type="button" @click="api.showSection('timeline')">View Timeline ↗</button>
+          <button type="button" @click="api.showSection('timeline')">View Timeline →</button>
         </section>
         <section>
           <h2>Family Locations</h2>
@@ -167,7 +167,7 @@ function album(item) {
             ><span>{{ count }} {{ count === 1 ? 'person' : 'people' }}</span>
           </button>
           <p v-if="!locations.length">Add current locations to explore your family on the map.</p>
-          <button type="button" @click="api.showSection('map')">Explore Map ↗</button>
+          <button type="button" @click="api.showSection('map')">Explore Map →</button>
         </section>
         <section>
           <h2>Latest Milestones</h2>
@@ -183,7 +183,7 @@ function album(item) {
             ><span>{{ api.familyDateLabel(event.date) }}</span>
           </button>
           <p v-if="!recent.length">No dated milestones yet.</p>
-          <button type="button" @click="api.showSection('timeline')">View Timeline ↗</button>
+          <button type="button" @click="api.showSection('timeline')">View Timeline →</button>
         </section>
         <section>
           <h2>Latest Albums</h2>
@@ -209,7 +209,7 @@ function album(item) {
             >
           </button>
           <p v-if="!recentAlbums.length">No albums yet.</p>
-          <button type="button" @click="api.showSection('albums')">View Albums ↗</button>
+          <button type="button" @click="api.showSection('albums')">View Albums →</button>
         </section>
       </div>
     </div>

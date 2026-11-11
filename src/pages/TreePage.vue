@@ -10,7 +10,7 @@ import { LockKeyhole, LockKeyholeOpen, Scan, Eraser, Network, RefreshCw } from '
           <h2>A Family Starts with Someone.</h2>
           <p>Search for a person above to discover their connections.</p>
           <div id="emptySuggestions"></div>
-          <button id="addFirst">Add person ↗</button>
+          <button id="addFirst">Add person →</button>
         </div>
         <div id="graph">
           <div id="graphSpace">

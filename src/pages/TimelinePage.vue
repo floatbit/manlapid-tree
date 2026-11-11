@@ -15,7 +15,7 @@ import UpcomingAnniversaries from '../components/UpcomingAnniversaries.vue';
         </p>
       </div>
       <div class="timeline-actions">
-        <button id="addBirthdays">Add birthdays ↗</button
+        <button id="addBirthdays">Add birthdays →</button
         ><button id="addMilestone" class="primary">＋ Add milestone</button>
       </div>
     </div>

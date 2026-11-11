@@ -1,5 +1,5 @@
 /* Phone and compact tablet layouts. Desktop styles remain in features.css. */
-.mobile-menu-toggle { display: none; }
+.mobile-menu-toggle, .mobile-page-title { display: none; }
 #mobileMainMenu { padding: 24px; border: 1px solid var(--line); border-radius: 18px; background: var(--paper); color: var(--ink); }
 #mobileMainMenu::backdrop { background: #12251dd9; backdrop-filter: blur(5px); }
 .mobile-menu-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
@@ -14,6 +14,7 @@
     gap: 8px; padding: 8px 12px; height: auto; min-height: 60px;
   }
   header .brand { flex: none;  margin: 0; }
+  .mobile-page-title { display: block; flex: 1; min-width: 0; margin-left: 8px; font-weight: 600; }
   .mobile-menu-toggle { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 12px; margin: 0; }
   #mainNavigation { display: none; order: 3; width: 100%; margin: 0; overflow: visible; white-space: normal; }
   #mainNavigation.mobile-menu-open { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; padding: 8px 0; }
@@ -198,7 +199,7 @@
   #empty .suggested-people { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   #empty .suggested-people > button { width: 100%; min-width: 0; }
   #editor > .intro { padding-left: 0; padding-right: 0; }
-  #timeline .birth-year { display: grid; grid-template-columns: 66px minmax(0, 1fr); gap: 24px; }
+  #timeline .birth-year { display: grid; grid-template-columns: 66px minmax(0, 1fr); gap: 24px; padding-left: 0; }
   #timeline .birth-year > h2 { margin: 25px 0 0; line-height: 36px; }
   #timeline .birth-cards { padding-left: 24px; }
   #timeline .birth-cards::before { left: 0; }
@@ -206,7 +207,138 @@
   #timeline .birth-event.easter-event::after { left: -30px; }
   #timeline .timeline-year-gap { padding-left: 114px; }
   #timeline .timeline-year-gap::before { left: 90px; }
-  #timeline .birth-event { display: flex; flex-wrap: wrap; gap: 12px; min-width: 0; }
+  #timeline .birth-event { display: grid; grid-template-columns: 62px minmax(0, 1fr); gap: 12px; min-width: 0; }
   #timeline .birth-event > .avatar, #timeline .birth-event > .milestone-gallery, #timeline .marriage-portraits { justify-self: start; }
-  #timeline .birth-event > span:not(.avatar):not(.marriage-portraits):not(.birth-arrow), #timeline .birth-event > .milestone-details { flex: 1 1 100%; min-width: 0; }
+  #timeline .birth-event > span:not(.avatar):not(.marriage-portraits):not(.birth-arrow), #timeline .birth-event > .milestone-details { min-width: 0; }
+}
+
+@media (max-width: 760px) {
+  #emptySuggestions .suggestion-search { grid-column: 1 / -1; justify-self: center; width: 100%; max-width: 420px; margin-inline: auto; }
+  #explore #graphTools { display: none; }
+  #explore #graph { touch-action: none; }
+  .timeline-columns > .upcoming-anniversaries { grid-row: 1; }
+  .anniversaries-toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; padding: 0; border: 0; background: transparent; color: var(--green); font-size: 15px; text-align: left; }
+  .anniversaries-toggle > span { flex: none; font-size: 12px; }
+  .anniversaries-desktop-heading, .upcoming-anniversaries > .anniversaries-window { display: none; }
+  #anniversaryEntries { margin-top: 18px; }
+  #anniversaryEntries.mobile-collapsed { display: none; }
+  #albumsPage .album-grid { grid-template-columns: minmax(0, 1fr); }
+  #albumsPage .album-card { display: grid; grid-template-columns: 100px minmax(0, 1fr); align-items: stretch; }
+  #albumsPage .album-cover { width: 100%; height: 100%; min-height: 120px; border-radius: 0; }
+  #albumsPage .album-card-details { min-width: 0; padding: 14px; }
+}
+
+@media (max-width: 760px) {
+  #explore #backToStart { display: none; }
+  #explore .canvas-bottom { width: 100%; margin-inline: 0; text-align: center; justify-content: center; }
+  #upcomingAnniversaries > .anniversaries-toggle { display: flex; flex-direction: row; align-items: center; justify-content: space-between; gap: 12px; width: 100%; margin: 0; padding: 8px 0; border: 0; border-radius: 0; background: transparent; text-align: left; }
+  #upcomingAnniversaries > .anniversaries-toggle:hover { background: transparent; color: var(--green); }
+  #familiesPage .families-grid { grid-template-columns: minmax(0, 1fr); }
+  #familiesPage .family-directory-card { grid-template-columns: 100px minmax(0, 1fr); gap: 6px 14px; padding: 14px; align-items: center; }
+  #familiesPage .family-directory-card > .family-cover,
+  #familiesPage .family-directory-card > .family-card-portraits { grid-column: 1; grid-row: 1 / 4; width: 100px; height: 100%; min-height: 100px; margin: 0; border-radius: 8px; object-fit: cover; }
+  #familiesPage .family-directory-card > .family-card-portraits { display: flex; flex-wrap: wrap; align-content: center; justify-content: center; padding: 0; }
+  #familiesPage .family-directory-card > strong,
+  #familiesPage .family-directory-card > span:not(.family-card-portraits):not(.family-cover),
+  #familiesPage .family-directory-card > small { grid-column: 2; margin: 0; min-width: 0; }
+  #familiesPage .family-directory-card > strong { font-size: 18px; }
+}
+
+@media (max-width: 760px) {
+  #explore .tree-view-actions { justify-content: center; }
+}
+
+/* Compact navigation keeps the tablet header to a single row. */
+@media (min-width: 761px) and (max-width: 1023px) {
+  #app > header { display: flex; align-items: center; flex-wrap: nowrap; gap: 12px; height: 68px; min-height: 68px; padding: 8px 20px; }
+  #app > header .brand { flex: none; margin: 0; }
+  .mobile-page-title { display: block; flex: 1; min-width: 0; font-weight: 600; }
+  .mobile-menu-toggle { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; padding: 8px 12px; margin: 0; }
+  #app > header #mainNavigation { display: none; }
+  #mobileMainMenu { width: calc(100vw - 24px); max-height: calc(100dvh - 32px); margin: auto; padding: 20px; overflow: auto; }
+  #mobileMenuContent { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+  #mobileMainMenu #mainNavigation { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; order: 2; height: auto; padding: 0; }
+  #mobileMainMenu #mainNavigation button { min-height: 52px; padding: 14px; background: white; border: 1px solid var(--line); border-radius: 10px; text-align: left; color: var(--ink); }
+  #mobileMainMenu #mainNavigation button.active { background: var(--green); color: white; border-color: var(--green); }
+  #mobileMainMenu .search { display: block; width: 100%; margin: 0; order: 1; position: relative; }
+  #mobileMainMenu .search label { display: block; font-weight: 600; margin-bottom: 10px; }
+  #mobileMainMenu .searchbox { height: auto; min-height: 48px; padding: 5px 8px; gap: 8px; }
+  #mobileMainMenu .searchbox input { min-width: 0; width: 100%; margin: 0; padding: 8px 0; }
+  #mobileMainMenu .searchbox input, #mobileMainMenu .search-field { font-size: 13px; }
+  #mobileMainMenu .searchbox button { font-size: 12px; }
+  #mobileMainMenu .searchbox button { padding: 9px; white-space: nowrap; }
+  #mobileMainMenu #results { position: static; width: 100%; max-height: 40dvh; overflow: auto; margin-top: 8px; box-shadow: none; }
+  #mobileMainMenu #results:empty { display: none; }
+  #mobileMainMenu #results button { min-height: 44px; }
+  #app > header { min-height: 60px; flex-wrap: nowrap; }
+  #app > header > .search { display: none; }
+  #mobileMainMenu { width: min(600px, calc(100vw - 48px)); }
+  #mobileMainMenu .auth-link { order: 3; }
+}
+
+@media (max-width: 760px) {
+  #upcomingAnniversaries > .anniversaries-toggle { width: calc(100% + 32px); margin: 0 -16px; padding: 22px 16px 20px; gap: 12px; border-bottom: 1px solid #dfe5d8; background: linear-gradient(120deg, #edf3e5, #fffaf0); }
+  #upcomingAnniversaries > .anniversaries-toggle:hover { background: linear-gradient(120deg, #e5edda, #fff6e8); }
+  #upcomingAnniversaries .anniversaries-toggle > .anniversaries-heading-icon { display: grid; font-size: inherit; }
+  #upcomingAnniversaries .anniversaries-toggle-copy { display: grid; flex: 1; min-width: 0; gap: 5px; }
+  #upcomingAnniversaries .anniversaries-toggle-title { font-size: 18px; font-weight: 600; line-height: 1.3; color: var(--ink); }
+  #upcomingAnniversaries .anniversaries-toggle-count { font-size: 11px; }
+  #upcomingAnniversaries .anniversaries-toggle-arrow { font-size: 24px; color: var(--green); }
+}
+
+/* The starting-person grid grows with the page instead of clipping in the canvas. */
+@media (max-width: 760px) {
+  #explore .workspace:has(#empty:not([hidden])) {
+    height: auto;
+    min-height: calc(100dvh - 60px);
+  }
+  #explore .canvas:has(#empty:not([hidden])) {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    min-height: calc(100dvh - 60px);
+    max-height: none;
+    overflow: visible;
+  }
+  #explore .canvas:has(#empty:not([hidden])) .tree-view-actions { order: 0; flex-shrink: 0; }
+  #explore #empty:not([hidden]) {
+    position: relative;
+    order: 1;
+    flex: 1;
+    width: 100%;
+    max-height: none;
+    overflow: visible;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  }
+}
+
+@media (max-width: 760px) {
+  #upcomingAnniversaries:has(#anniversaryEntries.mobile-collapsed) { padding-bottom: 0; }
+  #upcomingAnniversaries:has(#anniversaryEntries.mobile-collapsed) > .anniversaries-toggle { border-bottom: 0; }
+}
+
+/* Populated trees extend behind floating controls, as on desktop. */
+@media (max-width: 760px) {
+  #explore .canvas:has(#graph:not([hidden])) { display: block; position: relative; }
+  #explore #graph:not([hidden]) { position: absolute; inset: 0; width: 100%; height: 100%; }
+  #explore .canvas:has(#graph:not([hidden])) .tree-view-actions {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    width: auto;
+    max-width: none;
+    margin: 0;
+    z-index: 3;
+  }
+  #explore .canvas:has(#graph:not([hidden])) .canvas-bottom {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 10px;
+    width: 100%;
+    margin: 0;
+    z-index: 2;
+    pointer-events: none;
+  }
 }

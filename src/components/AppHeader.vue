@@ -3,14 +3,14 @@ import SearchField from './SearchField.vue';
 import { Search, Menu, X } from '@lucide/vue';
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import { activePage, ready, useRuntime, ui } from '../ui/runtime.js';
-const links=[['treeTab','tree','Tree'],['familiesTab','families','Family'],['peopleTab','people','People'],['timelineTab','timeline','Timeline'],['mapTab','map','Map'],['albumsTab','albums','Album'],['recipesTab','recipes','Recipes'],['overviewTab','overview','Reports']];
+const links=[['treeTab','tree','Tree'],['familiesTab','families','Families'],['peopleTab','people','People'],['timelineTab','timeline','Timeline'],['mapTab','map','Map'],['albumsTab','albums','Albums'],['recipesTab','recipes','Recipes'],['overviewTab','overview','Reports']];
 const menuOpen = ref(false), menuDialog = ref(null), mobile = ref(false);
 function closeMenu() { menuDialog.value?.close(); menuOpen.value = false; }
 function openMenu() { menuOpen.value = true; menuDialog.value.showModal(); }
 watch(activePage, closeMenu);
 let media;
 function updateMobile() { mobile.value = media.matches; if (!mobile.value) closeMenu(); }
-onMounted(() => { media = window.matchMedia('(max-width: 760px)'); updateMobile(); media.addEventListener('change', updateMobile); ui.closeMobileMenu = closeMenu; });
+onMounted(() => { media = window.matchMedia('(max-width: 1023px)'); updateMobile(); media.addEventListener('change', updateMobile); ui.closeMobileMenu = closeMenu; });
 onBeforeUnmount(() => { media?.removeEventListener('change', updateMobile); delete ui.closeMobileMenu; });
 </script>
 <template>
@@ -20,7 +20,8 @@ onBeforeUnmount(() => { media?.removeEventListener('change', updateMobile); dele
   </dialog>
   <header>
     <a class="brand" href="#" aria-label="Family tree home">✳</a>
-    <button class="mobile-menu-toggle" type="button" :aria-expanded="menuOpen" aria-haspopup="dialog" aria-controls="mobileMainMenu" @click="openMenu"><component :is="menuOpen ? X : Menu" :size="20" aria-hidden="true" />{{ links.find(link => link[1] === activePage)?.[2] || 'Menu' }}</button>
+    <span class="mobile-page-title">{{ links.find(link => link[1] === activePage)?.[2] }}</span>
+    <button class="mobile-menu-toggle" type="button" aria-label="Open menu" :aria-expanded="menuOpen" aria-haspopup="dialog" aria-controls="mobileMainMenu" @click="openMenu"><Menu :size="20" aria-hidden="true" /></button>
     <Teleport to="#mobileMenuContent" :disabled="!mobile">
     <nav id="mainNavigation" aria-label="Main navigation" :class="{ 'mobile-menu-open': menuOpen }" @keydown.esc="menuOpen = false">
       <button
@@ -46,7 +47,7 @@ onBeforeUnmount(() => { media?.removeEventListener('change', updateMobile); dele
           id="search"
           placeholder="Type a name to begin…"
           autocomplete="off"
-        /></SearchField><button id="searchGo">Search ↗</button>
+        /></SearchField><button id="searchGo">Search</button>
       </div>
       <div id="results"></div>
     </div>

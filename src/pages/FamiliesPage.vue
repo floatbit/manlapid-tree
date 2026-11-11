@@ -157,7 +157,7 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
               :key="p.id"
               :person="p"
           /></span>
-          <strong>{{ group.name }} <span aria-hidden="true">↗</span></strong>
+          <strong>{{ group.name }} <span aria-hidden="true">→</span></strong>
           <span>{{
             members(group.parents)
               .map((p) => api.displayName(p))
@@ -174,7 +174,7 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
         <span aria-hidden="true">⌂</span>
         <h2>Every Family Has a Story.</h2>
         <p>Create a family group by choosing its parents and children.</p>
-        <button v-if="canEdit" type="button" @click="edit()">Create Your First Family ↗</button>
+        <button v-if="canEdit" type="button" @click="edit()">Create Your First Family →</button>
       </div>
       <p v-else-if="!filtered.length" class="hint">No families match that search.</p>
     </template>
@@ -188,7 +188,7 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
         </div>
         <div class="family-detail-actions">
           <button type="button" @click="api.openSavedFamilyTree(selected, visibleIds)">
-            Open in Tree ↗</button
+            Open in Tree →</button
           ><button v-if="canEdit" type="button" @click="edit(selected)">Edit Family</button
           ><button v-if="canEdit" type="button" @click="remove()">Delete Group</button>
         </div>
@@ -196,7 +196,7 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
       <p v-if="newChildren.length" class="family-new-children">
         {{ newChildren.length }} recorded
         {{ newChildren.length === 1 ? 'child is' : 'children are' }} available to include.
-        <button v-if="canEdit" type="button" @click="edit(selected)">Review Family ↗</button>
+        <button v-if="canEdit" type="button" @click="edit(selected)">Review Family →</button>
       </p>
       <div class="family-detail-layout">
         <div class="family-generations">
@@ -223,7 +223,7 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
                     :class="{ active: personId === p.id }"
                     @click="personId = p.id"
                   >
-                    <PersonAvatar :person="p" /><span class="family-member-info"><strong>{{ api.displayName(p) }}</strong><small v-if="p.dateDetails?.birth || p.birthday">Born {{ api.familyDateLabel(p.dateDetails?.birth || p.birthday) }}</small><small v-if="p.deceased">Deceased</small></span><span class="family-member-arrow" aria-hidden="true">↗</span></button
+                    <PersonAvatar :person="p" /><span class="family-member-info"><strong>{{ api.displayName(p) }}</strong><small v-if="p.dateDetails?.birth || p.birthday">Born {{ api.familyDateLabel(p.dateDetails?.birth || p.birthday) }}</small><small v-if="p.deceased">Deceased</small></span><span class="family-member-arrow" aria-hidden="true">→</span></button
                   ><button
                     v-if="band.level === 1 && canExpand(p.id)"
                     type="button"
@@ -251,7 +251,7 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
                       type="button"
                       @click="personId = spouse.id"
                     >
-                      {{ api.displayName(spouse) }} ↗
+                      {{ api.displayName(spouse) }} →
                     </button>
                   </div>
                 </div>
@@ -276,13 +276,13 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
           </p>
           <section class="family-photos">
             <div class="family-photos-heading"><h3>Family Photos <span v-if="selected.photoCount">({{ selected.photoCount }})</span></h3>
-              <button v-if="canEdit" type="button" @click="edit(selected)">{{ selected.albumId ? 'Add / Manage Photos' : 'Create Family Album' }} ↗</button>
+              <button v-if="canEdit" type="button" @click="edit(selected)">{{ selected.albumId ? 'Add / Manage Photos' : 'Create Family Album' }} →</button>
             </div>
             <p v-if="!selected.photoCount" class="hint">Keep family photos together in an album. Its cover also appears on this family.</p>
             <div v-if="album?.photos.length" class="family-photo-grid">
               <button v-for="(photo,index) in album.photos.slice(0,6)" :key="photo" type="button" @click="api.openPhotoLightbox(album.photos,index,album.title)"><MediaPreview :src="photo" :alt="album.title" /></button>
             </div>
-            <button v-if="album?.photos.length" type="button" @click="api.openPhotoLightbox(album.photos,0,album.title)">View Album ↗</button>
+            <button v-if="album?.photos.length" type="button" @click="api.openPhotoLightbox(album.photos,0,album.title)">View Album →</button>
           </section>
           <section v-if="locations.length" class="family-locations">
             <h3>Family Locations</h3>
@@ -292,7 +292,7 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
               type="button"
               @click="openLocation(place)"
             >
-              ⌖ {{ place }} <span aria-hidden="true">↗</span>
+              ⌖ {{ place }} <span aria-hidden="true">→</span>
             </button>
           </section>
         </div>
@@ -328,8 +328,8 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
             <PersonPhotos :person-id="selectedPerson.id" />
             <div class="family-person-actions">
               <button type="button" @click="api.openSavedFamilyTree(selected, visibleIds)">
-                Open Family Tree ↗</button
-              ><button v-if="canEdit" type="button" @click="editPerson">Edit Person ↗</button>
+                Open Family Tree →</button
+              ><button v-if="canEdit" type="button" @click="editPerson">Edit Person →</button>
             </div></template
           ><template v-else
             ><span class="family-sidebar-symbol" aria-hidden="true">♡</span>

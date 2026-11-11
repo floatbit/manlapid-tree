@@ -193,11 +193,11 @@ console.log(
     });
   const camera =
     tree.slice(
-      tree.indexOf('  if (fit) {', tree.indexOf('function render(')),
+      tree.indexOf('  const mobilePersonZoom =', tree.indexOf('function render(')),
       tree.indexOf('  } else if (expanding && sameTree)', tree.indexOf('function render(')),
     ) + '\n}';
   vm.runInContext(
-    "var fit=true, root='root',oldTransform='none'; function fitGraph() {centered.push('fit');}",
+    "var resetPersonZoom=false, fit=true, root='root',oldTransform='none'; function fitGraph() {centered.push('fit');}",
     centerContext,
   );
   centerContext.zoomLocked = true;
@@ -208,4 +208,45 @@ console.log(
     'Fresh searches center at the locked scale',
   );
   centerContext.centered.length = 0;
+}
+
+{
+  const handlers = {}, matrix = { a: 1, d: 1, e: 0, f: 0 };
+  const graph = { scrollLeft: 0, scrollTop: 0,
+    addEventListener(type, handler) { handlers[type] = handler; },
+    getBoundingClientRect() { return { left: 0, top: 0 }; },
+    scrollTo({left, top}) { this.scrollLeft = left; this.scrollTop = top; } };
+  const context = vm.createContext({
+    $: () => graph, graphLayout: {}, treeCenterRequest: 0, cameraPadded: false,
+    getComputedStyle: () => ({ transform: 'camera' }),
+    DOMMatrixReadOnly: class { constructor() { Object.assign(this, matrix); } },
+    setGraphZoomLocked() {},
+    setGraphScale(scale) { matrix.a = matrix.d = scale; },
+  });
+  vm.runInContext(controls.slice(controls.indexOf('// Two fingers move')), context);
+  const gesture = touches => ({ touches: touches.map(([clientX, clientY]) => ({clientX, clientY})), preventDefault() {} });
+  handlers.touchstart(gesture([[50, 100], [150, 100]]));
+  handlers.touchmove(gesture([[0, 100], [200, 100]]));
+  assert.equal(matrix.a, 2, 'Doubling finger separation doubles tree scale');
+  assert.equal(graph.scrollLeft, 100, 'Zoom keeps midpoint over the same world point');
+  handlers.touchmove(gesture([[20, 120], [220, 120]]));
+  assert.equal(graph.scrollLeft, 80, 'Moving both fingers pans horizontally');
+  assert.equal(graph.scrollTop, 80, 'Moving both fingers pans vertically');
+  handlers.touchend();
+  handlers.touchmove(gesture([[50, 120], [250, 120]]));
+  assert.equal(graph.scrollLeft, 80, 'Ended gesture cannot keep moving the camera');
+  console.log('Passed: two-finger tree pinch anchors its midpoint, pans both axes, and stops on release.');
+}
+
+{
+  const camera = tree.slice(tree.indexOf('  const mobilePersonZoom =', tree.indexOf('function render(')), tree.indexOf('  } else if (expanding && sameTree)', tree.indexOf('function render('))) + '\n}';
+  for (const fit of [true, false]) {
+    const context = vm.createContext({ resetPersonZoom: true, fit, centerId: fit ? null : 'person', root: 'person', data: { selected: 'person' }, oldTransform: 'none', graphScale: .4, zoomLocked: true, window: { matchMedia: () => ({matches:true}) } });
+    vm.runInContext('var centeredScale, centeredId; function setGraphZoomLocked(value) { zoomLocked=value; } function centerGraphOnPerson(id,scale) {centeredId=id; centeredScale=scale;} function fitGraph() {throw Error("Mobile person navigation must not auto-fit");}', context);
+    vm.runInContext(camera, context);
+    assert.equal(context.centeredScale, 1);
+    assert.equal(context.centeredId, 'person');
+    assert.equal(context.zoomLocked, false);
+  }
+  console.log('Passed: mobile person navigation and Center Person reset zoom to 100% instead of fitting or retaining the old scale.');
 }

@@ -1815,7 +1815,10 @@ gmp-place-autocomplete {
 }
 
 #timeline .birth-event.marriage-event::before {
-  font-size: 23px;
+  content: '♥';
+  font-family: Arial, sans-serif;
+  font-size: 20px;
+  color: #587653;
 }
 #timeline .marriage-portraits { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; width: 74px; }
 #timeline .marriage-portraits .avatar { width: 68px; height: 68px; flex-shrink: 0; border: 3px solid var(--paper); object-fit: cover; }
@@ -2757,6 +2760,8 @@ input[type='search']:not(#search),
 /* Search inputs share a clear action without changing their results layout. */
 .clearable-search { position: relative; display: flex; min-width: 0; }
 .clearable-search > input { width: 100%; min-width: 0; padding-right: 40px !important; }
+header > .search .searchbox .search-clear-button,
+#mobileMainMenu .searchbox .search-clear-button,
 .clearable-search .search-clear-button,
 .clearable-suggestion-search > .search-clear-button {
   position: absolute; right: 7px; top: 50%; transform: translateY(-50%);
@@ -3019,3 +3024,37 @@ body:not(.is-editor) .lightbox-people:not(:has(.lightbox-person-tag)) { display:
 @media (max-width: 600px) {
   #photoLightbox .lightbox-people { width: calc(100% - 20px); }
 }
+
+/* Shared interactive feedback and compact Tree camera actions. */
+@media (hover: hover) {
+  :where(button:not(:disabled), a, summary):hover { filter: brightness(.94); }
+  .map-profile-relative:hover, #details .connection:hover { background: #edf3e7; box-shadow: inset 3px 0 var(--green); }
+}
+:where(button, a, summary):focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+#details .tree-profile-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; margin: 16px 0 24px; border: 1px solid var(--line); border-radius: 12px; background: white; }
+#details .tree-profile-tools button { margin: 0; padding: 12px 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--green); font-size: 12px; text-align: center; }
+#details .tree-profile-tools #traceSelected { grid-column: 1 / -1; }
+#details .tree-location-history { padding: 0; border: 0; background: transparent; }
+
+#details .tree-location-history .migration-stops button { width: 100%; text-align: left; background: transparent; border: 0; padding: 10px 0; }
+.anniversaries-toggle { display: none; }
+
+/* Keep the mobile accordion activator out of the desktop card rules. */
+#upcomingAnniversaries > .anniversaries-toggle { display: none; }
+#upcomingAnniversaries > .anniversaries-toggle:hover { background: transparent; filter: none; }
+#details .tree-location-history { margin-top: 30px; }
+#mapSelectedPerson #migrationPersonPicker { margin-bottom: 26px; }
+#explore .workspace:has(#empty:not([hidden])) { grid-template-columns: minmax(0, 1fr); }
+#explore .workspace:has(#empty:not([hidden])) #details,
+#explore .canvas:has(#empty:not([hidden])) .canvas-bottom { display: none; }
+#emptySuggestions #shufflePeople { background: #dce7cc; color: var(--ink); border: 0; margin: 0; height: 56px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+#timeline .birth-event.anniversary-highlight { outline: 3px solid #7d9a68; outline-offset: 4px; }
+
+/* Consistent breathing room between sidebar content groups. */
+:is(#details, #mapSelectedPerson, .family-person-sidebar) > :is(section, .person-tagged-photos),
+:is(#details, #mapSelectedPerson, .family-person-sidebar) > div:has(> .person-tagged-photos) { margin-top: 32px; margin-bottom: 32px; }
+#details .tree-location-history { margin-top: 32px; }
+#emptySuggestions #shufflePeople > span { color: var(--ink); }
+#familiesPage .families-intro { justify-content: space-between; text-align: left; }
+#familiesPage .families-intro > div { flex: 1; margin: 0; text-align: left; }
+#familiesPage .families-intro :is(h1, p) { text-align: left; margin-left: 0; }

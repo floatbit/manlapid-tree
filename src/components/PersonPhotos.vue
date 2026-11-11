@@ -20,8 +20,8 @@ async function open(photo) {
   <section v-if="photos.length" class="person-tagged-photos" :aria-label="'Photos of ' + name">
     <h3>Photos of {{ name }} <span>{{ photos.length }}</span></h3>
     <div class="person-photos-grid">
-      <button v-for="(photo,index) in photos.slice(0,9)" :key="photo" type="button" :disabled="loading" :aria-label="'View photo ' + (index+1) + ' of ' + name" @click="open(photo)"><img :src="photo" loading="lazy" :alt="'Tagged photo of ' + name" /></button>
+      <button v-for="(photo,index) in photos.slice(0,6)" :key="photo" type="button" :disabled="loading" :aria-label="'View photo ' + (index+1) + ' of ' + name" @click="open(photo)"><img :src="photo" loading="lazy" :alt="'Tagged photo of ' + name" /></button>
     </div>
-    <button class="person-photos-all" type="button" :disabled="loading" @click="open(photos[0])">{{ loading ? 'Loading…' : 'View All Photos (' + photos.length + ') ↗' }}</button>
+    <button class="person-photos-all" type="button" :disabled="loading" @click="open(photos[0])">{{ loading ? 'Loading…' : 'View All Photos (' + photos.length + ') →' }}</button>
   </section>
 </template>

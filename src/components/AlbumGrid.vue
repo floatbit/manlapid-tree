@@ -37,7 +37,7 @@ function view(album) { if(album.photos.length) api.value.openPhotoLightbox(album
               }}{{ api.milestoneMediaCount(album.photos) || 'No photos yet' }}
             </p>
             <small>{{ album.milestoneId ? 'Linked to a milestone' : 'Independent album' }}</small
-            ><button type="button" @click="api.openAlbum(album.id)">Edit Album ↗</button>
+            ><button type="button" @click="api.openAlbum(album.id)">Edit Album →</button>
           </div>
         </article>
       </div>

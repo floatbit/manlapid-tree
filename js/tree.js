@@ -19,7 +19,7 @@ function expand(id, { fit = false } = {}) {
       if (!data.visible.includes(pathId)) data.visible.push(pathId);
   if (!data.expanded.includes(id)) data.expanded.push(id);
   save();
-  render({ expanding: !fit, centerId: fit ? null : id, fit });
+  render({ expanding: !fit, centerId: fit ? null : id, fit, resetPersonZoom: true });
   $('#details').scrollTop = 0;
 }
 function start(id) {
@@ -751,7 +751,7 @@ function centerPerson(id) {
   if (!person(id) || !data.visible.includes(id)) return;
   data.selected = id;
   save();
-  render({ centerId: id });
+  render({ centerId: id, resetPersonZoom: true });
 }
 function centerGraphOnPerson(id, scale, oldTransform) {
   const position = graphLayout?.positions.get(id);
@@ -831,7 +831,7 @@ function animateFamilyLines(previousLines) {
   }
 }
 animateFamilyLines.serial = 0;
-function render({ expanding = false, centerId = null, fit = false } = {}) {
+function render({ expanding = false, centerId = null, fit = false, resetPersonZoom = false } = {}) {
   const centerRequest = ++treeCenterRequest;
   if (relationshipTrace?.ids.some((id) => !person(id))) relationshipTrace = null;
   $('#canvas').classList.toggle(
@@ -990,7 +990,12 @@ function render({ expanding = false, centerId = null, fit = false } = {}) {
     width !== oldLayout.width ||
     height !== oldLayout.height ||
     ids.length !== oldNodes.size;
-  if (fit) {
+  const mobilePersonZoom = resetPersonZoom && window.matchMedia('(max-width: 760px)').matches;
+  if (mobilePersonZoom) {
+    graphScale = 1;
+    setGraphZoomLocked(false);
+    centerGraphOnPerson(centerId || data.selected || root, 1, oldTransform);
+  } else if (fit) {
     if (zoomLocked) centerGraphOnPerson(data.selected || root, graphScale, oldTransform);
     else fitGraph({ fromTransform: oldTransform });
   } else if (expanding && sameTree) {
@@ -1033,6 +1038,6 @@ function render({ expanding = false, centerId = null, fit = false } = {}) {
   }
   renderedRoot = root;
   renderDetails();
-  if (expanding && sameTree && centerId && !zoomLocked)
+  if (expanding && sameTree && centerId && !zoomLocked && !mobilePersonZoom)
     centerAfterTreeSettles(centerId, centerRequest);
 }

@@ -45,7 +45,7 @@ function renderDetailsContent() {
       member.id,
     )}">${avatar(member)}<span><strong>${esc(displayName(member))}</strong>${
       label ? `<small>${esc(label)}</small>` : ''
-    }</span><span class="map-profile-arrow" aria-hidden="true">↗</span></button>`;
+    }</span><span class="map-profile-arrow" aria-hidden="true">→</span></button>`;
   const grouped = [
     ['parent', 'Parents'],
     ['sibling', 'Siblings'],
@@ -63,7 +63,6 @@ function renderDetailsContent() {
         : '';
     })
     .join('');
-  const homes = p.locationHistory?.length || 0;
   $('#details').innerHTML = `<div class="map-profile-header">${avatar(p)}<div><h2>${esc(
     p.name,
   )}</h2>${
@@ -80,23 +79,17 @@ function renderDetailsContent() {
     ${
       p.nicknames?.length ? `<p class="hint">Also known as: ${esc(p.nicknames.join(', '))}</p>` : ''
     }
-    <div class="map-profile-actions"><button id="editSelected" type="button">Edit Person ↗</button><button id="sharePerson" type="button">Copy Person Link ↗</button></div>
+    <div class="map-profile-actions"><button id="editSelected" type="button">Edit Person →</button><button id="sharePerson" type="button">Copy Person Link →</button></div>
     <p class="label-context">Tree labels are relative to this person.</p>
     <div class="person-view-actions tree-profile-tools"><button id="traceSelected" ${
       !data.root || data.root === p.id ? 'hidden' : ''
     }>Show Path from Starting Person</button><button id="centerSelected">◎ Center Person</button><button id="collapseSelected" ${
     data.expanded.includes(p.id) ? '' : 'disabled'
   }>− Collapse Branch</button></div>
-    <section class="map-profile-locations"><h3>Locations</h3><dl><div><dt>Current Location</dt><dd>${esc(
-      p.location || 'Not added yet',
-    )}</dd></div><div><dt>Birthplace</dt><dd>${esc(
-    p.birthplace?.location || 'Not added yet',
-  )}</dd></div><div><dt>Places Lived</dt><dd>${homes} ${
-    homes === 1 ? 'past home' : 'past homes'
-  }</dd></div></dl><button type="button" id="treePersonPlaces">View Places Lived ↗</button></section>
     <section class="map-profile-family"><h3>Family Connections <span>${
       relatives.length
     }</span></h3>${grouped || '<p class="hint">No connections added yet.</p>'}</section>
+    <section class="map-profile-locations tree-location-history"><h3>Locations</h3><ol class="migration-stops">${migrationStopsForPerson(p).map((stop, i) => `<li><button type="button" data-tree-stop="${i}"><strong>${esc(stop.note || familyDateLabel(stop.date))}</strong><span>${esc(stop.location)}</span></button></li>`).join('')}</ol><button type="button" id="treePersonPlaces">View Places Lived →</button></section>
     <div id="treePersonPhotos"></div>
     ${
       p.bio?.trim()
@@ -110,23 +103,28 @@ function renderDetailsContent() {
     .join('')}</div></section>
 `;
   ui.mountPersonPhotos($('#treePersonPhotos'),p.id,'tree');
-  $('#treePersonPlaces').onclick = () => {
+  async function openPlaces(index) {
     rememberMapCamera();
     mapCameraReady = false;
     migrationPersonId = p.id;
+    familyMapMode = 'history';
     showSection('map');
-    if (familyMapMode === 'history') renderMigrationView();
-    else setFamilyMapMode('history');
-  };
-  document.querySelectorAll('.connection').forEach((b) => (b.onclick = () => expand(b.dataset.id)));
+    await renderFamilyMap();
+    if (index !== undefined) $('#mapSelectedPerson [data-migration-stop="' + index + '"]')?.click();
+    scrollToFamilyMap();
+  }
+  $('#treePersonPlaces').onclick = () => openPlaces();
+  document.querySelectorAll('[data-tree-stop]').forEach(button => button.onclick = () => openPlaces(Number(button.dataset.treeStop)));
+  document.querySelectorAll('#details .connection').forEach((b) => (b.onclick = () => { expand(b.dataset.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }));
   $('#editSelected').onclick = () => {
     tab(true);
     edit(p.id);
   };
-  $('#traceSelected').onclick = () => showSelectedPersonPath(p.id);
+  const revealTree = () => { if (window.matchMedia('(max-width: 760px)').matches) window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  $('#traceSelected').onclick = () => { showSelectedPersonPath(p.id); revealTree(); };
   $('#sharePerson').onclick = () => copyDirectLink({ person: p.id });
-  $('#centerSelected').onclick = () => centerPerson(p.id);
-  $('#collapseSelected').onclick = () => collapseBranch(p.id);
+  $('#centerSelected').onclick = () => { centerPerson(p.id); revealTree(); };
+  $('#collapseSelected').onclick = () => { collapseBranch(p.id); revealTree(); };
   document
     .querySelectorAll('[data-add-family]')
     .forEach((b) => (b.onclick = () => openFamilyDialog(p.id, b.dataset.addFamily)));
@@ -139,7 +137,7 @@ function renderSuggestions(reshuffle = false) {
       const j = Math.floor(Math.random() * (i + 1));
       [ids[i], ids[j]] = [ids[j], ids[i]];
     }
-    suggestedPeople = ids.slice(0, 14);
+    suggestedPeople = ids.slice(0, 17);
   }
   $('#details').innerHTML =
     '<p class="eyebrow">A CLOSER LOOK</p><div class="sidebar-welcome"><div class="welcome-heart" aria-hidden="true">♡</div><h2>Meet Your People.</h2><p>Select a person to see their story and family connections.</p></div>';
@@ -149,17 +147,14 @@ function renderSuggestions(reshuffle = false) {
         const p = person(id);
         return `<button data-suggested="${id}">${avatar(p)}<span>${esc(
           displayName(p),
-        )}</span><span aria-hidden="true">↗</span></button>`;
+        )}</span><span aria-hidden="true">→</span></button>`;
       })
       .join('') || '<p>Add a person to begin your family tree.</p>'
-  }<div class="suggestion-search"><input id="suggestionSearch" type="search" placeholder="Find someone else…" aria-label="Find someone in the family" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="suggestionMatches" autocomplete="off"><div id="suggestionMatches" role="listbox" hidden></div></div></div>${
-    data.people.length ? '<button id="shufflePeople">↻ Show other people</button>' : ''
-  }`;
+  }${data.people.length ? '<button id="shufflePeople" type="button"><span aria-hidden="true">↻</span><span>Show other people</span></button>' : ''}</div>`;
   document
     .querySelectorAll('[data-suggested]')
     .forEach((button) => (button.onclick = () => start(button.dataset.suggested)));
   if ($('#shufflePeople')) $('#shufflePeople').onclick = () => renderSuggestions(true);
-  setupSuggestionSearch();
 }
 function setupSuggestionSearch() {
   const input = $('#suggestionSearch'),
@@ -342,13 +337,13 @@ function search() {
         (m, i) =>
           `<button id="search-option-${i}" role="option" aria-selected="false" tabindex="-1" data-match="${
             m.p.id
-          }">${esc(m.p.name)} ↗</button>`,
+          }">${esc(m.p.name)} →</button>`,
       )
       .join('') +
     '</div>' +
     `<p>${
       matches.length ? 'Someone missing?' : 'No matching people yet.'
-    }</p><button id="request">Request “${esc(query)}” by email ↗</button>`;
+    }</p><button id="request">Request “${esc(query)}” by email →</button>`;
   document.querySelectorAll('[data-match]').forEach((b, i) => {
     b.onclick = () => start(b.dataset.match);
     b.onmouseenter = () => highlightSearch(i);

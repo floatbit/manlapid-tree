@@ -58,6 +58,7 @@ $('#familyForm').onsubmit = async (e) => {
 let treeDrag = null;
 function startTreeDrag(event) {
   if (
+    event.pointerType === 'touch' ||
     event.button !== 0 ||
     event.isPrimary === false ||
     !graphLayout ||
@@ -190,3 +191,39 @@ function redrawCurrentTree() {
   render({ centerId: data.selected || data.root });
 }
 $('#redrawTree').onclick = redrawCurrentTree;
+
+// Two fingers move the camera and scale around the gesture midpoint.
+let treeTouchCamera = null;
+function touchMidpoint(touches) {
+  return { x: (touches[0].clientX + touches[1].clientX) / 2,
+    y: (touches[0].clientY + touches[1].clientY) / 2,
+    distance: Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY) };
+}
+$('#graph').addEventListener('touchstart', event => {
+  if (event.touches.length !== 2 || !graphLayout) return;
+  event.preventDefault();
+  const graph = $('#graph'), scene = $('#scene');
+  const before = new DOMMatrixReadOnly(getComputedStyle(scene).transform);
+  const left = graph.scrollLeft, top = graph.scrollTop;
+  cameraPadded = true;
+  setGraphZoomLocked(false);
+  treeCenterRequest++;
+  setGraphScale(before.a, { animate: false });
+  const after = new DOMMatrixReadOnly(getComputedStyle(scene).transform);
+  graph.scrollTo({ left: left + after.e - before.e, top: top + after.f - before.f, behavior: 'instant' });
+  const mid = touchMidpoint(event.touches), rect = graph.getBoundingClientRect();
+  treeTouchCamera = { distance: Math.max(1, mid.distance), scale: before.a,
+    worldX: (mid.x - rect.left + graph.scrollLeft - after.e) / before.a,
+    worldY: (mid.y - rect.top + graph.scrollTop - after.f) / before.a };
+}, { passive: false });
+$('#graph').addEventListener('touchmove', event => {
+  if (!treeTouchCamera || event.touches.length !== 2) return;
+  event.preventDefault();
+  const graph = $('#graph'), mid = touchMidpoint(event.touches), rect = graph.getBoundingClientRect();
+  const scale = Math.max(.2, Math.min(2, treeTouchCamera.scale * mid.distance / treeTouchCamera.distance));
+  setGraphScale(scale, { animate: false, manual: true });
+  const matrix = new DOMMatrixReadOnly(getComputedStyle($('#scene')).transform);
+  graph.scrollTo({ left: treeTouchCamera.worldX * scale + matrix.e - (mid.x - rect.left),
+    top: treeTouchCamera.worldY * scale + matrix.f - (mid.y - rect.top), behavior: 'instant' });
+}, { passive: false });
+for (const type of ['touchend', 'touchcancel']) $('#graph').addEventListener(type, () => { treeTouchCamera = null; });

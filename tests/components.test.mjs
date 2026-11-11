@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { mount, flushPromises } from './mount-component.mjs';
 import { nextTick } from 'vue';
+import UpcomingAnniversaries from '../src/components/UpcomingAnniversaries.vue';
 import PersonPhotos from '../src/components/PersonPhotos.vue';
 import PersonAutocomplete from '../src/components/PersonAutocomplete.vue';
 import NicknameTags from '../src/components/NicknameTags.vue';
@@ -324,7 +325,7 @@ ui.sync({
   tagged['someone-else.jpg']=['chris'];
   ui.sync({...family.value,people,photoTags:tagged});
   const wrapper=mount(PersonPhotos,{props:{personId:'melissa'}});
-  assert.equal(wrapper.findAll('.person-photos-grid img').length,9);
+  assert.equal(wrapper.findAll('.person-photos-grid img').length,6);
   assert(wrapper.text().includes('Photos of Melissa'));
   assert(wrapper.text().includes('View All Photos (11)'));
   await wrapper.findAll('.person-photos-grid button')[1].trigger('click');await flushPromises();
@@ -350,3 +351,44 @@ ui.sync({
 console.log(
   'Passed: Vue keyboard autocomplete, repeated selection, nickname tags, reports, and lightbox navigation/share.',
 );
+
+{
+  window.sessionStorage.removeItem('anniversaries-expanded');
+  const accordion = mount(UpcomingAnniversaries);
+  assert.equal(accordion.find('.anniversaries-toggle').attributes('aria-expanded'), 'false');
+  assert(accordion.find('#anniversaryEntries').element.classList.contains('mobile-collapsed'));
+  await accordion.find('.anniversaries-toggle').trigger('click');
+  assert.equal(accordion.find('.anniversaries-toggle').attributes('aria-expanded'), 'true');
+  accordion.unmount();
+  const restored = mount(UpcomingAnniversaries);
+  assert.equal(restored.find('.anniversaries-toggle').attributes('aria-expanded'), 'true');
+  await restored.find('.anniversaries-toggle').trigger('click');
+  restored.unmount();
+  const closed = mount(UpcomingAnniversaries);
+  assert.equal(closed.find('.anniversaries-toggle').attributes('aria-expanded'), 'false');
+  closed.unmount();
+  console.log('Passed: anniversaries default closed and retain both open and closed states across remounts.');
+}
+
+{
+  const originalScroll = window.scrollTo;
+  const originalMedia = window.matchMedia;
+  window.matchMedia = () => ({ matches: true });
+  const scrolls = [];
+  window.scrollTo = options => scrolls.push(options);
+  const target = document.createElement('article');
+  target.id = 'timeline-death-chris'; target.tabIndex = 0;
+  target.getBoundingClientRect = () => ({ top: 240 });
+  const birth = document.createElement('article'); birth.id = 'timeline-birth-chris';
+  document.body.append(target, birth);
+  bindRuntime({ upcomingAnniversaries: () => [{ kind: 'Remembrance', personId: 'chris', title: 'Chris', next: new Date(), days: 0, years: 1 }] });
+  const wrapper = mount(UpcomingAnniversaries);
+  await wrapper.find('.anniversary-card').trigger('click'); await flushPromises();
+  assert(target.classList.contains('anniversary-highlight'), 'Remembrance highlights the death entry');
+  assert(!birth.classList.contains('anniversary-highlight'));
+  assert.equal(document.activeElement, target, 'Timeline entry receives keyboard focus');
+  assert(scrolls.length > 0, 'Remembrance scrolls to its timeline entry');
+  wrapper.unmount(); target.remove(); birth.remove();
+  window.scrollTo = originalScroll; window.matchMedia = originalMedia;
+  console.log('Passed: remembrance focuses, scrolls to, and highlights the death entry.');
+}

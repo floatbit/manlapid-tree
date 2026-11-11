@@ -38,7 +38,7 @@ $('#relationshipForm').onsubmit = (event) => {
     )
     .join(
       '',
-    )}</ol><button id="showRelationshipPath" class="primary" type="button">Show path in tree ↗</button>`;
+    )}</ol><button id="showRelationshipPath" class="primary" type="button">Show path in tree →</button>`;
   $('#showRelationshipPath').onclick = () => showRelationshipPath(lastRelationshipResult);
 };
 for (const select of ['#relationshipFrom', '#relationshipTo'])

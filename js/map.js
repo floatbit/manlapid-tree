@@ -175,6 +175,10 @@ function drawFamilyMapClusters() {
     else currentLocationsPopupPersonId = null;
   }
 }
+function scrollToFamilyMap() {
+  if (window.matchMedia('(max-width: 760px)').matches)
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 function openFamilyMapGroup(group, marker, { restore = false } = {}) {
   currentLocationsPopupPersonId = group.people[0].id;
   const content = document.createElement('div');
@@ -186,7 +190,7 @@ function openFamilyMapGroup(group, marker, { restore = false } = {}) {
   const addPeople = document.createElement('button');
   addPeople.type = 'button';
   addPeople.className = 'map-add-people';
-  addPeople.textContent = 'Update People ↗';
+  addPeople.textContent = 'Update People →';
   addPeople.onclick = () => {
     const source = group.people[0];
     openBulkLocation('current', { location: source.location, locationPlaceId: source.locationPlaceId || '', locationLat: group.position.lat, locationLng: group.position.lng });
@@ -228,7 +232,7 @@ function openFamilyMapGroup(group, marker, { restore = false } = {}) {
       const arrow = document.createElement('span');
       arrow.className = 'map-popup-link-arrow';
       arrow.setAttribute('aria-hidden', 'true');
-      arrow.textContent = '↗';
+      arrow.textContent = '→';
       link.append(text, arrow);
       link.setAttribute('aria-label', label + ' — ' + displayName(p));
       link.onclick = action;
@@ -241,7 +245,7 @@ function openFamilyMapGroup(group, marker, { restore = false } = {}) {
   familyMapPopup.setContent(content);
   familyMapPopup.setOptions({ disableAutoPan: restore });
   familyMapPopup.open({ map: familyMap, anchor: marker, shouldFocus: !restore });
-  if (!restore) familyMap.panTo(group.position);
+  if (!restore) { familyMap.panTo(group.position); scrollToFamilyMap(); }
   persistMapView();
 }
 function showMapPerson(id) {
@@ -285,7 +289,7 @@ function showMapPerson(id) {
       member.id,
     )}">${avatar(member)}<span><strong>${esc(displayName(member))}</strong>${
       label ? `<small>${esc(label)}</small>` : ''
-    }</span><span class="map-profile-arrow" aria-hidden="true">↗</span></button>`;
+    }</span><span class="map-profile-arrow" aria-hidden="true">→</span></button>`;
   const grouped = [
     ['parent', 'Parents'],
     ['sibling', 'Siblings'],
@@ -316,14 +320,14 @@ function showMapPerson(id) {
       ? `<p>Died · ${esc(familyDateLabel(p.dateDetails.death))}</p>`
       : ''
   }</div></div>
-    <div class="map-profile-actions"><button type="button" id="mapPersonTree">Open Family Tree ↗</button><button type="button" id="mapPersonEdit">Edit Person ↗</button></div>
+    <div class="map-profile-actions"><button type="button" id="mapPersonTree">Open Family Tree →</button><button type="button" id="mapPersonEdit">Edit Person →</button></div>
     <section class="map-profile-locations"><h3>Locations</h3><dl><div><dt>Current Location</dt><dd>${esc(
       p.location || 'Not added yet',
     )}</dd></div><div><dt>Birthplace</dt><dd>${esc(
     p.birthplace?.location || 'Not added yet',
   )}</dd></div><div><dt>Places Lived</dt><dd>${homes} ${
     homes === 1 ? 'past home' : 'past homes'
-  }</dd></div></dl><button type="button" id="mapPersonPlaces">View Places Lived ↗</button></section>
+  }</dd></div></dl><button type="button" id="mapPersonPlaces">View Places Lived →</button></section>
     <section class="map-profile-shared"><h3>At This Location <span>${shared.length}</span></h3>${
     shared
       .map((member) =>
@@ -402,7 +406,7 @@ async function renderFamilyMap({ fit = true } = {}) {
   missingReport.className = 'map-missing-report';
   missingReport.textContent = `${missing.length} ${
     missing.length === 1 ? 'person needs' : 'people need'
-  } locations — View Report ↗`;
+  } locations — View Report →`;
   missingReport.onclick = (event) => {
     event.preventDefault();
     showSection('overview');
@@ -412,7 +416,7 @@ async function renderFamilyMap({ fit = true } = {}) {
   $('#familyMapStatus').textContent = 'Loading map…';
   try {
     await loadPlacesLibrary();
-    const [{ Map, InfoWindow }, { AdvancedMarkerElement, PinElement }] = await Promise.all([
+    const [{ Map, InfoWindow, StyledMapType }, { AdvancedMarkerElement, PinElement }] = await Promise.all([
       google.maps.importLibrary('maps'),
       google.maps.importLibrary('marker'),
     ]);
@@ -422,10 +426,22 @@ async function renderFamilyMap({ fit = true } = {}) {
         center: { lat: 20, lng: 0 },
         zoom: 2,
         mapId: 'DEMO_MAP_ID',
+        renderingType: google.maps.RenderingType.RASTER,
+        clickableIcons: false,
         mapTypeControl: false,
         streetViewControl: false,
         gestureHandling: 'cooperative',
       });
+      // Use a styled base map so POIs stay hidden while retaining the map ID
+      // required by our family location markers.
+      familyMap.mapTypes.set(
+        'family',
+        new StyledMapType(
+          [{ featureType: 'poi', stylers: [{ visibility: 'off' }] }],
+          { name: 'Family map' },
+        ),
+      );
+      familyMap.setMapTypeId('family');
       familyMapPopup = new InfoWindow({ maxHeight: 560 });
       familyMapPopup.addListener('closeclick', () => {
         if (familyMapMode === 'current') {
@@ -439,13 +455,14 @@ async function renderFamilyMap({ fit = true } = {}) {
     familyMapGroups = groups;
     familyMapMarkerLibrary = { AdvancedMarkerElement, PinElement };
     if (familyMapMode === 'history') {
-      renderMigrationView();
+      await renderMigrationView();
       return;
     }
     drawFamilyMapClusters();
     groups.forEach((group, i) => {
       const button = $('#mappedPeople').querySelector(`[data-map-group="${i}"]`);
       button.onclick = () => {
+        scrollToFamilyMap();
         familyMap.setCenter(group.position);
         familyMap.setZoom(14);
         const marker = familyMapMarkers.find((marker) =>
@@ -600,7 +617,7 @@ async function renderMigrationView() {
     )
     .join('')}</select>${
     p
-      ? `${avatar(p)}<h3>${esc(p.name)}</h3><ol class="migration-stops">${stops
+      ? `<div class="map-profile-header">${avatar(p)}<div><h2>${esc(p.name)}</h2></div></div><ol class="migration-stops">${stops
           .map(
             (stop, i) =>
               `<li><button type="button" data-migration-stop="${i}"><strong>${
@@ -613,7 +630,7 @@ async function renderMigrationView() {
           )
           .join('')}</ol>${
           !stops.length ? '<p>No places lived recorded yet.</p>' : ''
-        }<button type="button" id="editMigrationPerson">Edit places lived ↗</button>`
+        }<button type="button" id="editMigrationPerson">Edit places lived →</button>`
       : '<p>Choose a person to explore their moves.</p>'
   }`;
   $('#migrationPerson').onchange = (e) => {
@@ -697,6 +714,7 @@ async function renderMigrationView() {
   details.querySelectorAll('[data-migration-stop]').forEach(
     (button) =>
       (button.onclick = () => {
+        scrollToFamilyMap();
         const i = Number(button.dataset.migrationStop);
         familyMap.setCenter({ lat: stops[i].lat, lng: stops[i].lng });
         familyMap.setZoom(9);

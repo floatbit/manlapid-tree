@@ -10,7 +10,7 @@
     "build": "vite build",
     "build:watch": "vite build --watch",
     "preview": "vite preview --host 127.0.0.1",
-    "test:components": "node --import ./tests/setup-dom.mjs --import ./tests/register-vue.mjs tests/components.test.mjs && node --import ./tests/setup-dom.mjs --import ./tests/register-vue.mjs tests/families-components.test.mjs && node --import ./tests/setup-dom.mjs --import ./tests/register-vue.mjs tests/viewer-components.test.mjs"
+    "test:components": "node --import ./tests/setup-dom.mjs --import ./tests/register-vue.mjs tests/components.test.mjs && node --import ./tests/setup-dom.mjs --import ./tests/register-vue.mjs tests/families-components.test.mjs && node --import ./tests/setup-dom.mjs --import ./tests/register-vue.mjs tests/viewer-components.test.mjs && node --import ./tests/setup-dom.mjs --import ./tests/register-vue.mjs tests/stories-components.test.mjs"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.10",

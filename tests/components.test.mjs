@@ -267,7 +267,7 @@ ui.sync({
   assert(document.querySelector('#mobileMainMenu #search'),'Mobile search moves into the menu');
   await mobileHeader.find('.mobile-menu-toggle').trigger('click');
   assert(document.querySelector('#mobileMainMenu').open,'Mobile menu opens as a modal');
-  assert.equal(document.querySelectorAll('#mobileMainMenu nav button').length,8);
+  assert.equal(document.querySelectorAll('#mobileMainMenu nav button').length,9);
   ui.closeMobileMenu();
   assert(!document.querySelector('#mobileMainMenu').open,'Selecting a person can close the menu');
   mobileHeader.unmount();window.matchMedia=originalMatchMedia;

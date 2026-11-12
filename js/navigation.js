@@ -80,7 +80,6 @@ function renderDetailsContent() {
       p.nicknames?.length ? `<p class="hint">Also known as: ${esc(p.nicknames.join(', '))}</p>` : ''
     }
     <div class="map-profile-actions"><button id="editSelected" type="button">Edit Person ${uiIcon('arrowRight')}</button><button id="sharePerson" type="button">Copy Person Link ${uiIcon('arrowRight')}</button></div>
-    <p class="label-context" data-viewer-context>${ui.viewerId ? 'Relationships to you.' : 'Tree labels are relative to this person.'}</p>
     <div class="person-view-actions tree-profile-tools"><button id="traceSelected" ${
       !data.root || data.root === p.id ? 'hidden' : ''
     }>Show Path from Starting Person</button><button id="centerSelected">◎ Center Person</button><button id="collapseSelected" ${
@@ -368,6 +367,7 @@ function savedSection() {
       'map',
       'albums',
       'recipes',
+      'stories',
     ].includes(section)
       ? section
       : 'overview';
@@ -400,12 +400,15 @@ function showSection(section, { replace = false } = {}) {
       'map',
       'albums',
       'recipes',
+      'stories',
     ].includes(section)
   )
     section = 'tree';
   rememberSection(section);
   ui.setSection(section);
   if (!restoringPageHistory) updatePageUrl(section, { replace });
+  $('#storiesPage').hidden = section !== 'stories';
+  $('#storiesTab').classList.toggle('active', section === 'stories');
   $('#familiesPage').hidden = section !== 'families';
   $('#familiesTab').classList.toggle('active', section === 'families');
   $('#overviewPage').hidden = section !== 'overview';
@@ -434,6 +437,7 @@ function showSection(section, { replace = false } = {}) {
   else if (section === 'albums') renderAlbums();
   else if (section === 'map') renderFamilyMap();
   else if (section === 'families') ui.sync(data);
+  else if (section === 'stories') return;
   else {
     render();
     fitGraph();
@@ -477,6 +481,7 @@ function sectionFromUrl(url = new URL(location.href)) {
     'map',
     'albums',
     'recipes',
+    'stories',
   ].includes(page)
     ? page
     : null;

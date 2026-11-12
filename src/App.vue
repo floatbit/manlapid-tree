@@ -7,6 +7,7 @@ import TreePage from './pages/TreePage.vue';
 import MapPage from './pages/MapPage.vue';
 import RecipesPage from './pages/RecipesPage.vue';
 import AlbumsPage from './pages/AlbumsPage.vue';
+import StoriesPage from './pages/StoriesPage.vue';
 import TimelinePage from './pages/TimelinePage.vue';
 import PeoplePage from './pages/PeoplePage.vue';
 import BulkLocationDialog from './dialogs/BulkLocationDialog.vue';
@@ -31,6 +32,7 @@ import SystemNotices from './components/SystemNotices.vue';
   <RecipesPage />
   <AlbumsPage />
   <TimelinePage />
+  <StoriesPage />
   <PeoplePage />
   <BulkLocationDialog />
   <SiblingGroupDialog />

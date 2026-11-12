@@ -36,6 +36,7 @@ for (const page of [
   'map',
   'albums',
   'recipes',
+  'stories',
   'relationships',
   'overview',
 ]) {

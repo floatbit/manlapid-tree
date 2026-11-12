@@ -381,3 +381,25 @@
 @media (max-width: 760px) {
   #viewerIdentityDialog { overflow-y: auto; padding: 28px 20px; }
 }
+@media (max-width: 760px) {
+  #storiesPage { padding: 24px 20px 44px; }
+  .stories-heading { align-items: flex-start; flex-direction: column; gap: 12px; }
+  .stories-prototype-note { align-items: flex-start; }
+  .story-article { padding: 10px 20px 40px; }
+  .story-article-heading h1 { font-size: 36px; }
+  #storyReader, #storyPrototypeEditor { width: 100vw; height: 100dvh; max-width: 100vw; max-height: 100dvh; margin: 0; border: 0; border-radius: 0; }
+}
+
+@media (max-width: 900px) {
+  #timeline { padding: 24px 16px 40px; }
+  .timeline-workspace { display: flex; flex-direction: column; }
+  .timeline-main { display: contents; }
+  #timeline .timeline-heading { order: 1; }
+  #timeline .timeline-search { order: 2; width: 100%; }
+  #timeline #timelineSummary { order: 3; }
+  #timeline .timeline-sidebar-stack { order: 4; position: static; width: 100%; height: auto; max-height: none; overflow: visible; padding: 0; border: 0; background: transparent; margin-bottom: 28px; }
+  #timeline #timelineEvents { order: 5; width: 100%; }
+}
+@media (max-width: 900px) {
+  #timeline .timeline-sidebar-stack { border: 0; }
+}

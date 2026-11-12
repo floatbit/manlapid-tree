@@ -49,7 +49,6 @@ function refreshViewerBadges() {
     node.setAttribute('aria-label', description);
     node.querySelector('.node-open')?.setAttribute('aria-label', description);
   }
-  for (const note of document.querySelectorAll('[data-viewer-context]')) note.textContent = viewerId.value ? 'Relationships to you.' : 'Tree labels are relative to this person.';
   document.getElementById('viewerPathHighlight')?.remove();
 }
 watch(viewerLabels, refreshViewerBadges, { flush: 'post' });
@@ -62,7 +61,7 @@ export const ui = {
   setEditing(allowed) {
     canEdit.value = !!allowed;
     document.body.classList.toggle('is-editor', !!allowed);
-    if (!allowed) for (const dialog of document.querySelectorAll('#albumDialog[open], #milestoneDialog[open], #recipeDialog[open], #familyDialog[open], #bulkLocationDialog[open], #siblingGroupDialog[open], #childrenGroupDialog[open], #familyGroupDialog[open], .birth-album-dialog[open]')) dialog.close();
+    if (!allowed) for (const dialog of document.querySelectorAll('#albumDialog[open], #milestoneDialog[open], #recipeDialog[open], #familyDialog[open], #bulkLocationDialog[open], #siblingGroupDialog[open], #childrenGroupDialog[open], #familyGroupDialog[open], #storyPrototypeEditor[open], .birth-album-dialog[open]')) dialog.close();
   },
   sync(data) {
     family.value = { ...data };

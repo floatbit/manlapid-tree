@@ -3408,3 +3408,74 @@ body:not(.is-editor) .lightbox-people:not(:has(.lightbox-person-tag)) { display:
 .family-generation-choice button { display: inline-flex; align-items: center; justify-content: center; margin: 0; min-height: 36px; line-height: 1.4; }
 .map-person-popup .map-popup-person-actions button { font-weight: 400; }
 @media (min-width: 1024px) { #app > header > .search { flex: 0 1 330px; max-width: 330px; } }
+
+/* Cards must not shrink: the scroll container, not the cards, limits height. */
+.timeline-sidebar-stack > * { flex: 0 0 auto; }
+@media (min-width: 901px) {
+  .timeline-sidebar-stack { overflow-y: auto; min-height: 0; max-height: calc(100dvh - 128px); padding-bottom: 4px; }
+}
+#storiesPage { max-width: 1440px; margin: 0 auto; padding: 40px 30px 70px; }
+.stories-heading { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.stories-heading h1 { margin: 18px 0; }
+.stories-heading p { color: var(--muted); }
+.stories-heading > button, .stories-prototype-note { display: flex; align-items: center; gap: 8px; }
+.stories-prototype-note { padding: 14px 16px; background: #edf2e6; color: var(--green); border-radius: 10px; line-height: 1.6; margin: 26px 0; }
+.stories-prototype-note svg { flex-shrink: 0; }
+.stories-search { max-width: 560px; margin: 24px 0; }
+.stories-list { max-width: 1000px; }
+.story-card { padding: 30px 0; border-bottom: 1px solid var(--line); }
+.story-card > div { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.story-card time, .story-byline { color: var(--muted); font-size: 12px; }
+.story-sample-label { padding: 3px 7px; background: var(--line); color: var(--muted); border-radius: 5px; font-size: 10px; }
+.story-card h2 { margin: 12px 0; }
+.story-card h2 button { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 0; border: 0; background: transparent; width: 100%; font: inherit; color: var(--ink); text-align: left; }
+.story-card h2 button svg { flex-shrink: 0; color: var(--green); }
+.story-card p { color: var(--muted); line-height: 1.7; max-width: 70ch; }
+.story-reader { width: min(960px, calc(100vw - 48px)); max-height: calc(100dvh - 48px); padding: 0; overflow-y: auto; background: var(--paper); }
+.story-close { position: sticky; top: 12px; z-index: 2; margin: 12px 12px 0 auto; display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; padding: 0; background: var(--paper); }
+.story-article { max-width: 800px; margin: 0 auto; padding: 10px 40px 50px; }
+.story-article > .story-article-heading { display: block; position: static; height: auto; min-height: 0; padding: 0 0 22px; background: transparent; border: 0; }
+.story-article-heading h1 { font-size: 36px; line-height: 1.25; margin: 14px 0 20px; }
+.story-meta { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 12px; color: var(--muted); }
+.story-deck { font-size: 18px; line-height: 1.6; color: var(--muted); }
+.story-prose p { font-size: 16px; line-height: 1.9; margin: 0 0 24px; white-space: pre-line; }
+.story-prose figure { margin: 30px 0; }
+.story-prose img { display: block; width: 100%; max-height: 600px; object-fit: contain; border-radius: 10px; }
+.story-prose figcaption { margin-top: 10px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.story-people { margin-top: 36px; border-top: 1px solid var(--line); padding-top: 22px; }
+.story-people h2 { font-size: 18px; }
+.story-people > div, .story-tag-list { display: flex; flex-wrap: wrap; gap: 10px; }
+.story-people > div > span { display: inline-flex; align-items: center; gap: 8px; background: #edf2e6; padding: 6px 12px 6px 6px; border-radius: 30px; font-size: 12px; }
+.story-people .avatar { width: 30px; height: 30px; margin: 0; font-size: 11px; }
+.story-editor { width: min(760px, calc(100vw - 40px)); padding: 0 26px 26px; max-height: calc(100dvh - 40px); overflow-y: auto; }
+.story-editor label { display: block; margin-top: 18px; }
+.story-editor input, .story-editor textarea { display: block; width: 100%; margin-top: 8px; }
+.story-editor fieldset { margin-top: 20px; border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+.story-editor .person-autocomplete [role=listbox] { position: static; max-height: 200px; overflow: auto; }
+.story-author-selection { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.story-tag-list button { background: #edf2e6; border-radius: 20px; margin-bottom: 8px; }
+.story-image-draft { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
+.story-image-draft img { width: 72px; height: 72px; object-fit: cover; border-radius: 8px; }
+.story-image-draft label { flex: 1; margin: 0; }
+.story-editor-actions { display: flex; gap: 10px; margin-top: 24px; }
+
+/* Timeline uses the same edge-to-edge side panel as Tree and Map. */
+#timeline { max-width: none; width: 100%; margin: 0; padding: 0; --timeline-header-height: 88px; }
+.timeline-workspace { display: grid; grid-template-columns: minmax(0, 1fr) 300px; align-items: start; gap: 0; }
+.timeline-main { min-width: 0; width: 100%; max-width: 1440px; margin: 0 auto; padding: 35px 40px 70px; }
+#timeline .timeline-sidebar-stack { position: sticky; top: var(--timeline-header-height); height: calc(100dvh - var(--timeline-header-height)); max-height: calc(100dvh - var(--timeline-header-height)); min-height: 0; overflow-y: auto; overscroll-behavior-y: contain; padding: 25px 18px; border-left: 1px solid var(--line); background: #fffefa; gap: 24px; scrollbar-gutter: auto; }
+#timeline .birth-year > h2 { top: calc(var(--timeline-header-height) + 12px); }
+
+/* A single quiet sidebar surface, with sections and rows instead of nested cards. */
+#timeline .timeline-sidebar-stack { border: 0; border-left: 1px solid var(--line); border-radius: 0; box-shadow: none; gap: 0; }
+#timeline .timeline-sidebar-stack :is(.on-this-day-card, #upcomingAnniversaries) { padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; overflow: visible; }
+#timeline .timeline-sidebar-stack .on-this-day-card + #upcomingAnniversaries { margin-top: 26px; padding-top: 26px; border-top: 1px solid var(--line); }
+#timeline .timeline-sidebar-stack .anniversaries-heading { margin: 0; padding: 0; background: transparent; border: 0; }
+#timeline .timeline-sidebar-stack :is(.on-this-day-icon, .anniversaries-heading-icon) { width: 28px; min-width: 28px; height: 32px; background: transparent; border: 0; border-radius: 0; }
+#timeline .timeline-sidebar-stack :is(.anniversary-card, .on-this-day-item) { margin: 0; padding: 16px 0; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: transparent; box-shadow: none; }
+#timeline .timeline-sidebar-stack :is(.anniversary-card, .on-this-day-item):last-child { border-bottom: 0; }
+#timeline .timeline-sidebar-stack :is(.anniversary-card, .on-this-day-item):hover { background: #f3f5ef; filter: none; transform: none; box-shadow: none; }
+#timeline .timeline-sidebar-stack :is(.anniversary-date, .on-this-day-years-badge) { padding: 4px 0; background: transparent; border: 0; border-radius: 0; color: var(--green); }
+#timeline .timeline-sidebar-stack .on-this-day-entries { gap: 0; }
+#timeline .timeline-sidebar-stack .on-this-day-title { white-space: normal; }
+#timeline .timeline-sidebar-stack .anniversaries-window { margin: 18px 0 4px; }

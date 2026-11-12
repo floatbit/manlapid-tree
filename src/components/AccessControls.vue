@@ -7,7 +7,7 @@ function updateControls() {
     if (editingIds.has(button.id) || /^(?:edit\b|delete\b|create\b|add\b|update people\b|review family\b|attach album\b|change album\b|[＋+]\s*(?:add|create)\b)/i.test(button.textContent.trim()) || button.matches('[data-add-family], [data-node-add], .lightbox-delete')) button.dataset.editorOnly = '';
   }
   for (const dialog of document.querySelectorAll('dialog')) {
-    if (dialog.querySelector('.dialog-close-x, #lightboxClose, .relationship-dialog-close, [aria-label="Close menu"], [aria-label="Close Select Me"]')) continue;
+    if (dialog.querySelector('.dialog-close-x, #lightboxClose, .relationship-dialog-close, [aria-label="Close menu"], [aria-label="Close Select Me"], .story-close')) continue;
     const close = document.createElement('button');
     close.type = 'button';close.className = 'dialog-close-x';close.textContent = '×';close.setAttribute('aria-label','Close dialog');
     close.onclick = () => {

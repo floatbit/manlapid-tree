@@ -195,5 +195,5 @@ ui.unmountPersonPhotos = key => {
 ui.mountPersonPhotos = (host,personId,key) => {
   ui.unmountPersonPhotos(key);
   if(!host)return;
-  const app=createApp(PersonPhotos,{personId});app.mount(host);personPhotoApps.set(key,app);
+  const app=createApp(PersonPhotos,{personId,inSidebar:true});app.mount(host);personPhotoApps.set(key,app);
 };

@@ -37,7 +37,12 @@ watch(activePage, page => { if (page === 'families') api.value?.loadFamilyAlbums
 
 const view = computed(() => {const options={...defaultFamilyView(),...selected.value?.viewOptions};if(options.below==='none')options.below='children';if(options.below==='children')options.expandedChildren=[];return options;});
 const bands = computed(() => familyGenerationBands(selected.value, people.value, family.value.links || [], view.value));
-const visibleIds = computed(() => [...new Set([...bands.value.flatMap((band) => band.ids), ...(view.value.below === 'none' ? [] : view.value.expandedChildren.flatMap((id) => spouses(id).map((p) => p.id)))])]);
+const visibleIds = computed(() => {
+  const spouseIds = view.value.below === 'none' ? [] : view.value.expandedChildren.flatMap((id) => spouses(id).map((p) => p.id));
+  const beforeSpouses = bands.value.filter((b) => b.level <= 1).flatMap((b) => b.ids);
+  const afterSpouses = bands.value.filter((b) => b.level > 1).flatMap((b) => b.ids);
+  return [...new Set([...beforeSpouses, ...spouseIds, ...afterSpouses])];
+});
 function spouses(id) { return (family.value.links || []).filter((link) => link.type === 'spouse' && (link.a === id || link.b === id)).map((link) => person(link.a === id ? link.b : link.a)).filter(Boolean); }
 function canExpand(id) {return recordedChildren([id]).length || spouses(id).length;}
 async function changeView(key, value) {
@@ -284,7 +289,7 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
             <button v-if="album?.photos.length" type="button" @click="api.openPhotoLightbox(album.photos,0,album.title)">View Album <PhArrowRight :size="16" class="ui-icon" aria-hidden="true" /></button>
           </section>
           <section class="family-member-photos"><h3>Photos by Family Member</h3>
-            <div class="family-member-photo-grid"><PersonPhotos v-for="member in members([...selected.parents, ...selected.children])" :key="member.id" :person-id="member.id" :limit="12" :columns="4" show-empty show-name /></div>
+            <div class="family-member-photo-grid"><PersonPhotos v-for="member in members(visibleIds)" :key="member.id" :person-id="member.id" :limit="8" :columns="4" show-empty show-name /></div>
           </section>
           <section v-if="locations.length" class="family-locations">
             <h3>Family Locations</h3>

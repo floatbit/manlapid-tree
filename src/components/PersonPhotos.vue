@@ -19,11 +19,11 @@ async function open(photo) {
 </script>
 <template>
   <section v-if="photos.length || showEmpty" class="person-tagged-photos" :aria-label="'Photos of ' + name">
-    <h3>{{ showName ? name + ' · Photos' : 'PHOTOS' }} <span>{{ photos.length }}</span></h3>
+    <h3>{{ showName ? name : 'PHOTOS' }} <span v-if="!showName">{{ photos.length }}</span></h3>
     <p v-if="!photos.length" class="hint">No photos tagged yet.</p>
     <div class="person-photos-grid" :style="{gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`}">
       <button v-for="(photo,index) in photos.slice(0,limit)" :key="photo" type="button" :disabled="loading" :aria-label="'View photo ' + (index+1) + ' of ' + name" @click="open(photo)"><img :src="photo" loading="lazy" :alt="'Tagged photo of ' + name" /></button>
     </div>
-    <button v-if="photos.length" class="person-photos-all" type="button" :disabled="loading" @click="open(photos[0])">{{ loading ? 'Loading…' : 'View All Photos (' + photos.length + ')' }} <PhArrowRight :size="14" class="ui-icon" aria-hidden="true" /></button>
+    <button v-if="photos.length" class="person-photos-all" type="button" :disabled="loading" @click="open(photos[0])">{{ loading ? 'Loading…' : (showName ? 'View All Photos (' + photos.length + ')' : 'View All Photos') }} <PhArrowRight :size="14" class="ui-icon" aria-hidden="true" /></button>
   </section>
 </template>

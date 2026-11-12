@@ -3347,7 +3347,7 @@ body:not(.is-editor) .lightbox-people:not(:has(.lightbox-person-tag)) { display:
 #timeline .birth-event::before { left: var(--timeline-marker-left); top: var(--timeline-marker-top); width: 32px; height: 32px; }
 #timeline .timeline-rail-icon { position: absolute; left: var(--timeline-marker-left); top: var(--timeline-marker-top); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: #587347; pointer-events: none; }
 #timeline .timeline-rail-icon .event-icon-birth { width: 13px; height: 13px; }
-#timeline .timeline-rail-icon .event-icon-marriage { width: 20px; height: 20px; }
+#timeline .timeline-rail-icon .event-icon-marriage { width: 16px; height: 16px; }
 #timeline .timeline-rail-icon .event-icon-birthday_party,
 #timeline .timeline-rail-icon .event-icon-thanksgiving,
 #timeline .timeline-rail-icon .event-icon-christmas,
@@ -3396,3 +3396,15 @@ body:not(.is-editor) .lightbox-people:not(:has(.lightbox-person-tag)) { display:
 .map-popup-person-heading .viewer-relationship { display: block; margin-top: 3px; }
 
 #viewerIdentityDialog .viewer-relationship { display: none; }
+
+/* Keep tall timeline sidebars accessible beneath the sticky header. */
+@media (min-width: 901px) {
+  .timeline-sidebar-stack { max-height: calc(100dvh - 128px); overflow-y: auto; overscroll-behavior-y: contain; scrollbar-gutter: stable; }
+}
+.family-view-controls { align-items: center; }
+.family-generation-choice { display: flex; flex-direction: column; gap: 8px; }
+.family-generation-choice > span { display: flex; align-items: center; margin: 0; line-height: 1.4; }
+.family-generation-choice > div { align-items: center; }
+.family-generation-choice button { display: inline-flex; align-items: center; justify-content: center; margin: 0; min-height: 36px; line-height: 1.4; }
+.map-person-popup .map-popup-person-actions button { font-weight: 400; }
+@media (min-width: 1024px) { #app > header > .search { flex: 0 1 330px; max-width: 330px; } }

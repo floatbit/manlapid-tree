@@ -49,7 +49,7 @@ function refreshViewerBadges() {
     node.setAttribute('aria-label', description);
     node.querySelector('.node-open')?.setAttribute('aria-label', description);
   }
-  for (const note of document.querySelectorAll('[data-viewer-context]')) note.textContent = viewerId.value ? 'Tree labels show each person’s relationship to you.' : 'Tree labels are relative to this person.';
+  for (const note of document.querySelectorAll('[data-viewer-context]')) note.textContent = viewerId.value ? 'Relationships to you.' : 'Tree labels are relative to this person.';
   document.getElementById('viewerPathHighlight')?.remove();
 }
 watch(viewerLabels, refreshViewerBadges, { flush: 'post' });

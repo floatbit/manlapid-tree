@@ -18,9 +18,9 @@ async function open(photo) {
 }
 </script>
 <template>
-  <section v-if="photos.length || showEmpty" class="person-tagged-photos" :aria-label="'Photos of ' + name">
+  <section v-if="photos.length || showEmpty || inSidebar" class="person-tagged-photos" :aria-label="'Photos of ' + name">
     <h3>{{ showName ? name : 'PHOTOS' }} <span v-if="!showName">{{ photos.length }}</span></h3>
-    <p v-if="!photos.length" class="hint">No photos tagged yet.</p>
+    <p v-if="!photos.length" class="hint">No photos yet.</p>
     <div class="person-photos-grid" :style="{gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`}">
       <button v-for="(photo,index) in photos.slice(0,limit)" :key="photo" type="button" :disabled="loading" :aria-label="'View photo ' + (index+1) + ' of ' + name" @click="open(photo)"><img :src="photo" loading="lazy" :alt="'Tagged photo of ' + name" /></button>
     </div>

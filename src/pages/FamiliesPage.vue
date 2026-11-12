@@ -340,6 +340,7 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
             </p>
             <section class="map-profile-locations tree-location-history">
               <h3>Locations</h3>
+              <p v-if="!(api.migrationStopsForPerson?.(selectedPerson) || []).length" class="hint">No places recorded yet.</p>
               <ol class="migration-stops"><li v-for="(stop,index) in api.migrationStopsForPerson?.(selectedPerson) || []" :key="stop.id || index"><button type="button" @click="api.openPersonPlaces(selectedPerson.id,index)"><strong>{{ api.locationStopLabel(stop) }}</strong><span>{{ stop.location }}</span></button></li></ol>
             </section>
             <p v-if="selectedPerson.bio">{{ selectedPerson.bio }}</p>

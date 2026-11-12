@@ -12,6 +12,7 @@ function highlightViewerPath(id) {
   const overlay = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   overlay.id = 'viewerPathHighlight'; overlay.setAttribute('pointer-events', 'none');
   overlay.innerHTML = relationshipPathLines(graphLayout, path);
-  document.getElementById('lines').append(overlay);
+  const lines = document.getElementById('lines');
+  lines.insertBefore(overlay, lines.querySelector('.spouse-heart'));
 }
 function clearViewerPath() { document.getElementById('viewerPathHighlight')?.remove(); }

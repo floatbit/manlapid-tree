@@ -80,7 +80,7 @@ function renderDetailsContent() {
       p.nicknames?.length ? `<p class="hint">Also known as: ${esc(p.nicknames.join(', '))}</p>` : ''
     }
     <div class="map-profile-actions"><button id="editSelected" type="button">Edit Person ${uiIcon('arrowRight')}</button><button id="sharePerson" type="button">Copy Person Link ${uiIcon('arrowRight')}</button></div>
-    <p class="label-context" data-viewer-context>${ui.viewerId ? 'Tree labels show each person’s relationship to you.' : 'Tree labels are relative to this person.'}</p>
+    <p class="label-context" data-viewer-context>${ui.viewerId ? 'Relationships to you.' : 'Tree labels are relative to this person.'}</p>
     <div class="person-view-actions tree-profile-tools"><button id="traceSelected" ${
       !data.root || data.root === p.id ? 'hidden' : ''
     }>Show Path from Starting Person</button><button id="centerSelected">◎ Center Person</button><button id="collapseSelected" ${
@@ -89,7 +89,7 @@ function renderDetailsContent() {
     <section class="map-profile-family"><h3>Family Connections <span>${
       relatives.length
     }</span></h3>${grouped || '<p class="hint">No connections added yet.</p>'}</section>
-    <section class="map-profile-locations tree-location-history"><h3>Locations</h3><ol class="migration-stops">${migrationStopsForPerson(p).map((stop, i) => `<li><button type="button" data-tree-stop="${i}"><strong>${esc(locationStopLabel(stop))}</strong><span>${esc(stop.location)}</span></button></li>`).join('')}</ol><button type="button" id="treePersonPlaces">View Places Lived ${uiIcon('arrowRight')}</button></section>
+    <section class="map-profile-locations tree-location-history"><h3>Locations</h3>${!migrationStopsForPerson(p).length ? '<p class="hint">No places recorded yet.</p>' : ''}<ol class="migration-stops">${migrationStopsForPerson(p).map((stop, i) => `<li><button type="button" data-tree-stop="${i}"><strong>${esc(locationStopLabel(stop))}</strong><span>${esc(stop.location)}</span></button></li>`).join('')}</ol><button type="button" id="treePersonPlaces">View Places Lived ${uiIcon('arrowRight')}</button></section>
     <div id="treePersonPhotos"></div>
     ${
       p.bio?.trim()

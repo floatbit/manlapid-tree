@@ -42,7 +42,7 @@ watch([ready, canEdit], ([loaded, editing]) => {
       <button class="viewer-dialog-close" type="button" aria-label="Close Select Me" @click="dialog.close()"><PhX :size="20" /></button>
       <h2 id="viewerIdentityTitle">{{ introduction ? 'Make This Your Family View' : 'Select Me' }}</h2>
       <p>Choose yourself to see how everyone is related to you across the tree, family cards, and people searches. Your choice stays in this browser and can be changed or cleared anytime.</p>
-      <p class="hint">This is optional. It personalizes your view and does not change family records or editing access.</p>
+      <p class="hint">Optional. Only your view changes.</p>
       <PersonAutocomplete v-if="api" :key="viewerId" ref="picker" input-id="viewerIdentitySearch" list-id="viewerIdentityMatches" label="Find yourself" placeholder="Search for your name…" :options="()=>family.people" :matches="api.personMatchesQuery" :display="api.displayName" :validate-selection="false" @select="choose" />
       <div class="viewer-dialog-actions">
         <button v-if="viewer" type="button" @click="clear">Clear Me</button>

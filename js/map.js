@@ -326,7 +326,7 @@ function showMapPerson(id) {
       : ''
   }${viewerBadge(p.id)}</div></div>
     <div class="map-profile-actions"><button type="button" id="mapPersonTree">Open Family Tree ${uiIcon('arrowRight')}</button><button type="button" id="mapPersonEdit">Edit Person ${uiIcon('arrowRight')}</button></div>
-    <section class="map-profile-locations tree-location-history"><h3>Locations</h3><ol class="migration-stops">${migrationStopsForPerson(p).map((stop,i) => `<li><button type="button" data-map-person-stop="${i}"><strong>${esc(locationStopLabel(stop))}</strong><span>${esc(stop.location)}</span></button></li>`).join('')}</ol><button type="button" id="mapPersonPlaces">View Places Lived ${uiIcon('arrowRight')}</button></section>
+    <section class="map-profile-locations tree-location-history"><h3>Locations</h3>${!migrationStopsForPerson(p).length ? '<p class="hint">No places recorded yet.</p>' : ''}<ol class="migration-stops">${migrationStopsForPerson(p).map((stop,i) => `<li><button type="button" data-map-person-stop="${i}"><strong>${esc(locationStopLabel(stop))}</strong><span>${esc(stop.location)}</span></button></li>`).join('')}</ol><button type="button" id="mapPersonPlaces">View Places Lived ${uiIcon('arrowRight')}</button></section>
     <section class="map-profile-shared"><h3>At This Location <span>${shared.length}</span></h3>${
     shared
       .map((member) =>
@@ -630,7 +630,7 @@ async function renderMigrationView() {
               }</button></li>`,
           )
           .join('')}</ol>${
-          !stops.length ? '<p>No places lived recorded yet.</p>' : ''
+          !stops.length ? '<p>No places recorded yet.</p>' : ''
         }<button type="button" id="editMigrationPerson">Edit places lived ${uiIcon('arrowRight')}</button>`
       : '<p>Choose a person to explore their moves.</p>'
   }`;

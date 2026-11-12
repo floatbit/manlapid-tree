@@ -328,7 +328,7 @@ function search() {
         (m, i) =>
           `<button id="search-option-${i}" role="option" aria-selected="false" tabindex="-1" data-match="${
             m.p.id
-          }">${esc(m.p.name)} ${viewerBadge(m.p.id)} ${uiIcon('arrowRight')}</button>`,
+          }">${esc(m.p.name)} ${uiIcon('arrowRight')}</button>`,
       )
       .join('') +
     '</div>' +

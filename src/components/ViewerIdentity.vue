@@ -6,10 +6,13 @@ import PersonAutocomplete from './PersonAutocomplete.vue';
 const picker = ref(null), dialog = ref(null), introduction = ref(false);
 const viewer = computed(() => family.value.people.find(p => p.id === viewerId.value));
 const api = computed(useRuntime);
+const PROMPT_KEY = 'kinfolk-viewer-prompted';
+function alreadyPrompted() { try { return window.sessionStorage.getItem(PROMPT_KEY) === '1'; } catch { return false; } }
 async function open(isIntroduction = false) {
   introduction.value = isIntroduction;
   await nextTick();
   if (!dialog.value?.isConnected) return;
+  if (isIntroduction) { try { window.sessionStorage.setItem(PROMPT_KEY, '1'); } catch {} }
   dialog.value.showModal(); await nextTick();
   dialog.value.querySelector('input')?.focus();
 }
@@ -18,11 +21,13 @@ function clear() { setViewer(''); }
 let offered = false;
 watch([ready, canEdit], ([loaded, editing]) => {
   const afterLogin = editing && new URLSearchParams(window.location.search).get('select-me') === '1';
-  if (!loaded || offered || (viewer.value && !afterLogin)) return;
+  if (!loaded || offered) return;
   offered = true;
-  const url = new URL(window.location.href); url.searchParams.delete('select-me');
-  window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash);
-  open(true);
+  if (afterLogin) {
+    const url = new URL(window.location.href); url.searchParams.delete('select-me');
+    window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash);
+  }
+  if (!viewer.value && (afterLogin || !alreadyPrompted())) open(true);
 }, { immediate: true, flush: 'post' });
 </script>
 <template>

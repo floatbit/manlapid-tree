@@ -1,5 +1,4 @@
 <script setup lang="js">
-import ViewerRelation from './ViewerRelation.vue';
 import { PhX } from '@phosphor-icons/vue';
 import { computed, nextTick, ref } from 'vue';
 const props = defineProps({
@@ -118,7 +117,7 @@ defineExpose({input,close});
         @mousedown.prevent
         @click="choose(p)"
       >
-        <span>{{ display(p) }}</span><ViewerRelation :person-id="p.id" />
+        <span>{{ display(p) }}</span>
       </button>
       <p v-if="!results.length">No matching people.</p>
     </div>

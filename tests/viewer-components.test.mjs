@@ -27,13 +27,18 @@ await picker.find('.viewer-identity-clear').trigger('click');await nextTick();
 assert.equal(viewerId.value,'');assert.equal(window.localStorage.getItem('kinfolk-viewer-id'),null);assert.equal(badge.findAll('.viewer-relationship').length,0);assert.equal(legacy.textContent,'Sibling');legacy.remove();
 setViewer('me');ui.sync({...family.value,people:people.filter(p=>p.id!=='me')});await nextTick();assert.equal(viewerId.value,'','Deleted identities are cleared safely');
 picker.unmount();badge.unmount();
-// A successful login can offer an optional step, without choosing an identity.
+const refresh=mount(ViewerIdentity,{attachTo:document.body});await flushPromises();
+assert(!document.querySelector('#viewerIdentityDialog').open,'Refreshing in the same session does not prompt again');
+await refresh.find('.viewer-identity-trigger').trigger('click');await flushPromises();assert(document.querySelector('#viewerIdentityDialog').open,'Manual selection remains available');refresh.unmount();
+// Login offers the optional step even after the first-visit prompt was dismissed.
+assert.equal(window.sessionStorage.getItem('kinfolk-viewer-prompted'),'1');
 ui.sync({people,links:[],albums:[]});
 window.history.replaceState({},'', '/?select-me=1#page=tree');ui.setEditing(true);
 const intro=mount(ViewerIdentity,{attachTo:document.body});await flushPromises();
 const introDialog=document.querySelector('#viewerIdentityDialog');assert(introDialog.open);assert(introDialog.textContent.includes('Skip for Now'));assert.equal(viewerId.value,'');assert(!window.location.search.includes('select-me'));
 [...introDialog.querySelectorAll('button')].find(b=>b.textContent==='Skip for Now').click();assert(!introDialog.open);intro.unmount();
 setViewer('me');
+window.history.replaceState({},'', '/?select-me=1#page=tree');
 const returning=mount(ViewerIdentity,{attachTo:document.body});await flushPromises();
-assert(!document.querySelector('#viewerIdentityDialog').open,'A saved identity suppresses the first-visit prompt');returning.unmount();setViewer('');
+assert(!document.querySelector('#viewerIdentityDialog').open,'A saved identity suppresses the post-login prompt');returning.unmount();setViewer('');
 console.log('Passed: optional identity selection, persistence, clearing, legacy badges, cached calculations, deleted identities and login introduction.');

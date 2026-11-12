@@ -403,3 +403,10 @@
 @media (max-width: 900px) {
   #timeline .timeline-sidebar-stack { border: 0; }
 }
+
+@media (max-width: 900px) {
+  :root { --page-padding: 24px 16px 40px; }
+  #editor, #albumsPage, #recipesPage, #overviewPage, #familiesPage, #storiesPage {
+    padding: var(--page-padding);
+  }
+}

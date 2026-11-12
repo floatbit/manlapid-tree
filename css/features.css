@@ -3462,7 +3462,7 @@ body:not(.is-editor) .lightbox-people:not(:has(.lightbox-person-tag)) { display:
 /* Timeline uses the same edge-to-edge side panel as Tree and Map. */
 #timeline { max-width: none; width: 100%; margin: 0; padding: 0; --timeline-header-height: 88px; }
 .timeline-workspace { display: grid; grid-template-columns: minmax(0, 1fr) 300px; align-items: start; gap: 0; }
-.timeline-main { min-width: 0; width: 100%; max-width: 1440px; margin: 0 auto; padding: 35px 40px 70px; }
+.timeline-main { min-width: 0; width: 100%; max-width: 1440px; margin: 0 auto; padding: var(--page-padding); }
 #timeline .timeline-sidebar-stack { position: sticky; top: var(--timeline-header-height); height: calc(100dvh - var(--timeline-header-height)); max-height: calc(100dvh - var(--timeline-header-height)); min-height: 0; overflow-y: auto; overscroll-behavior-y: contain; padding: 25px 18px; border-left: 1px solid var(--line); background: #fffefa; gap: 24px; scrollbar-gutter: auto; }
 #timeline .birth-year > h2 { top: calc(var(--timeline-header-height) + 12px); }
 
@@ -3479,3 +3479,9 @@ body:not(.is-editor) .lightbox-people:not(:has(.lightbox-person-tag)) { display:
 #timeline .timeline-sidebar-stack .on-this-day-entries { gap: 0; }
 #timeline .timeline-sidebar-stack .on-this-day-title { white-space: normal; }
 #timeline .timeline-sidebar-stack .anniversaries-window { margin: 18px 0 4px; }
+
+/* Keep content pages aligned with the Timeline content area. */
+:root { --page-padding: 35px 40px 70px; }
+#editor, #albumsPage, #recipesPage, #overviewPage, #familiesPage, #storiesPage {
+  padding: var(--page-padding);
+}

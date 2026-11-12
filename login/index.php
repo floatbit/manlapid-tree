@@ -13,7 +13,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
     elseif(isset($_POST['logout'])){$_SESSION['family_editor']=false;$_SESSION['csrf']=bin2hex(random_bytes(24));session_regenerate_id(true);header('Location: '.$home, true,303);exit;}
     elseif(time()<($_SESSION['login_retry_after']??0)){http_response_code(429);$error='Too many attempts. Please try again in a minute.';}
     elseif(familyPasswordMatches(is_string($_POST['password']??null)?$_POST['password']:'')){
-        session_regenerate_id(true);$_SESSION['family_editor']=true;$_SESSION['csrf']=bin2hex(random_bytes(24));unset($_SESSION['login_failures'],$_SESSION['login_retry_after']);header('Location: '.$home,true,303);exit;
+        session_regenerate_id(true);$_SESSION['family_editor']=true;$_SESSION['csrf']=bin2hex(random_bytes(24));unset($_SESSION['login_failures'],$_SESSION['login_retry_after']);header('Location: '.$home.'?select-me=1',true,303);exit;
     }else{$_SESSION['login_failures']=($_SESSION['login_failures']??0)+1;if($_SESSION['login_failures']>=5)$_SESSION['login_retry_after']=time()+60;http_response_code(401);$error='Incorrect password.';}
 }
 $loggedIn=familyCanEdit();$token=htmlspecialchars($_SESSION['csrf'],ENT_QUOTES);session_write_close();

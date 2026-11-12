@@ -1,4 +1,5 @@
 <script setup lang="js">
+import ViewerIdentity from './ViewerIdentity.vue';
 import SearchField from './SearchField.vue';
 import { PhMagnifyingGlass as Search, PhList as Menu, PhX as X } from '@phosphor-icons/vue';
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
@@ -51,6 +52,7 @@ onBeforeUnmount(() => { media?.removeEventListener('change', updateMobile); dele
       </div>
       <div id="results"></div>
     </div>
+    <ViewerIdentity />
     </Teleport>
     <span class="saved" hidden aria-live="polite"></span>
   </header>

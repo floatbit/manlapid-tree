@@ -56,7 +56,7 @@
   .suggested-people button { min-width: 0; padding: 10px;  min-height: 62px; }
   .map-view-controls { left: 10px; top: 10px; right: 10px; flex-wrap: wrap; gap: 6px; }
   .map-view-controls button { min-height: 40px;  padding: 8px 10px; }
-  .map-person-popup { max-width: min(320px, calc(100vw - 70px)); max-height: 45dvh; }
+  .map-person-popup { max-width: min(320px, calc(100vw - 70px)); max-height: min(220px, 35dvh); }
   .map-popup-person, .map-popup-person-content { min-width: 0; }
   .map-popup-person-actions { flex-wrap: wrap; white-space: normal; overflow: visible; grid-column: 1 / -1; gap: 4px 12px; }
   .map-person-popup .map-popup-person-actions button { min-height: 36px; }
@@ -372,4 +372,12 @@
 @media (max-width: 760px) {
   #timeline .birth-event { --timeline-marker-left: -40px; --timeline-marker-top: 26px; }
   #timeline .birth-event::before { left: var(--timeline-marker-left); top: var(--timeline-marker-top); width: 32px; height: 32px; }
+}
+
+@media (max-width: 1023px) {
+  #mobileMenuContent .viewer-identity { margin-top: 16px; }
+  #mobileMenuContent .viewer-identity-trigger { max-width: calc(100vw - 92px); }
+}
+@media (max-width: 760px) {
+  #viewerIdentityDialog { overflow-y: auto; padding: 28px 20px; }
 }

@@ -444,6 +444,54 @@ function upcomingAnniversaries(people, milestones, today = new Date()) {
     })
     .sort((a, b) => a.next - b.next || a.title.localeCompare(b.title));
 }
+function onThisDayEvents(people, milestones, today = new Date()) {
+  const targetMonth = today.getMonth() + 1;
+  const targetDay = today.getDate();
+  const currentYear = today.getFullYear();
+  const candidates = [];
+  for (const p of people) {
+    if (p.dateDetails?.birth || p.birthday)
+      candidates.push({
+        date: p.dateDetails?.birth || p.birthday,
+        title: displayName(p),
+        kind: 'Birthday',
+        type: 'birth',
+        personId: p.id,
+        deceased: p.deceased,
+      });
+    if (p.deceased && p.dateDetails?.death)
+      candidates.push({
+        date: p.dateDetails.death,
+        title: displayName(p),
+        kind: 'Remembrance',
+        type: 'death',
+        personId: p.id,
+      });
+  }
+  for (const event of milestones)
+    if (event.date)
+      candidates.push({
+        date: event.date,
+        title: event.title,
+        kind: event.type === 'marriage' ? 'Wedding Anniversary' : (milestoneTypes[event.type] || 'Milestone'),
+        type: event.type,
+        milestoneId: event.id,
+      });
+  return candidates
+    .flatMap((event) => {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(event.date || '') || !validFamilyDate(event.date)) return [];
+      const [year, month, day] = event.date.split('-').map(Number);
+      const isLeapDay = month === 2 && day === 29;
+      const isLeapYearNow = (currentYear % 4 === 0 && currentYear % 100 !== 0) || currentYear % 400 === 0;
+      const matches = (month === targetMonth && day === targetDay) ||
+        (isLeapDay && targetMonth === 2 && targetDay === 28 && !isLeapYearNow);
+      if (!matches) return [];
+      const yearsAgo = currentYear - year;
+      if (yearsAgo < 0) return [];
+      return [{ ...event, year, yearsAgo }];
+    })
+    .sort((a, b) => b.yearsAgo - a.yearsAgo || a.title.localeCompare(b.title));
+}
 function renderUpcomingAnniversaries() {
   ui.sync(data);
 }

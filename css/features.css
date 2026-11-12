@@ -1288,6 +1288,135 @@ gmp-place-autocomplete {
   gap: 36px;
   align-items: start;
 }
+.timeline-sidebar-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: sticky;
+  top: 108px;
+}
+.timeline-sidebar-stack .upcoming-anniversaries {
+  position: static;
+  top: auto;
+}
+.on-this-day-card {
+  padding: 20px 22px;
+  border: 1px solid #d5e0cb;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f4f8ed 0%, #fffcf5 100%);
+  box-shadow: 0 2px 8px rgba(38, 60, 54, 0.04);
+}
+.on-this-day-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.on-this-day-icon {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 10px;
+  background: #e2ecd6;
+  color: #4a6839;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.on-this-day-eyebrow {
+  margin: 0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #5c7b49;
+}
+.on-this-day-heading h2 {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 2px 0 0;
+  color: var(--ink);
+}
+.on-this-day-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.on-this-day-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #dce5d3;
+  border-radius: 10px;
+  background: #fffefa;
+  text-align: left;
+  transition: all .15s ease;
+}
+.on-this-day-item:hover {
+  background: #f6faf0;
+  border-color: #9cb48e;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(38, 60, 54, 0.06);
+}
+.on-this-day-years-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  padding: 4px 6px;
+  border-radius: 8px;
+  background: #edf3e7;
+  color: #3b562a;
+}
+.on-this-day-years-badge strong {
+  font-size: 15px;
+  line-height: 1.1;
+  font-weight: 700;
+}
+.on-this-day-years-badge small {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #647b56;
+}
+.on-this-day-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.on-this-day-kind {
+  font-size: 11px;
+  font-weight: 600;
+  color: #647b56;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.on-this-day-title {
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.on-this-day-arrow {
+  color: #8a9b7d;
+  opacity: 0.7;
+  transition: opacity .15s, transform .15s;
+  flex-shrink: 0;
+}
+.on-this-day-item:hover .on-this-day-arrow {
+  opacity: 1;
+  transform: translateX(2px);
+  color: var(--green);
+}
+
 .upcoming-anniversaries {
   padding: 22px;
   border: 1px solid var(--line);
@@ -1315,7 +1444,7 @@ gmp-place-autocomplete {
   .timeline-columns {
     grid-template-columns: minmax(0, 1fr);
   }
-  .upcoming-anniversaries {
+  .timeline-sidebar-stack {
     position: static;
     grid-row: 1;
   }
@@ -3226,7 +3355,6 @@ body:not(.is-editor) .lightbox-people:not(:has(.lightbox-person-tag)) { display:
 #timeline .timeline-rail-icon .event-icon-halloween { width: 14px; height: 14px; }
 .timeline-event-icon { flex-shrink: 0; vertical-align: middle; }
 #timeline .timeline-event-icon { transform: scale(1.2); transform-origin: center; }
-.timeline-event-icon.event-icon-easter { color: #79add3; }
 .anniversary-event-icon { display: inline-flex; align-items: center; }
 @media (max-width: 650px) { #timeline .birth-event { --timeline-marker-left: -39px; --timeline-marker-top: 18px; } }
 
@@ -3240,3 +3368,31 @@ body:not(.is-editor) .lightbox-people:not(:has(.lightbox-person-tag)) { display:
 .overview-reports .directory-missing-list button > span { min-width: 0; }
 .report-photo-actions > button { display: inline-flex; align-items: center; gap: 8px; }
 .family-back, .family-generation-choice > span { display: inline-flex; align-items: center; gap: 6px; }
+
+/* A local, optional identity adds context without changing the family records. */
+.viewer-identity { display: inline-flex; align-items: center; gap: 2px; flex-shrink: 0; }
+.viewer-identity-trigger { display: inline-flex; align-items: center; gap: 7px; padding: 8px 10px; border-radius: 24px; background: #edf2e6; font-size: 12px; max-width: 270px; }
+.viewer-identity-trigger > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.viewer-identity-clear { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border: 0; background: transparent; }
+.viewer-identity-dialog { position: relative; width: min(560px, calc(100vw - 40px)); padding: 30px; overflow: visible; }
+.viewer-identity-dialog p { line-height: 1.6; }
+.viewer-identity-dialog h2 { padding-right: 30px; }
+.viewer-dialog-close { position: absolute; right: 12px; top: 12px; display: flex; padding: 8px; border: 0; background: transparent; }
+.viewer-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+:root { --relationship-badge-background: var(--line); }
+.viewer-relationship { display: inline-block; width: fit-content; max-width: 100%; border-radius: 5px; padding: 2px 6px; background: var(--relationship-badge-background); color: #4e594f; border: 0; box-shadow: none; font-size: 11px; font-weight: 500; line-height: 1.4; letter-spacing: normal; text-transform: none; }
+.node .viewer-relationship { --relationship-badge-background: #edf3e5; color: #47634a; max-width: 164px; font-size: 10px; padding: 1px 4px; }
+.node .node-perspective { min-height: 18px; }
+.person-autocomplete [role='option'] .viewer-relationship { margin-left: 8px; }
+.map-profile-relative .viewer-relationship { display: block; margin-top: 4px; }
+#viewerIdentityDialog [role='listbox'] { position: relative; max-height: 280px; overflow: auto; }
+#viewerPathHighlight .relationship-highlight { stroke: #4f805a; }
+@media (min-width: 1024px) and (max-width: 1400px) { .viewer-identity-trigger { max-width: 190px; } }
+@media (min-width: 1024px) {
+  #app > header { gap: 18px; }
+  #app > header > .search { flex: 1 1 200px; width: auto; min-width: 180px; max-width: 420px; }
+}
+#emptySuggestions .suggested-people .viewer-relationship { display: block; margin-top: 4px; }
+.map-popup-person-heading .viewer-relationship { display: block; margin-top: 3px; }
+
+#viewerIdentityDialog .viewer-relationship { display: none; }

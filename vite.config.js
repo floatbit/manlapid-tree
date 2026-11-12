@@ -28,8 +28,8 @@ export default defineConfig({
           `\n
 export const runtime = {
  get data() { return data; },
- start, familyDateYear, milestoneIcons, milestoneTypes, displayName, firstLastName, personMatchesQuery, initials, familyDateLabel,
- upcomingAnniversaries, sortedAlbums, milestoneMediaCount,
+ start, relationshipLabels, familyDateYear, milestoneIcons, milestoneTypes, displayName, firstLastName, personMatchesQuery, initials, familyDateLabel,
+ upcomingAnniversaries, onThisDayEvents, sortedAlbums, milestoneMediaCount,
  isMilestoneVideo, showSection, edit, selectPersonFromDirectory, openMilestone,
  deletePhotoFromLightbox, savePhotoPeople, openTaggedPerson, openAlbum, openRecipe, closeRecipe, editRecipe, recipeCategories, openPhotoLightbox, copyDirectLink, notify,
  updatePersonUnsaved, loadFamilyAlbums, attachBirthEventAlbum, createBirthEventAlbum, resizePhoto, saveFamilyGroup, deleteFamilyGroup, openSavedFamilyTree, openFamilyMapLocation, migrationStopsForPerson, locationStopLabel, openPersonPlaces,

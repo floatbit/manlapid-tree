@@ -2,6 +2,7 @@
   "js/icons.js",
   "js/core.js",
   "js/relationships.js",
+  "js/viewer.js",
   "js/tree.js",
   "js/navigation.js",
   "js/milestones.js",

@@ -8,7 +8,7 @@ function extract(name) {
   return source.slice(start, next < 0 ? undefined : next);
 }
 const ctx = vm.createContext({ console, Date, data: { people: [] }, displayName: (p) => p.name });
-for (const name of ['familyDateYear', 'validFamilyDate', 'upcomingAnniversaries']) {
+for (const name of ['familyDateYear', 'validFamilyDate', 'upcomingAnniversaries', 'onThisDayEvents']) {
   const code = extract(name);
   vm.runInContext(code, ctx);
 }
@@ -37,4 +37,12 @@ assert.equal(
     .next.getDate(),
   28,
 );
+const onThisDay = ctx.onThisDayEvents(
+  [{ id: 'a', name: 'Chris', birthday: '1980-11-12' }],
+  [{ id: 'w', type: 'marriage', date: '2000-11-12', title: 'Wedding Day' }],
+  new Date(2026, 10, 12),
+);
+assert.equal(onThisDay.length, 2);
+assert.equal(onThisDay[0].yearsAgo, 46);
+assert.equal(onThisDay[1].yearsAgo, 26);
 console.log('Passed: approximate dates and anniversary rollover/leap days.');

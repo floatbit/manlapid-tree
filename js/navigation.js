@@ -43,7 +43,7 @@ function renderDetailsContent() {
   const relativeCard = (member, label = '') =>
     `<button type="button" class="connection map-profile-relative" data-id="${esc(
       member.id,
-    )}">${avatar(member)}<span><strong>${esc(displayName(member))}</strong>${
+    )}">${avatar(member)}<span><strong>${esc(displayName(member))}</strong>${viewerBadge(member.id)}${
       label ? `<small>${esc(label)}</small>` : ''
     }</span><span class="map-profile-arrow" aria-hidden="true">${uiIcon('arrowRight')}</span></button>`;
   const grouped = [
@@ -75,12 +75,12 @@ function renderDetailsContent() {
     p.deceased && p.dateDetails?.death
       ? `<p>Died · ${esc(familyDateLabel(p.dateDetails.death))}</p>`
       : ''
-  }</div></div>
+  }${viewerBadge(p.id)}</div></div>
     ${
       p.nicknames?.length ? `<p class="hint">Also known as: ${esc(p.nicknames.join(', '))}</p>` : ''
     }
     <div class="map-profile-actions"><button id="editSelected" type="button">Edit Person ${uiIcon('arrowRight')}</button><button id="sharePerson" type="button">Copy Person Link ${uiIcon('arrowRight')}</button></div>
-    <p class="label-context">Tree labels are relative to this person.</p>
+    <p class="label-context" data-viewer-context>${ui.viewerId ? 'Tree labels show each person’s relationship to you.' : 'Tree labels are relative to this person.'}</p>
     <div class="person-view-actions tree-profile-tools"><button id="traceSelected" ${
       !data.root || data.root === p.id ? 'hidden' : ''
     }>Show Path from Starting Person</button><button id="centerSelected">◎ Center Person</button><button id="collapseSelected" ${
@@ -138,7 +138,7 @@ function renderSuggestions(reshuffle = false) {
         const p = person(id);
         return `<button data-suggested="${id}">${avatar(p)}<span>${esc(
           displayName(p),
-        )}</span><span aria-hidden="true">${uiIcon('arrowRight')}</span></button>`;
+        )}${viewerBadge(p.id)}</span><span aria-hidden="true">${uiIcon('arrowRight')}</span></button>`;
       })
       .join('') || '<p>Add a person to begin your family tree.</p>'
   }${data.people.length ? `<button id="shufflePeople" type="button"><span>Show other people</span>${uiIcon('shuffle')}</button>` : ''}</div>`;
@@ -328,7 +328,7 @@ function search() {
         (m, i) =>
           `<button id="search-option-${i}" role="option" aria-selected="false" tabindex="-1" data-match="${
             m.p.id
-          }">${esc(m.p.name)} ${uiIcon('arrowRight')}</button>`,
+          }">${esc(m.p.name)} ${viewerBadge(m.p.id)} ${uiIcon('arrowRight')}</button>`,
       )
       .join('') +
     '</div>' +

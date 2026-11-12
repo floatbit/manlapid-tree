@@ -1,4 +1,5 @@
-import { shallowRef, createApp, nextTick } from 'vue';
+import { viewerRelationshipLabels } from '../domain/viewer-relationships.js';
+import { shallowRef, createApp, nextTick, computed, watch } from 'vue';
 import PersonAutocomplete from '../components/PersonAutocomplete.vue';
 import PersonPhotos from '../components/PersonPhotos.vue';
 import ConnectionRow from '../components/ConnectionRow.vue';
@@ -18,7 +19,46 @@ export function bindRuntime(value) {
 export function useRuntime() {
   return runtime.value;
 }
+const VIEWER_KEY = 'kinfolk-viewer-id';
+function storedViewer() { try { return window.localStorage.getItem(VIEWER_KEY) || ''; } catch { return ''; } }
+export const viewerId = shallowRef(storedViewer());
+let viewerCacheKey = '', viewerCache = new Map(), viewerCalculator;
+export const viewerLabels = computed(() => {
+  const snapshot = family.value, id = viewerId.value, calculator = runtime.value?.relationshipLabels;
+  if (!id || !calculator || !snapshot.people.some(p => p.id === id)) return new Map();
+  const key = JSON.stringify([id, snapshot.people.map(p => [p.id, p.gender, p.sex]), snapshot.links]);
+  if (key !== viewerCacheKey || calculator !== viewerCalculator) { viewerCalculator = calculator; viewerCache = viewerRelationshipLabels(snapshot, id, calculator(id)); viewerCacheKey = key; }
+  return viewerCache;
+});
+export function setViewer(id) {
+  if (id && !family.value.people.some(p => p.id === id)) return;
+  viewerId.value = id || '';
+  try { if (id) window.localStorage.setItem(VIEWER_KEY, id); else window.localStorage.removeItem(VIEWER_KEY); } catch {}
+}
+export function viewerRelation(id) { return viewerLabels.value.get(id) || ''; }
+function refreshViewerBadges() {
+  for (const badge of document.querySelectorAll('[data-viewer-person]')) {
+    const label = viewerRelation(badge.dataset.viewerPerson);
+    badge.textContent = label || badge.dataset.viewerFallback || '';
+    badge.hidden = !badge.textContent;
+    badge.classList.toggle('viewer-relationship', !!label);
+  }
+  for (const node of document.querySelectorAll('[data-viewer-name]')) {
+    const label = viewerRelation(node.dataset.id) || node.dataset.viewerRelationFallback;
+    const description = `${node.dataset.viewerName}, ${label}. Reveal connections`;
+    node.setAttribute('aria-label', description);
+    node.querySelector('.node-open')?.setAttribute('aria-label', description);
+  }
+  for (const note of document.querySelectorAll('[data-viewer-context]')) note.textContent = viewerId.value ? 'Tree labels show each person’s relationship to you.' : 'Tree labels are relative to this person.';
+  document.getElementById('viewerPathHighlight')?.remove();
+}
+watch(viewerLabels, refreshViewerBadges, { flush: 'post' });
+watch([ready, family], () => { if (ready.value && viewerId.value && !family.value.people.some(p => p.id === viewerId.value)) setViewer(''); });
+if (typeof window !== 'undefined') window.addEventListener('storage', event => { if (event.key === VIEWER_KEY || event.key === null) viewerId.value = storedViewer(); });
+
 export const ui = {
+  viewerRelation,
+  get viewerId() { return viewerId.value; },
   setEditing(allowed) {
     canEdit.value = !!allowed;
     document.body.classList.toggle('is-editor', !!allowed);

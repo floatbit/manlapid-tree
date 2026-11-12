@@ -181,12 +181,12 @@ function findRelationship(from, to) {
   }
   return { from, to, ids: ids.reverse(), edges: edges.reverse(), label };
 }
-function relationshipPathLines(layout) {
-  if (!relationshipTrace) return '';
+function relationshipPathLines(layout, trace = relationshipTrace) {
+  if (!trace) return '';
   const { positions, families } = layout,
     normal = familyRoutes(layout),
     highlights = [];
-  for (const edge of relationshipTrace.edges) {
+  for (const edge of trace.edges) {
     const a = positions.get(edge.from),
       b = positions.get(edge.to);
     if (!a || !b) continue;

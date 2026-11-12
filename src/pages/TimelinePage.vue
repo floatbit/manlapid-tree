@@ -3,6 +3,7 @@ import { PhArrowRight } from '@phosphor-icons/vue';
 import SearchField from '../components/SearchField.vue';
 import TimelineEvents from '../components/TimelineEvents.vue';
 import UpcomingAnniversaries from '../components/UpcomingAnniversaries.vue';
+import OnThisDay from '../components/OnThisDay.vue';
 </script>
 <template>
   <main id="timeline" hidden>
@@ -24,7 +25,10 @@ import UpcomingAnniversaries from '../components/UpcomingAnniversaries.vue';
     <p id="timelineSummary" class="hint" role="status"></p>
     <div class="timeline-columns">
       <TimelineEvents />
-      <UpcomingAnniversaries />
+      <div class="timeline-sidebar-stack">
+        <OnThisDay />
+        <UpcomingAnniversaries />
+      </div>
     </div>
   </main>
 </template>

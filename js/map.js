@@ -201,7 +201,7 @@ function openFamilyMapGroup(group, marker, { restore = false } = {}) {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'map-popup-person-heading';
-    button.innerHTML = `${avatar(p)}<span>${esc(displayName(p))}</span>`;
+    button.innerHTML = `${avatar(p)}<span>${esc(displayName(p))}${viewerBadge(p.id)}</span>`;
     button.onclick = () => showMapPerson(p.id);
     const entry = document.createElement('div');
     entry.className = 'map-popup-person';
@@ -292,7 +292,7 @@ function showMapPerson(id) {
   const personButton = (member, label = '') =>
     `<button type="button" class="map-profile-relative" data-map-relative="${esc(
       member.id,
-    )}">${avatar(member)}<span><strong>${esc(displayName(member))}</strong>${
+    )}">${avatar(member)}<span><strong>${esc(displayName(member))}</strong>${viewerBadge(member.id)}${
       label ? `<small>${esc(label)}</small>` : ''
     }</span><span class="map-profile-arrow" aria-hidden="true">${uiIcon('arrowRight')}</span></button>`;
   const grouped = [
@@ -324,7 +324,7 @@ function showMapPerson(id) {
     p.deceased && p.dateDetails?.death
       ? `<p>Died · ${esc(familyDateLabel(p.dateDetails.death))}</p>`
       : ''
-  }</div></div>
+  }${viewerBadge(p.id)}</div></div>
     <div class="map-profile-actions"><button type="button" id="mapPersonTree">Open Family Tree ${uiIcon('arrowRight')}</button><button type="button" id="mapPersonEdit">Edit Person ${uiIcon('arrowRight')}</button></div>
     <section class="map-profile-locations tree-location-history"><h3>Locations</h3><ol class="migration-stops">${migrationStopsForPerson(p).map((stop,i) => `<li><button type="button" data-map-person-stop="${i}"><strong>${esc(locationStopLabel(stop))}</strong><span>${esc(stop.location)}</span></button></li>`).join('')}</ol><button type="button" id="mapPersonPlaces">View Places Lived ${uiIcon('arrowRight')}</button></section>
     <section class="map-profile-shared"><h3>At This Location <span>${shared.length}</span></h3>${

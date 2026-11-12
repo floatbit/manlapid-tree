@@ -912,6 +912,8 @@ function render({ expanding = false, centerId = null, fit = false, resetPersonZo
         : ''
     }`;
     node.dataset.id = id;
+    node.dataset.viewerName = displayName(p);
+    node.dataset.viewerRelationFallback = relation;
     node.style.left = pos.x + 'px';
     node.style.top = pos.y + 'px';
     node.style.setProperty('--bubble', familyColors[kind]);
@@ -922,23 +924,28 @@ function render({ expanding = false, centerId = null, fit = false, resetPersonZo
     ).size;
     node.setAttribute(
       'aria-label',
-      `${displayName(p)}, ${relation}. ${
+      `${displayName(p)}, ${ui.viewerRelation(id) || relation}. ${
         hiddenConnections ? `${hiddenConnections} more immediate family members. ` : ''
       }Reveal connections`,
     );
-    const contents = `<button type="button" class="node-open" aria-label="${esc(displayName(p))}, ${esc(relation)}. Reveal connections">${avatar(p)}${
+    const contents = `<button type="button" class="node-open" aria-label="${esc(displayName(p))}, ${esc(ui.viewerRelation(id) || relation)}. Reveal connections">${avatar(p)}${
       p.deceased ? '<span class="node-deceased" aria-label="Deceased">Deceased</span>' : ''
     }${
       hiddenConnections
         ? `<span class="node-more-connections" aria-hidden="true">+${hiddenConnections}</span>`
         : ''
-    }<strong>${esc(displayName(p))}</strong><small>${relation}</small></button>${['parent','child','sibling','spouse'].map(type => `<button type="button" class="node-add-connection node-add-${type}" data-node-add="${type}" title="Add ${type} to ${esc(displayName(p))}" aria-label="Add ${type} to ${esc(displayName(p))}">＋</button>`).join('')}`;
+    }<strong>${esc(displayName(p))}</strong><small class="node-perspective">${viewerBadge(id, relation)}</small></button>${['parent','child','sibling','spouse'].map(type => `<button type="button" class="node-add-connection node-add-${type}" data-node-add="${type}" title="Add ${type} to ${esc(displayName(p))}" aria-label="Add ${type} to ${esc(displayName(p))}">＋</button>`).join('')}`;
     if (node.innerHTML !== contents) node.innerHTML = contents;
     node.onclick = (event) => {
       const add=event.target.closest('[data-node-add]');
       if(add) {event.stopPropagation();openFamilyDialog(id,add.dataset.nodeAdd);return;}
       expand(id);
+      highlightViewerPath(id);
     };
+    node.onpointerenter = () => highlightViewerPath(id);
+    node.onpointerleave = clearViewerPath;
+    node.onfocusin = () => highlightViewerPath(id);
+    node.onfocusout = clearViewerPath;
     node.ondblclick = (event) => {if(!event.target.closest('[data-node-add]'))centerPerson(id);};
     node.title = hiddenConnections
       ? `Click to reveal ${hiddenConnections} more immediate family ${

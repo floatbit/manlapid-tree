@@ -1,4 +1,5 @@
 <script setup lang="js">
+import ViewerRelation from '../components/ViewerRelation.vue';
 import { PhArrowRight, PhArrowLeft, PhArrowUp, PhArrowDown, PhHeart, PhHouse, PhMapPin, PhPlus, PhMinus } from '@phosphor-icons/vue';
 import MediaPreview from '../components/MediaPreview.vue';
 import SearchField from '../components/SearchField.vue';
@@ -241,7 +242,7 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
                     :class="{ active: personId === p.id }"
                     @click="personId = p.id"
                   >
-                    <PersonAvatar :person="p" /><span class="family-member-info"><strong>{{ api.displayName(p) }}</strong><small v-if="p.dateDetails?.birth || p.birthday">Born {{ api.familyDateLabel(p.dateDetails?.birth || p.birthday) }}</small><small v-if="p.deceased">Deceased</small></span><span class="family-member-arrow" aria-hidden="true"><PhArrowRight :size="16" class="ui-icon" aria-hidden="true" /></span></button
+                    <PersonAvatar :person="p" /><span class="family-member-info"><strong>{{ api.displayName(p) }}</strong><ViewerRelation :person-id="p.id" /><small v-if="p.dateDetails?.birth || p.birthday">Born {{ api.familyDateLabel(p.dateDetails?.birth || p.birthday) }}</small><small v-if="p.deceased">Deceased</small></span><span class="family-member-arrow" aria-hidden="true"><PhArrowRight :size="16" class="ui-icon" aria-hidden="true" /></span></button
                   ><button
                     v-if="band.level === 1 && canExpand(p.id)"
                     type="button"
@@ -327,7 +328,7 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
             ><div class="map-profile-header">
               <PersonAvatar :person="selectedPerson" />
               <div>
-                <h2>{{ selectedPerson.name }}</h2>
+                <h2>{{ selectedPerson.name }}</h2><ViewerRelation :person-id="selectedPerson.id" />
                 <span v-if="selectedPerson.deceased" class="deceased-badge">Deceased</span>
               </div>
             </div>

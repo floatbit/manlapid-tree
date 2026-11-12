@@ -1,4 +1,5 @@
 <script setup lang="js">
+import ViewerRelation from '../components/ViewerRelation.vue';
 import { PhArrowRight, PhShuffle } from '@phosphor-icons/vue';
 import { computed, nextTick, ref, watch } from 'vue';
 import { family, activePage, useRuntime } from '../ui/runtime.js';
@@ -125,7 +126,7 @@ function album(item) {
               type="button"
               @click="editPerson(p, report.kind)"
             >
-              <span>{{ api?.displayName(p) || p.name }}</span> <PhArrowRight :size="16" class="ui-icon" aria-hidden="true" />
+              <span>{{ api?.displayName(p) || p.name }} <ViewerRelation :person-id="p.id" /></span> <PhArrowRight :size="16" class="ui-icon" aria-hidden="true" />
             </button>
             <p v-if="!report.people.length">Everyone is up to date.</p>
           </div>

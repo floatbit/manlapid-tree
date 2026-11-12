@@ -34,7 +34,7 @@ for (const file of files) {
     compilerOptions: { bindingMetadata },
   });
   assert.equal(result.errors.length, 0, `${file}: ${result.errors.join(', ')}`);
-  ids.push(...[...descriptor.template.content.matchAll(/(?<!:)\bid="([^"]+)"/g)].map((m) => m[1]));
+  ids.push(...[...descriptor.template.content.matchAll(/(?<![:\w-])id="([^"]+)"/g)].map((m) => m[1]));
 }
 assert.equal(ids.length, new Set(ids).size, 'Static IDs must be unique across Vue components');
 console.log(

@@ -1,4 +1,5 @@
 <script setup lang="js">
+import ViewerRelation from './ViewerRelation.vue';
 import { PhArrowRight } from '@phosphor-icons/vue';
 import { computed, ref } from 'vue';
 import { family, timelineView, timelineQuery, useRuntime } from '../ui/runtime.js';
@@ -82,7 +83,7 @@ function marriagePeople(event) {
                 ><strong
                   >{{ api.displayName(event.person) }}
                   {{ event.kind === 'death' ? 'passed away' : 'was born' }}</strong
-                ><time>{{ api.familyDateLabel(event.date) }}<template v-if="event.kind === 'death' && ageAtPassing(event.person.dateDetails?.birth || event.person.birthday, event.date)"> · {{ ageAtPassing(event.person.dateDetails?.birth || event.person.birthday, event.date) }}</template></time>
+                ><ViewerRelation :person-id="event.person.id" /><time>{{ api.familyDateLabel(event.date) }}<template v-if="event.kind === 'death' && ageAtPassing(event.person.dateDetails?.birth || event.person.birthday, event.date)"> · {{ ageAtPassing(event.person.dateDetails?.birth || event.person.birthday, event.date) }}</template></time>
                 <span v-if="event.kind === 'birth'" class="birth-album-actions" @click.stop>
                   <button v-if="event.person.birthAlbumId" type="button" @click="viewBirthAlbum(event)">View Album<span v-if="birthAlbum(event)"> · {{ birthAlbum(event).photos.length }} photos</span> <PhArrowRight :size="16" class="ui-icon" aria-hidden="true" /></button>
                   <button type="button" class="birth-album-edit" @click="openBirthAlbum(event)">{{ event.person.birthAlbumId ? 'Change Album' : 'Attach Album' }}</button>

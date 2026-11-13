@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { familyInsights, dateParts, agePyramid } from '../src/domain/insights.js';
+import { familyInsights, dateParts, agePyramid, migrationDisplayLabel } from '../src/domain/insights.js';
 const people=[{id:'a',name:'A',birthday:'1900-12-25',deceased:true,dateDetails:{death:'1972-01-01'},birthplace:{location:'Manila',placeId:'google-place',lat:14.6,lng:121},location:'New York'},{id:'b',name:'B',dateDetails:{birth:'About 1980'},birthplace:'Manila',location:'New York'},{id:'c',name:'C',birthday:'2000-12-01',location:'Paris'},{id:'d',name:'Unknown'}];
 const result=familyInsights(people,[{id:'w',type:'marriage',date:'2010-06-12'}],new Date(2026,0,1));
 assert.equal(result.lives.length,3);assert.equal(result.average,36);
@@ -10,3 +10,8 @@ assert.equal(familyInsights([]).average,null);
 console.log('Passed: Insights partial dates, living age estimates, birthday months, wedding months and migration grouping.');
 
 const pyramid=agePyramid(people,new Date(2026,0,1));assert.equal(pyramid.rows[3].historical.length,1);assert.equal(pyramid.rows[1].living.length,1);assert.equal(pyramid.unknown,1);
+
+assert.equal(migrationDisplayLabel('Waimea, HI 96743, USA'),'Waimea, HI, USA');
+assert.equal(migrationDisplayLabel('Pahala, HI 96777-1234, USA'),'Pahala, HI, USA');
+assert.equal(migrationDisplayLabel('Waikoloa Village, HI, USA'),'Waikoloa Village, HI, USA');
+assert.equal(migrationDisplayLabel('Paris 12, France'),'Paris 12, France');

@@ -63,3 +63,13 @@ assert.equal(actions.at(-2), 'people');
 console.log(
   'Passed: page URLs, reports alias, deep links, repeat navigation, and history restoration.',
 );
+
+// Opening a person uses start(), which must also hide newer content pages.
+const elements=new Map();
+const element=id=>{if(!elements.has(id))elements.set(id,{hidden:false,open:false,value:'',classList:{add(){},remove(){}},close(){}});return elements.get(id);};
+const startContext=vm.createContext({$:element,ui:{setSection(){}},location:{hash:''},URLSearchParams,rememberSection(){},restoringPageHistory:false,updatePageUrl(){},data:{},closeSearch(){},displayName:p=>p.name,person:id=>({id,name:'Person'}),expand(){},window:{matchMedia:()=>({matches:false})}});
+const tree=fs.readFileSync('js/tree.js','utf8');
+vm.runInContext(tree.slice(tree.indexOf('function start('),tree.indexOf('function start(')+tree.slice(tree.indexOf('function start(')).indexOf('\n}',0)+2),startContext);
+vm.runInContext("start('person')",startContext);
+assert.equal(element('#insightsPage').hidden,true);assert.equal(element('#storiesPage').hidden,true);assert.equal(element('#explore').hidden,false);
+console.log('Passed: opening a person switches from Insights or Stories to the Tree canvas.');

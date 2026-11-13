@@ -34,3 +34,8 @@ export function agePyramid(people, now=new Date()) {
   }
   return {rows,unknown};
 }
+
+// Presentation only: retain original Google place labels and identifiers in storage.
+export function migrationDisplayLabel(value) {
+  return String(value || '').replace(/\b([A-Z]{2})\s+\d{5}(?:-\d{4})?\b/g,'$1').replace(/\s+,/g,',');
+}

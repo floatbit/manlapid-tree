@@ -24,6 +24,10 @@ function expand(id, { fit = false } = {}) {
 }
 function start(id) {
   ui.closeMobileMenu?.();
+  $('#insightsPage').hidden = true;
+  $('#insightsTab').classList.remove('active');
+  $('#storiesPage').hidden = true;
+  $('#storiesTab').classList.remove('active');
   $('#familiesPage').hidden = true;
   $('#familiesTab').classList.remove('active');
   $('#overviewPage').hidden = true;

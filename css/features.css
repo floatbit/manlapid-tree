@@ -3705,3 +3705,21 @@ body:not(.is-editor) .lightbox-people:not(:has(.lightbox-person-tag)) { display:
 .insights-sidebar-route h3 { font-size: 13px; line-height: 1.6; margin: 0 0 8px; overflow-wrap: anywhere; }
 .insights-sidebar-route h3 svg { vertical-align: middle; }
 .insights-sidebar-route > p { font-size: 11px; margin-top: 0; }
+/* The lifespan axis shares the exact track columns with every person row. */
+#insightsPage .insights-lifespans { position: relative; --life-name-width: 210px; --life-gap: 16px; --life-right-inset: 151px; }
+.insights-life-axis { display: grid; grid-template-columns: var(--life-name-width) minmax(100px,1fr) 125px; gap: var(--life-gap); padding: 10px; height: 40px; color: var(--muted); font-size: 11px; }
+.insights-life-axis > div { position: relative; }
+.insights-life-axis > div > span { position: absolute; white-space: nowrap; transform: translateX(-50%); }
+.insights-life-axis .life-tick-first { transform: none; }
+.insights-life-axis .life-tick-last { transform: translateX(-100%); color: var(--green); }
+.insights-life-guides { position: absolute; top: 32px; bottom: 32px; left: calc(10px + var(--life-name-width) + var(--life-gap)); right: var(--life-right-inset); pointer-events: none; z-index: 2; }
+.insights-life-guides > span { position: absolute; top: 0; bottom: 0; width: 1px; background: #80917624; }
+.insights-life-guides > .life-guide-today { background: #38634e66; }
+@media(min-width:901px) and (max-width:1200px) {
+  #insightsPage .insights-lifespans { --life-name-width: 140px; --life-right-inset: 10px; }
+  .insights-life-axis { grid-template-columns: var(--life-name-width) minmax(80px,1fr); }
+}
+@media(max-width:600px) {
+  #insightsPage .insights-lifespans { --life-name-width: 125px; --life-gap: 8px; --life-right-inset: 10px; }
+  .insights-life-axis { grid-template-columns: var(--life-name-width) minmax(90px,1fr); }
+}

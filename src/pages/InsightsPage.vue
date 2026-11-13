@@ -17,7 +17,7 @@ async function revealPanel(){await nextTick();if(sidebar.value)sidebar.value.scr
 function showPerson(person){selected.value=person;panel.value='person';revealPanel();}
 function showFlow(value){highlightedRoutes.value=[routeKey(value)];flow.value=value;context.value={title:migrationDisplayLabel(value.from)+' → '+migrationDisplayLabel(value.to),people:value.people,routes:[value]};selected.value=null;panel.value='people';revealPanel();}
 function showBracket(value){highlightedRoutes.value=[];flow.value=value;context.value={title:value.from+' · '+value.to,people:value.people};selected.value=null;panel.value='people';revealPanel();}
-function showPlace(place,side){const matches=routes.value.filter(r=>r[side]===place);highlightedRoutes.value=matches.map(routeKey);context.value={title:migrationDisplayLabel(place),description:side==='from'?'Relatives born here':'Relatives living here',routes:matches,people:[...new Map(matches.flatMap(r=>r.people).map(p=>[p.id,p])).values()]};selected.value=null;panel.value='people';revealPanel();}
+function showPlace(place,side){const matches=routes.value.filter(r=>r[side]===place);highlightedRoutes.value=matches.map(routeKey);context.value={title:migrationDisplayLabel(place),routes:matches,people:[...new Map(matches.flatMap(r=>r.people).map(p=>[p.id,p])).values()]};selected.value=null;panel.value='people';revealPanel();}
 function showMonth(value){highlightedRoutes.value=[];month.value=value;selected.value=null;panel.value='month';revealPanel();}
 function clearPanel(){highlightedRoutes.value=[];panel.value='';selected.value=null;context.value=null;}
 const hoveredBirth=ref(null);
@@ -25,6 +25,7 @@ const now=new Date().getFullYear();
 const pyramid=computed(()=>agePyramid(family.value.people));
 const pyramidMax=computed(()=>Math.max(1,...pyramid.value.rows.flatMap(r=>[r.living.length,r.historical.length])));
 const data=computed(()=>familyInsights(family.value.people,family.value.milestones));
+const weddingPeople=event=>(event.participants || []).map(id=>family.value.people.find(p=>p.id===id)).filter(Boolean).slice(0,2);
 const name=p=>api.value?.displayName(p) || p.name;
 const monthName=i=>new Date(2000,i,1).toLocaleString('en-US',{month:'long'});
 const busiest=computed(()=>[...data.value.months].sort((a,b)=>b.birthdays.length-a.birthdays.length)[0]);
@@ -72,7 +73,7 @@ const tooltip=p=>`${name(p.person)} · ${p.birth.approximate?'About ':''}${p.bir
         <text :x="x(year)" :y="swarmHeight+28" :text-anchor="year===minimum?'start':year===now?'end':'middle'">{{year===now?'Today · '+year:year}}</text>
       </g>
       <g v-if="hoveredBirth" class="insights-birth-hover" aria-hidden="true" pointer-events="none">
-        <line :x1="hoveredBirth.x" :x2="hoveredBirth.x" y1="30" :y2="swarmHeight" stroke="var(--green)" stroke-width="1" vector-effect="non-scaling-stroke" />
+        <line :x1="hoveredBirth.x" :x2="hoveredBirth.x" y1="-6" :y2="swarmHeight" stroke="var(--green)" stroke-width="1" vector-effect="non-scaling-stroke" />
         <rect :x="Math.min(918,Math.max(4,hoveredBirth.x-39))" y="-32" width="78" height="26" rx="5" fill="var(--green)" />
         <text :x="Math.min(957,Math.max(43,hoveredBirth.x))" y="-14" text-anchor="middle" style="fill:white;font-size:12px;font-weight:600">{{hoveredBirth.birth.approximate?'c. ':''}}{{hoveredBirth.birth.year}}</text>
       </g>
@@ -86,7 +87,8 @@ const tooltip=p=>`${name(p.person)} · ${p.birth.approximate?'About ':''}${p.bir
   </section>
   <section class="insights-section"><p class="eyebrow">FROM THERE TO HERE</p><h2>Our Migration Connections</h2><p>Birthplaces on the left, current homes on the right. Wider lines represent more relatives; these connect recorded locations, not travel routes.</p>
     <p v-if="!routes.length">Add birthplaces and current locations to reveal connections.</p>
-    <div v-else class="insights-chart-scroll"><svg :viewBox="`0 0 1000 ${routeHeight}`" class="insights-flow" role="group" aria-label="Birthplace to current location connections">
+    <div v-else class="insights-chart-scroll"><svg :viewBox="`0 -35 1000 ${routeHeight+35}`" class="insights-flow" role="group" aria-label="Birthplace to current location connections">
+      <text x="0" y="-14" class="migration-column-heading">Birthplace</text><text x="745" y="-14" class="migration-column-heading">Current Location</text>
       <path v-for="r in drawnRoutes" :key="routeKey(r)" :class="{'migration-route-selected':routeSelected(r)}" :aria-pressed="routeSelected(r)" :d="`M 270 ${sources.indexOf(r.from)*55+28} C 470 ${sources.indexOf(r.from)*55+28},530 ${destinations.indexOf(r.to)*55+28},730 ${destinations.indexOf(r.to)*55+28}`" fill="none" stroke="#8da77c" :stroke-width="Math.min(20,2+r.people.length*2)+(routeSelected(r)?4:0)" opacity=".65" tabindex="0" role="button" :aria-label="`${migrationDisplayLabel(r.from)} to ${migrationDisplayLabel(r.to)}: ${r.people.length} relatives`" @click="showFlow(r)" @keydown.enter.prevent="showFlow(r)" @keydown.space.prevent="showFlow(r)"><title>{{migrationDisplayLabel(r.from)}} → {{migrationDisplayLabel(r.to)}} · {{r.people.length}} relatives</title></path>
       <text v-for="(place,i) in sources" :key="'s'+place" :class="{'migration-place-selected':placeSelected(place,'from')}" role="button" tabindex="0" :aria-label="'Relatives born in '+migrationDisplayLabel(place)" @click="showPlace(place,'from')" @keydown.enter.prevent="showPlace(place,'from')" @keydown.space.prevent="showPlace(place,'from')" x="0" :y="i*55+32">{{shortPlace(place)}}<title>{{migrationDisplayLabel(place)}}</title></text><text v-for="(place,i) in destinations" :key="'d'+place" :class="{'migration-place-selected':placeSelected(place,'to')}" role="button" tabindex="0" :aria-label="'Relatives living in '+migrationDisplayLabel(place)" @click="showPlace(place,'to')" @keydown.enter.prevent="showPlace(place,'to')" @keydown.space.prevent="showPlace(place,'to')" x="745" :y="i*55+32">{{shortPlace(place)}}<title>{{migrationDisplayLabel(place)}}</title></text>
     </svg></div>
@@ -99,17 +101,17 @@ const tooltip=p=>`${name(p.person)} · ${p.birth.approximate?'About ':''}${p.bir
 <aside ref="sidebar" class="insights-sidebar" aria-label="Insight details" tabindex="0">
   <div class="insights-sidebar-heading"><p class="eyebrow">A CLOSER LOOK</p><button v-if="panel" type="button" aria-label="Clear insight selection" @click="clearPanel"><PhX :size="20"/></button></div>
   <template v-if="panel==='person' && selected">
-    <InsightPersonDetails :person="selected" @select="showPerson" @tree="api.openTaggedPerson($event.id);clearPanel()" />
+    <InsightPersonDetails :person="selected" @select="showPerson" @tree="api.openTaggedPerson($event.id)" />
   </template>
   <template v-else-if="panel==='people' && context">
-    <h2>{{context.title}}</h2><p v-if="context.description">{{context.description}}</p><p>{{context.people.length}} relatives</p>
+    <template v-if="!context.routes"><h2>{{context.title}}</h2><p v-if="context.description">{{context.description}}</p><p>{{context.people.length}} relatives</p></template>
     <div v-if="context.routes" class="insights-sidebar-routes"><section v-for="route in context.routes" :key="routeKey(route)" class="insights-sidebar-route"><h3>{{migrationDisplayLabel(route.from)}} <PhArrowRight :size="14" aria-hidden="true"/> {{migrationDisplayLabel(route.to)}}</h3><p>{{route.people.length}} {{route.people.length===1?'relative':'relatives'}}</p><div class="insights-sidebar-people"><button v-for="p in route.people" :key="p.id" @click="showPerson(p)"><PersonAvatar :person="p"/><span>{{name(p)}}<small v-if="viewerRelation(p.id)">{{viewerRelation(p.id)}}</small></span><PhArrowRight :size="16"/></button></div></section></div>
     <div v-else class="insights-sidebar-people"><button v-for="p in context.people" :key="p.id" @click="showPerson(p)"><PersonAvatar :person="p"/><span>{{name(p)}}<small v-if="viewerRelation(p.id)">{{viewerRelation(p.id)}}</small></span><PhArrowRight :size="16"/></button></div><p v-if="!context.people.length">No relatives in this group.</p>
   </template>
   <template v-else-if="panel==='month' && month">
     <h2>{{monthName(month.month)}}</h2><p>Birthdays &amp; Wedding Anniversaries</p>
     <div class="insights-sidebar-people"><button v-for="p in month.birthdays" :key="p.id" @click="showPerson(p)"><PersonAvatar :person="p"/><span>{{name(p)}}<small>Birthday · {{api.familyDateLabel(p.dateDetails?.birth || p.birthday)}}</small></span><PhArrowRight :size="16"/></button></div>
-    <article v-for="w in month.weddings" :key="w.id" class="insights-sidebar-event"><strong>{{w.title}}</strong><p>Wedding Anniversary · {{api.familyDateLabel(w.date)}}</p></article>
+    <article v-for="w in month.weddings" :key="w.id" class="insights-sidebar-event insights-wedding-event"><div v-if="weddingPeople(w).length" class="insights-wedding-portraits"><button v-for="p in weddingPeople(w)" :key="p.id" type="button" :aria-label="'View '+name(p)" @click="showPerson(p)"><PersonAvatar :person="p"/></button></div><div><strong>{{w.title}}</strong><p>Wedding Anniversary · {{api.familyDateLabel(w.date)}}</p></div></article>
     <p v-if="!month.birthdays.length && !month.weddings.length">No celebrations recorded for this month.</p>
   </template>
   <template v-else-if="panel==='overlap' && chosen">

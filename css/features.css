@@ -3592,7 +3592,7 @@ body:not(.is-editor) .lightbox-people:not(:has(.lightbox-person-tag)) { display:
 .insights-section h2 { font-size: 26px; margin: 10px 0; }
 .insights-chart-scroll { overflow-x: auto; padding: 14px 0; }
 .insights-chart-scroll > svg { width: 100%; min-width: 780px; display: block; }
-.insights-chart-scroll text { fill: var(--ink); font: 12px Manrope,sans-serif; }
+.insights-chart-scroll text { fill: var(--ink); font: 12px 'DM Sans',sans-serif; }
 .insights-dot, .insights-flow path { cursor: pointer; }
 .insights-dot:hover circle, .insights-dot:focus circle { stroke: var(--green); stroke-width: 3px; }
 .insights-flow path:hover, .insights-flow path:focus { stroke: var(--green); opacity: 1; }
@@ -3723,3 +3723,15 @@ body:not(.is-editor) .lightbox-people:not(:has(.lightbox-person-tag)) { display:
   #insightsPage .insights-lifespans { --life-name-width: 125px; --life-gap: 8px; --life-right-inset: 10px; }
   .insights-life-axis { grid-template-columns: var(--life-name-width) minmax(90px,1fr); }
 }
+.insights-flow text.migration-column-heading { font-family: 'DM Sans',sans-serif; font-size: 15px; font-weight: 700; letter-spacing: -0.2px; text-transform: uppercase; fill: var(--ink); }
+.insights-sidebar-route:first-child { border-top: 0; padding-top: 12px; }
+.insights-wedding-event { display: flex; align-items: center; gap: 12px; }
+.insights-wedding-event > div:last-child { min-width: 0; flex: 1; }
+.insights-wedding-event p { margin: 6px 0 0; font-size: 11px; }
+.insights-wedding-portraits { display: flex; flex-direction: column; width: 40px; flex-shrink: 0; }
+.insights-wedding-portraits > button { display: block; padding: 0; border: 0; border-radius: 50%; background: transparent; width: 40px; height: 40px; }
+.insights-wedding-portraits > button + button { margin-top: -10px; }
+.insights-wedding-portraits .avatar { width: 40px; height: 40px; min-width: 40px; margin: 0; border-radius: 50%; border: 2px solid #fffefa; background: #d5e1c9; object-fit: cover; font-size: 12px; }
+.insights-wedding-portraits > button:hover, .insights-wedding-portraits > button:focus-visible { position: relative; z-index: 1; outline: 2px solid var(--green); outline-offset: 1px; }
+.map-person-popup .map-popup-person-actions button,
+.map-popup-location-heading .map-add-people { text-decoration: underline; text-underline-offset: 3px; }

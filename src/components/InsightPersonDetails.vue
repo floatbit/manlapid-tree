@@ -26,6 +26,6 @@ function edit(){api.value.showSection('people');api.value.selectPersonFromDirect
   <PersonPhotos :person-id="person.id" in-sidebar/>
   <section v-if="person.bio?.trim()" class="map-profile-story"><h3>About</h3><p>{{person.bio}}</p></section>
   <button type="button" @click="emit('tree',person)">Open Family Tree <PhArrowRight :size="16"/></button>
-  <section v-if="canEdit" class="tree-profile-add"><h3>Add to {{person.firstName || person.name.split(/\s+/)[0]}}’s Family</h3><div class="quick-add"><button v-for="type in ['parent','sibling','spouse','child']" :key="type" type="button" @click="api.openFamilyDialog(person.id,type)">＋ Add {{type}}</button></div></section>
+
 </div>
 </template>

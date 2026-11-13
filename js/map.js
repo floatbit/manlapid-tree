@@ -190,7 +190,7 @@ function openFamilyMapGroup(group, marker, { restore = false } = {}) {
   const addPeople = document.createElement('button');
   addPeople.type = 'button';
   addPeople.className = 'map-add-people';
-  addPeople.innerHTML = 'Update People ' + uiIcon('arrowRight');
+  addPeople.textContent = 'Update People';
   addPeople.onclick = () => {
     const source = group.people[0];
     openBulkLocation('current', { location: source.location, locationPlaceId: source.locationPlaceId || '', locationLat: group.position.lat, locationLng: group.position.lng });
@@ -234,11 +234,7 @@ function openFamilyMapGroup(group, marker, { restore = false } = {}) {
       compact.className = 'map-popup-action-short';
       compact.setAttribute('aria-hidden', 'true');
       compact.textContent = { 'View Places Lived': 'Places Lived', 'View Details': 'Details', 'Open Family Tree': 'Tree' }[label] || label;
-      const arrow = document.createElement('span');
-      arrow.className = 'map-popup-link-arrow';
-      arrow.setAttribute('aria-hidden', 'true');
-      arrow.innerHTML = uiIcon('arrowRight');
-      link.append(text, compact, arrow);
+      link.append(text, compact);
       link.setAttribute('aria-label', label + ' — ' + displayName(p));
       link.onclick = action;
       actions.append(link);

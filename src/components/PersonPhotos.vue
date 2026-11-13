@@ -22,7 +22,7 @@ async function open(photo) {
     <h3>{{ showName ? name : 'PHOTOS' }} <span v-if="!showName && photos.length">{{ photos.length }}</span></h3>
     <p v-if="!photos.length" class="hint">No photos yet.</p>
     <div class="person-photos-grid" :style="{gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`}">
-      <button v-for="(photo,index) in photos.slice(0,limit)" :key="photo" type="button" :disabled="loading" :aria-label="'View photo ' + (index+1) + ' of ' + name" @click="open(photo)"><img :src="photo" loading="lazy" :alt="'Tagged photo of ' + name" /></button>
+      <button v-for="(photo,index) in photos.slice(0,inSidebar ? Math.min(limit,6) : limit)" :key="photo" type="button" :disabled="loading" :aria-label="'View photo ' + (index+1) + ' of ' + name" @click="open(photo)"><img :src="photo" loading="lazy" :alt="'Tagged photo of ' + name" /></button>
     </div>
     <button v-if="photos.length" class="person-photos-all" type="button" :disabled="loading" @click="open(photos[0])">{{ loading ? 'Loading…' : (inSidebar ? 'View All Photos' : 'View All Photos (' + photos.length + ')') }} <PhArrowRight :size="14" class="ui-icon" aria-hidden="true" /></button>
   </section>

@@ -37,13 +37,15 @@ for (const page of [
   'albums',
   'recipes',
   'stories',
+  'insights',
   'relationships',
   'overview',
 ]) {
   vm.runInContext(`updatePageUrl('${page}')`, ctx);
   assert.equal(vm.runInContext('sectionFromUrl()', ctx), page);
 }
-assert.equal(current.hash, '#page=reports');
+assert.equal(current.hash, '#page=contribute');
+assert.equal(vm.runInContext("sectionFromUrl(new URL('http://family.local/#page=reports'))", ctx), 'overview');
 const count = visits.length;
 vm.runInContext("updatePageUrl('overview')", ctx);
 assert.equal(visits.length, count);

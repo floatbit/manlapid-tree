@@ -410,3 +410,27 @@
     padding: var(--page-padding);
   }
 }
+@media(max-width:1023px) {
+  #mobileMainMenu .header-more { display: block; height: auto; grid-column: 1 / -1; }
+  #mobileMainMenu .header-more-trigger { width: 100%; justify-content: space-between; }
+  #mobileMainMenu .header-more-links { position: static; box-shadow: none; border: 0; padding: 8px 0 0; }
+}
+@media(max-width:900px) { #insightsPage { padding: var(--page-padding); } }
+@media(max-width:600px) {
+  .insights-stats, .insights-calendar { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .insights-stats article { padding: 16px; }
+  .insights-life { grid-template-columns: 125px minmax(90px,1fr); gap: 8px; }
+  .insights-life > small { grid-column: 1 / -1; }
+  .insights-person-drawer { top: 0; z-index: 60; }
+}
+@media(max-width:760px) {
+  #overviewReports, .contribution-queue-grid { grid-template-columns: minmax(0,1fr); }
+  .contribution-portrait-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .contribution-date-row { grid-template-columns: minmax(0,1fr) !important; }
+}
+@media(max-width:900px) {
+  #insightsPage { padding: 0; }
+  .insights-workspace { display: flex; flex-direction: column; }
+  .insights-main { padding: var(--page-padding); }
+  .insights-sidebar { position: static; width: 100%; height: auto; max-height: none; overflow: visible; padding: 24px 16px; border-left: 0; border-top: 1px solid var(--line); scroll-margin-top: 80px; }
+}

@@ -2266,7 +2266,7 @@ gmp-place-autocomplete {
 #familyMapPeople.showing-person > #familyMapStatus {
   display: none;
 }
-:is(#mapSelectedPerson, #details) #mapBackToLocations {
+:is(#mapSelectedPerson, #details, .insights-sidebar) #mapBackToLocations {
   border: 0;
   padding: 0;
   margin-bottom: 22px;
@@ -2285,13 +2285,13 @@ gmp-place-autocomplete {
   font-size: 22px;
   margin: 0;
 }
-:is(#mapSelectedPerson, #details) .map-profile-header h2 {
+:is(#mapSelectedPerson, #details, .insights-sidebar) .map-profile-header h2 {
   margin: 0 0 6px;
   font-size: 21px;
   line-height: 1.35;
   letter-spacing: -0.4px;
 }
-:is(#mapSelectedPerson, #details) .map-profile-header p {
+:is(#mapSelectedPerson, #details, .insights-sidebar) .map-profile-header p {
   margin: 6px 0 0;
   font-size: 11px;
   color: var(--muted);
@@ -2307,8 +2307,8 @@ gmp-place-autocomplete {
   gap: 8px 15px;
   margin-bottom: 24px;
 }
-:is(#mapSelectedPerson, #details) .map-profile-actions button,
-:is(#mapSelectedPerson, #details) #mapPersonPlaces {
+:is(#mapSelectedPerson, #details, .insights-sidebar) .map-profile-actions button,
+:is(#mapSelectedPerson, #details, .insights-sidebar) #mapPersonPlaces {
   width: auto;
   padding: 0;
   margin: 0;
@@ -2327,12 +2327,12 @@ gmp-place-autocomplete {
   background: #f3f6ee;
   margin-bottom: 25px;
 }
-:is(#mapSelectedPerson, #details) h3 {
+:is(#mapSelectedPerson, #details, .insights-sidebar) h3 {
   margin: 0 0 14px;
   font-size: 15px;
   letter-spacing: -0.2px;
 }
-:is(#mapSelectedPerson, #details) h3 > span,
+:is(#mapSelectedPerson, #details, .insights-sidebar) h3 > span,
 .map-profile-family-group h4 > span {
   color: var(--muted);
   font-weight: 400;
@@ -2364,7 +2364,7 @@ gmp-place-autocomplete {
   font-size: 11px;
   color: var(--muted);
 }
-:is(#mapSelectedPerson, #details) .map-profile-relative {
+:is(#mapSelectedPerson, #details, .insights-sidebar) .map-profile-relative {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -2376,12 +2376,12 @@ gmp-place-autocomplete {
   border: 1px solid transparent;
   transition: all .15s ease;
 }
-:is(#mapSelectedPerson, #details) .map-profile-relative:hover {
+:is(#mapSelectedPerson, #details, .insights-sidebar) .map-profile-relative:hover {
   background: #e2ecd9;
   border-color: #cbd8bf;
   box-shadow: none;
 }
-:is(#mapSelectedPerson, #details) .map-profile-relative .avatar {
+:is(#mapSelectedPerson, #details, .insights-sidebar) .map-profile-relative .avatar {
   width: 36px;
   height: 36px;
   min-width: 36px;
@@ -2393,13 +2393,13 @@ gmp-place-autocomplete {
   flex-shrink: 0;
   object-fit: cover;
 }
-:is(#mapSelectedPerson, #details) .map-profile-relative strong {
+:is(#mapSelectedPerson, #details, .insights-sidebar) .map-profile-relative strong {
   font-size: 12px;
   line-height: 1.4;
   font-weight: 600;
   color: var(--ink);
 }
-:is(#mapSelectedPerson, #details) .map-profile-relative small {
+:is(#mapSelectedPerson, #details, .insights-sidebar) .map-profile-relative small {
   display: block;
   font-size: 11px;
   margin-top: 2px;
@@ -3291,8 +3291,8 @@ body:not(.is-editor) .lightbox-people:not(:has(.lightbox-person-tag)) { display:
 #timeline .birth-event.anniversary-highlight { outline: 3px solid #7d9a68; outline-offset: 4px; }
 
 /* Consistent breathing room between sidebar content groups. */
-:is(#details, #mapSelectedPerson, .family-person-sidebar) > :is(section, .person-tagged-photos),
-:is(#details, #mapSelectedPerson, .family-person-sidebar) > div:has(> .person-tagged-photos) { margin-top: 32px; margin-bottom: 32px; }
+:is(#details, #mapSelectedPerson, .family-person-sidebar, .insights-person-details) > :is(section, .person-tagged-photos),
+:is(#details, #mapSelectedPerson, .family-person-sidebar, .insights-person-details) > div:has(> .person-tagged-photos) { margin-top: 32px; margin-bottom: 32px; }
 #details .tree-location-history { margin-top: 32px; }
 #emptySuggestions #shufflePeople > span { color: var(--ink); }
 #familiesPage .families-intro { justify-content: space-between; text-align: left; }
@@ -3302,8 +3302,8 @@ body:not(.is-editor) .lightbox-people:not(:has(.lightbox-person-tag)) { display:
 /* Clear initials, roomy sidebar groups, and consistent page headings. */
 #empty .suggested-people > button, #emptySuggestions #shufflePeople { background: #edf2e6; }
 #empty .suggested-people .avatar { border-radius: 50%; background: #d5e1c9; border: 1px solid #afc19e; flex-shrink: 0; }
-:is(#details, #mapSelectedPerson, .family-person-sidebar) > section,
-:is(#details, #mapSelectedPerson, .family-person-sidebar) > div:has(> .person-tagged-photos) { margin-block: 44px; }
+:is(#details, #mapSelectedPerson, .family-person-sidebar, .insights-person-details) > section,
+:is(#details, #mapSelectedPerson, .family-person-sidebar, .insights-person-details) > div:has(> .person-tagged-photos) { margin-block: 44px; }
 #details .tree-location-history, .family-person-sidebar .tree-location-history { margin-top: 44px; }
 .family-person-sidebar .tree-location-history { padding: 0; border: 0; background: transparent; }
 .family-person-sidebar .migration-stops button { width: 100%; padding: 10px 0; border: 0; background: transparent; text-align: left; }
@@ -3574,3 +3574,128 @@ body:not(.is-editor) .lightbox-people:not(:has(.lightbox-person-tag)) { display:
   background: transparent;
 }
 .viewer-selected-person > button:hover { background: var(--line); }
+
+/* More navigation supports hover, keyboard focus, and click/touch. */
+.header-more { position: relative; display: flex; height: 100%; align-items: stretch; }
+.header-more-trigger { display: inline-flex; align-items: center; gap: 5px; }
+.header-more-links { position: absolute; top: 100%; right: 0; min-width: 170px; padding: 8px; background: #fffefa; border: 1px solid var(--line); border-radius: 0 0 10px 10px; box-shadow: 0 12px 24px #263c3614; z-index: 50; }
+.header-more-links:not([hidden]) { display: grid; }
+#mainNavigation .header-more-links button { padding: 12px; text-align: left; border: 0; border-radius: 6px; }
+#mainNavigation .header-more-links button:hover, #mainNavigation .header-more-links button.active { background: #edf2e6; color: var(--green); }
+#insightsPage { max-width: 1440px; margin: 0 auto; padding: var(--page-padding); }
+.insights-stats { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 20px; }
+.insights-stats article { padding: 24px; border-top: 2px solid #a7b99b; background: #f0f3e9; }
+.insights-stats h2 { font-size: 24px; line-height: 1.3; overflow-wrap: anywhere; }
+.insights-stats p { margin: 10px 0; }
+#insightsPage small { color: var(--muted); font-size: 11px; line-height: 1.5; }
+.insights-section { padding: 38px 0; border-bottom: 1px solid var(--line); }
+.insights-section h2 { font-size: 26px; margin: 10px 0; }
+.insights-chart-scroll { overflow-x: auto; padding: 14px 0; }
+.insights-chart-scroll > svg { width: 100%; min-width: 780px; display: block; }
+.insights-chart-scroll text { fill: var(--ink); font: 12px Manrope,sans-serif; }
+.insights-dot, .insights-flow path { cursor: pointer; }
+.insights-dot:hover circle, .insights-dot:focus circle { stroke: var(--green); stroke-width: 3px; }
+.insights-flow path:hover, .insights-flow path:focus { stroke: var(--green); opacity: 1; }
+.insights-section > .person-autocomplete { max-width: 450px; margin: 20px 0; }
+.insights-lifespans { max-height: 540px; overflow: auto; margin: 24px 0 12px; }
+.insights-life { display: grid; grid-template-columns: 210px minmax(100px,1fr) 125px; align-items: center; gap: 16px; width: 100%; border: 0; border-bottom: 1px solid var(--line); background: transparent; border-radius: 0; padding: 10px; text-align: left; }
+.insights-life-track { height: 16px; position: relative; background: #edf0e7; border-radius: 3px; }
+.insights-life-track > span { position: absolute; height: 100%; background: #87a477; border-radius: 3px; }
+.insights-life-muted .insights-life-track > span { background: #d5dbcf; }
+.insights-life-selected { background: #e9efdf; }
+.insights-flow-people { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 20px; }
+.insights-flow-people > strong, .insights-flow-people > h3 { flex-basis: 100%; }
+.insights-flow-people button { display: inline-flex; align-items: center; gap: 12px; }
+.insights-calendar { display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); gap: 12px; margin-top: 24px; }
+.insights-calendar button { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; text-align: left; padding: 18px; background: rgba(141,167,124,var(--month-strength)); }
+.insights-calendar b { font-size: 28px; color: var(--green); }
+.insights-person-drawer { position: fixed; right: 0; top: 88px; bottom: 0; width: min(390px,100%); padding: 34px; overflow-y: auto; background: #fffefa; border-left: 1px solid var(--line); box-shadow: -12px 0 35px #263c361c; z-index: 45; }
+.insights-person-drawer .avatar { width: 100px; height: 100px; border-radius: 50%; display: grid; place-items: center; object-fit: cover; background: #e4ecd9; }
+.insights-person-drawer > button:last-child { display: flex; align-items: center; gap: 15px; }
+.insights-close { position: absolute; right: 12px; top: 12px; padding: 6px; border: 0; background: transparent; }
+@media(max-width:1100px) { .insights-stats { grid-template-columns: repeat(2,minmax(0,1fr)); } .insights-calendar { grid-template-columns:repeat(4,minmax(0,1fr)); } }
+
+/* Contribute lists expand with the page rather than scrolling inside cards. */
+#overviewReports { grid-template-columns: repeat(2,minmax(0,1fr)); }
+#overviewReports .directory-missing-list { max-height: none; height: auto; overflow: visible; }
+.contribution-queue-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 24px; }
+.contribution-queue-grid > section { min-width: 0; padding: 22px; border: 1px solid var(--line); border-radius: 12px; background: #fffefa; }
+.contribution-queue-grid label { display: block; }
+.contribution-queue-grid select { width: 100%; margin: 8px 0 20px; }
+.contribution-date-row { display: grid !important; grid-template-columns: minmax(0,1fr) minmax(120px,1fr); align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.contribution-date-row small { display: block; color: var(--muted); font-size: 11px; }
+.contribution-date-row input { min-width: 0; width: 100%; }
+.contribution-date-group { margin-bottom: 22px; }
+.contribution-location-list > label { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.contribution-location-list { margin-bottom: 20px; }
+.contribution-portraits { grid-column: auto; }
+.contribution-portrait-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+.contribution-portrait-grid article { display: flex; align-items: center; flex-direction: column; text-align: center; gap: 12px; padding: 16px; background: #f2f5ec; border-radius: 10px; }
+.contribution-portrait-grid .avatar { width: 64px; height: 64px; display: grid; place-items: center; border-radius: 50%; background: #dce6ce; }
+.portrait-upload { display: inline-flex !important; align-items: center; gap: 6px; cursor: pointer; color: var(--green); position: relative; }
+.portrait-upload input { position: absolute; inset: 0; opacity: 0; width: 100%; cursor: pointer; }
+.portrait-upload:focus-within { outline: 2px solid var(--green); outline-offset: 4px; }
+.contribution-error { color: #963c2b; }
+.pyramid-legend { display: flex; gap: 25px; margin: 20px 0; }
+.pyramid-legend span::before { content: ''; display: inline-block; width: 12px; height: 12px; margin-right: 7px; background: #769866; }
+.pyramid-legend span:last-child::before { background: #b7a58c; }
+.pyramid-row { display: grid; grid-template-columns: 85px minmax(0,1fr); align-items: center; gap: 16px; margin: 18px 0; }
+.pyramid-row > div { display: grid; gap: 6px; }
+.pyramid-row button { min-width: 32px; border: 0; border-radius: 3px; text-align: right; padding: 7px 10px; }
+.pyramid-living { background: #769866; color: white; }
+.pyramid-historical { background: #b7a58c; color: #263c36; }
+.header-more-links .header-auth-link { display: block; margin: 5px 0 0; padding: 12px; border-top: 1px solid var(--line); text-align: left; color: var(--ink); text-decoration: none; font: inherit; }
+.header-more-links form.header-auth-link { padding: 0; }
+#mainNavigation .header-auth-link button { width: 100%; }
+.header-more-links a.header-auth-link:hover { background: #edf2e6; }
+
+.contribution-queues .directory-missing-list { max-height: none; height: auto; overflow: visible; display: grid; gap: 8px; }
+/* Override global form widths so checkboxes stay beside their names. */
+.contribution-location-list > label { justify-content: flex-start; text-align: left; width: 100%; }
+.contribution-location-list > label > input[type="checkbox"] { flex: 0 0 16px; width: 16px; height: 16px; min-width: 16px; margin: 0; padding: 0; }
+.contribution-location-list > label > span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.contribution-portrait-grid article.portrait-dragging { outline: 2px dashed var(--green); outline-offset: -2px; background: #e1ebd5; }
+
+/* Insights mirrors Timeline: charts on the left, one persistent details surface. */
+#insightsPage { max-width: none; padding: 0; --insights-header-height: 88px; }
+.insights-workspace { display: grid; grid-template-columns: minmax(0,1fr) 300px; align-items: start; }
+.insights-main { min-width: 0; max-width: 1440px; width: 100%; margin: 0 auto; padding: var(--page-padding); }
+.insights-sidebar { position: sticky; top: var(--insights-header-height); height: calc(100dvh - var(--insights-header-height)); overflow-y: auto; overscroll-behavior-y: contain; min-height: 0; padding: 25px 18px; border-left: 1px solid var(--line); background: #fffefa; }
+.insights-sidebar h2 { font-size: 18px; line-height: 1.4; overflow-wrap: anywhere; }
+.insights-sidebar-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.insights-sidebar-heading > button { display: grid; place-items: center; padding: 4px; border: 0; background: transparent; }
+.insights-sidebar-people { display: grid; }
+.insights-sidebar-people > button { display: flex; align-items: center; gap: 10px; width: 100%; padding: 15px 0; text-align: left; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: transparent; }
+.insights-sidebar-people > button:hover { background: #f3f5ef; }
+.insights-sidebar-people > button > span:not(.avatar) { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.insights-sidebar-people .avatar { flex: 0 0 36px; width: 36px; height: 36px; border-radius: 50%; object-fit: cover; display: grid; place-items: center; background: #e4ecd9; }
+.insights-sidebar-people small { display: block; margin-top: 4px; }
+.insights-sidebar-event { padding: 16px 0; border-bottom: 1px solid var(--line); }
+.insights-person-details > .avatar { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; display: grid; place-items: center; background: #e4ecd9; margin-top: 20px; }
+.insights-person-details > button { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; }
+#insightsPage .insights-lifespans { max-height: none; overflow: visible; }
+.insights-flow text[role="button"] { cursor: pointer; }
+.insights-flow text[role="button"]:hover, .insights-flow text[role="button"]:focus { fill: var(--green); text-decoration: underline; }
+@media(min-width:901px) and (max-width:1200px) { .insights-stats { grid-template-columns: repeat(2,minmax(0,1fr)); } .insights-calendar { grid-template-columns: repeat(3,minmax(0,1fr)); } .insights-life { grid-template-columns: 140px minmax(80px,1fr); } .insights-life > small { grid-column: 1 / -1; } }
+/* Shared person pills retain the extra context supplied by Insights charts. */
+.insights-sidebar-people > button { padding: 10px; margin-bottom: 7px; border: 1px solid transparent; border-radius: 9px; background: #edf2e6; }
+.insights-sidebar-people > button:hover { background: #e2ecd9; border-color: #cbd8bf; }
+.insights-sidebar-people .avatar { font-size: 12px; margin: 0; border: 1px solid #afc19e; background: #d5e1c9; }
+.insights-sidebar-people > button > span:not(.avatar) { font-size: 12px; font-weight: 600; line-height: 1.4; }
+.insights-sidebar-people small { font-size: 11px; font-weight: 400; color: var(--muted); }
+.insights-sidebar-people > button > svg { flex-shrink: 0; margin-left: auto; color: #728b64; }
+.insights-sidebar .map-profile-relative > span:not(.avatar) { flex: 1; min-width: 0; }
+.insights-sidebar .avatar { display: grid; place-items: center; }
+.insights-sidebar h3 { font-size: 15px; letter-spacing: -.2px; margin: 0 0 14px; }
+.insights-sidebar h3 > span { color: var(--muted); font-weight: 400; margin-left: 4px; }
+.insights-sidebar .map-profile-actions button { display: inline-flex; align-items: center; gap: 6px; }
+.insights-sidebar .insight-places-link { display: inline-flex; gap: 6px; align-items: center; padding: 0; border: 0; background: transparent; color: var(--green); text-decoration: underline; font-size: 11px; }
+.insights-sidebar .tree-profile-add { margin-top: 28px; }
+.insights-sidebar .quick-add { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+
+/* Location stops and section spacing match the Tree profile sidebar. */
+.insights-sidebar .tree-location-history { padding: 0; border: 0; background: transparent; margin-top: 44px; }
+.insights-sidebar .tree-location-history .migration-stops button { display: block; width: 100%; padding: 10px 0; border: 0; border-radius: 0; background: transparent; text-align: left; }
+.insights-sidebar .tree-location-history .migration-stops button strong,
+.insights-sidebar .tree-location-history .migration-stops button span { display: block; font-size: 12px; line-height: 1.6; }
+.insights-sidebar .insights-person-details > section > h3 { text-transform: uppercase; }

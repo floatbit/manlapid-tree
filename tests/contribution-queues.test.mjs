@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import { nextTick } from 'vue';
+import { mount, flushPromises } from './mount-component.mjs';
+import ContributionQueues from '../src/components/ContributionQueues.vue';
+import { bindRuntime, ui } from '../src/ui/runtime.js';
+const saved=[];
+bindRuntime({displayName:p=>p.name,initials:p=>p.name[0],resizePhoto:async()=> 'data:image/jpeg;base64,test',saveContributionUpdates:async updates=>saved.push(updates)});
+ui.sync({people:[{id:'z',name:'Amy Zebra',firstName:'Amy',lastName:'Zebra'},{id:'b',name:'Zoe Adams',firstName:'Zoe',lastName:'Adams'},{id:'a',name:'Ben Adams',firstName:'Ben',lastName:'Adams'}],links:[],milestones:[{id:'w',type:'marriage',title:'Wedding'}]});ui.setEditing(true);
+const page=mount(ContributionQueues);
+assert.deepEqual(page.findAll('.contribution-date-row > span').map(r=>r.text().replace('Birth Date','')),['Ben Adams','Zoe Adams','Amy Zebra']);
+assert.deepEqual(page.findAll('.contribution-location-list span').map(r=>r.text()),['Ben Adams','Zoe Adams','Amy Zebra']);
+assert.deepEqual(page.findAll('.contribution-portrait-grid strong').map(r=>r.text()),['Ben Adams','Zoe Adams','Amy Zebra']);
+assert(!page.text().includes('Family Branch'));assert(!page.text().includes('Wedding Date'));
+const card=page.find('.contribution-portrait-grid article').element;
+const drop=new Event('drop',{bubbles:true,cancelable:true});Object.defineProperty(drop,'dataTransfer',{value:{files:[new File(['image'],'portrait.jpg',{type:'image/jpeg'})]}});card.dispatchEvent(drop);await flushPromises();await nextTick();assert.equal(saved[0][0].id,'a');assert.equal(saved[0][0].kind,'portrait');
+ui.setEditing(false);card.dispatchEvent(drop);await flushPromises();assert.equal(saved.length,1,'Visitor drops cannot save');page.unmount();
+console.log('Passed: surname-first ordering in all queues, birthdays only, portrait drops and visitor upload guard.');

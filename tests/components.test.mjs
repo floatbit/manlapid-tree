@@ -24,6 +24,7 @@ const matches = (p, q) =>
   [p.name, ...(p.nicknames || [])].some((n) => n.toLowerCase().includes(q.trim().toLowerCase()));
 const calls = [];
 bindRuntime({
+  initials:p=>p.name[0],
   displayName: display,
   firstLastName: display,
   recipeCategories: { main: 'Main dishes' },
@@ -116,16 +117,10 @@ ui.sync({
 }
 {
   const wrapper = mount(ReportsPage, { attachTo: document.body });
-  assert.equal(wrapper.findAll('.directory-missing').length, 5);
-  assert(
-    wrapper
-      .findAll('.directory-missing')
-      .find((s) => s.text().includes('Missing Headshots'))
-      .text()
-      .includes('Melissa'),
-  );
-  await wrapper.find('.overview-album').trigger('click');
-  assert(Array.isArray(calls.at(-1)) && calls.at(-1)[2] === 'Christmas');
+  assert.equal(wrapper.findAll('.directory-missing').length, 1);
+  assert.equal(wrapper.findAll('#reportRandomPhoto').length, 1);
+  assert(wrapper.find('.contribution-portraits').text().includes('Melissa'));
+  assert.equal(wrapper.findAll('.overview-panels, .overview-stats').length, 0, 'Contribute omits overview panels and stats');
   wrapper.unmount();
 }
 {
@@ -267,7 +262,7 @@ ui.sync({
   assert(document.querySelector('#mobileMainMenu #search'),'Mobile search moves into the menu');
   await mobileHeader.find('.mobile-menu-toggle').trigger('click');
   assert(document.querySelector('#mobileMainMenu').open,'Mobile menu opens as a modal');
-  assert.equal(document.querySelectorAll('#mobileMainMenu nav button').length,9);
+  assert.equal(document.querySelectorAll('#mobileMainMenu nav button').length,13);
   ui.closeMobileMenu();
   assert(!document.querySelector('#mobileMainMenu').open,'Selecting a person can close the menu');
   mobileHeader.unmount();window.matchMedia=originalMatchMedia;
@@ -281,26 +276,6 @@ ui.sync({
   await modal.find('.relationship-dialog-close').trigger('click');
   assert(!modal.element.open);
   modal.unmount();
-}
-{
-  activePage.value='tree';
-  ui.sync({people,links:[],milestones:[],recipes:[],albums:[{id:'random',title:'Random Album',photos:['tagged.jpg','video.mp4','untagged1.jpg','untagged2.jpg']}],photoTags:{'tagged.jpg':['melissa']}});
-  const wrapper=mount(ReportsPage);
-  activePage.value='overview';await flushPromises();await nextTick();
-  let first=wrapper.find('.report-random-image img').attributes('src');
-  assert(['untagged1.jpg','untagged2.jpg'].includes(first),'Reports chooses only untagged photos');
-  const tagInput=wrapper.find('#reportPhotoPeopleSearch');tagInput.element.focus();
-  await tagInput.trigger('keydown',{key:'Escape'});
-  assert.equal(document.activeElement,wrapper.find('#reportRandomPhoto').element,'Escape moves focus out of the tag input');
-  await wrapper.find('#reportRandomPhoto').trigger('keydown',{key:'ArrowRight'});await flushPromises();await nextTick();
-  assert.notEqual(wrapper.find('.report-random-image img').attributes('src'),first,'Right arrow loads another photo');
-  assert.equal(document.activeElement,wrapper.find('#reportPhotoPeopleSearch').element,'Next photo focuses tag search');
-  first=wrapper.find('.report-random-image img').attributes('src');
-  ui.sync({...family.value,photoTags:{...family.value.photoTags,[first]:['melissa']}});await nextTick();
-  assert.equal(wrapper.find('.report-random-image img').attributes('src'),first,'Tagging keeps the current photo in place');
-  activePage.value='tree';await nextTick();activePage.value='overview';await flushPromises();await nextTick();
-  assert.notEqual(wrapper.find('.report-random-image img').attributes('src'),first,'Next visit selects another untagged photo');
-  wrapper.unmount();activePage.value='tree';
 }
 {
   const wrapper=mount(PhotoLightbox);

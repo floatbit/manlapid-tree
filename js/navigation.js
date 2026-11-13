@@ -368,6 +368,7 @@ function savedSection() {
       'albums',
       'recipes',
       'stories',
+      'insights',
     ].includes(section)
       ? section
       : 'overview';
@@ -401,12 +402,15 @@ function showSection(section, { replace = false } = {}) {
       'albums',
       'recipes',
       'stories',
+      'insights',
     ].includes(section)
   )
     section = 'tree';
   rememberSection(section);
   ui.setSection(section);
   if (!restoringPageHistory) updatePageUrl(section, { replace });
+  $('#insightsPage').hidden = section !== 'insights';
+  $('#insightsTab').classList.toggle('active', section === 'insights');
   $('#storiesPage').hidden = section !== 'stories';
   $('#storiesTab').classList.toggle('active', section === 'stories');
   $('#familiesPage').hidden = section !== 'families';
@@ -437,7 +441,7 @@ function showSection(section, { replace = false } = {}) {
   else if (section === 'albums') renderAlbums();
   else if (section === 'map') renderFamilyMap();
   else if (section === 'families') ui.sync(data);
-  else if (section === 'stories') return;
+  else if (section === 'stories' || section === 'insights') return;
   else {
     render();
     fitGraph();
@@ -471,6 +475,7 @@ function sectionFromUrl(url = new URL(location.href)) {
   ])
     if (params.has(key)) return section;
   const page = params.get('page');
+  if (page === 'contribute') return 'overview';
   if (page === 'reports') return 'overview';
   return [
     'tree',
@@ -482,6 +487,7 @@ function sectionFromUrl(url = new URL(location.href)) {
     'albums',
     'recipes',
     'stories',
+      'insights',
   ].includes(page)
     ? page
     : null;
@@ -493,7 +499,7 @@ function updatePageUrl(section, { replace = false } = {}) {
     sectionFromUrl(url) === section
       ? new URLSearchParams(url.hash.slice(1))
       : new URLSearchParams();
-  params.set('page', section === 'overview' ? 'reports' : section);
+  params.set('page', section === 'overview' ? 'contribute' : section);
   url.hash = params.toString();
   if (url.href !== location.href) history[replace ? 'replaceState' : 'pushState'](null, '', url);
 }

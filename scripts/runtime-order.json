@@ -24,5 +24,6 @@
   "js/bulk-location.js",
   "js/albums.js",
   "js/recipes.js",
-  "js/family-groups.js"
+  "js/family-groups.js",
+  "js/contributions.js"
 ]

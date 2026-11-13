@@ -17,6 +17,7 @@ async function open(isIntroduction = false) {
   dialog.value.showModal(); await nextTick();
   dialog.value.querySelector('input')?.focus();
 }
+defineExpose({ open });
 function choose(person) { setViewer(person.id); dialog.value.close(); }
 function clear() { setViewer(''); }
 let offered = false;

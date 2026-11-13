@@ -269,13 +269,18 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
                       v-for="spouse in spouses(p.id)"
                       :key="spouse.id"
                       type="button"
-                      class="family-spouse-card"
+                      class="family-member family-spouse-member"
                       :class="{ active: personId === spouse.id }"
                       @click="personId = spouse.id"
                     >
                       <PersonAvatar :person="spouse" />
-                      <span class="family-spouse-name">{{ api.displayName(spouse) }}</span>
-                      <PhArrowRight :size="14" class="ui-icon spouse-arrow" aria-hidden="true" />
+                      <span class="family-member-info">
+                        <strong>{{ api.displayName(spouse) }}</strong>
+                        <ViewerRelation :person-id="spouse.id" />
+                        <small v-if="spouse.dateDetails?.birth || spouse.birthday">Born {{ api.familyDateLabel(spouse.dateDetails?.birth || spouse.birthday) }}</small>
+                        <small v-if="spouse.deceased">Deceased</small>
+                      </span>
+                      <span class="family-member-arrow" aria-hidden="true"><PhArrowRight :size="16" class="ui-icon" /></span>
                     </button>
                   </div>
                 </div>

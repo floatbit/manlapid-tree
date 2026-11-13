@@ -3699,3 +3699,9 @@ body:not(.is-editor) .lightbox-people:not(:has(.lightbox-person-tag)) { display:
 .insights-sidebar .tree-location-history .migration-stops button strong,
 .insights-sidebar .tree-location-history .migration-stops button span { display: block; font-size: 12px; line-height: 1.6; }
 .insights-sidebar .insights-person-details > section > h3 { text-transform: uppercase; }
+.insights-flow path.migration-route-selected { stroke: var(--green); opacity: 1; filter: drop-shadow(0 0 2px #38634e55); }
+.insights-flow text.migration-place-selected { fill: var(--green); font-weight: 700; text-decoration: underline; }
+.insights-sidebar-route { padding: 20px 0; border-top: 1px solid var(--line); }
+.insights-sidebar-route h3 { font-size: 13px; line-height: 1.6; margin: 0 0 8px; overflow-wrap: anywhere; }
+.insights-sidebar-route h3 svg { vertical-align: middle; }
+.insights-sidebar-route > p { font-size: 11px; margin-top: 0; }

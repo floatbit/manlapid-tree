@@ -3475,7 +3475,7 @@ body:not(.is-editor) .lightbox-people:not(:has(.lightbox-person-tag)) { display:
 #timeline .timeline-sidebar-stack :is(.anniversary-card, .on-this-day-item) { margin: 0; padding: 16px 0; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: transparent; box-shadow: none; }
 #timeline .timeline-sidebar-stack :is(.anniversary-card, .on-this-day-item):last-child { border-bottom: 0; }
 #timeline .timeline-sidebar-stack :is(.anniversary-card, .on-this-day-item):hover { background: #f3f5ef; filter: none; transform: none; box-shadow: none; }
-#timeline .timeline-sidebar-stack :is(.anniversary-date, .on-this-day-years-badge) { padding: 4px 0; background: transparent; border: 0; border-radius: 0; color: var(--green); }
+#timeline .timeline-sidebar-stack :is(.anniversary-date, .on-this-day-years-badge) { padding: 4px 0; background: #f3f5ef; border: 0; border-radius: 0; color: var(--green); }
 #timeline .timeline-sidebar-stack .on-this-day-entries { gap: 0; }
 #timeline .timeline-sidebar-stack .on-this-day-title { white-space: normal; }
 #timeline .timeline-sidebar-stack .anniversaries-window { margin: 18px 0 4px; }
@@ -3485,3 +3485,92 @@ body:not(.is-editor) .lightbox-people:not(:has(.lightbox-person-tag)) { display:
 #editor, #albumsPage, #recipesPage, #overviewPage, #familiesPage, #storiesPage {
   padding: var(--page-padding);
 }
+
+/* Use one visual language for both lists of family dates. */
+.on-this-day-heading h2,
+#upcomingAnniversaries h2,
+#upcomingAnniversaries .anniversaries-toggle-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  line-height: 1.4;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.on-this-day-eyebrow.anniversaries-eyebrow {
+  margin: 0 0 5px;
+  color: #708364;
+  font-size: 8px;
+  letter-spacing: 1.3px;
+}
+.on-this-day-item {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 12px;
+}
+.on-this-day-years-badge strong {
+  font-size: 22px;
+  line-height: 1.1;
+  font-weight: 600;
+}
+.on-this-day-years-badge { min-width: 0; text-align: center; justify-items: center; }
+.on-this-day-years-badge small {
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.7px;
+  color: var(--muted);
+}
+.on-this-day-info { display: grid; gap: 6px; }
+.on-this-day-kind { font-size: 10px; font-weight: 400; color: var(--muted); }
+.on-this-day-title { font-size: 12px; line-height: 1.5; color: var(--muted); }
+
+/* Shared muted accents for history and upcoming date lists. */
+.anniversary-date small,
+.on-this-day-years-badge small,
+.on-this-day-kind .anniversary-event-icon,
+.anniversary-kind .anniversary-event-icon { color: var(--muted); }
+
+/* Keep desktop navigation compact without squeezing the name search. */
+@media (min-width: 1024px) {
+  #app > header #mainNavigation { gap: 15px; flex-shrink: 0; }
+  #app > header > .search { min-width: 300px; }
+}
+/* The identity picker stays compact; its name is available in the tooltip. */
+.viewer-identity .viewer-identity-trigger {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  padding: 8px;
+  justify-content: center;
+  border-radius: 50%;
+}
+@media (min-width: 1024px) and (max-width: 1200px) {
+  #app > header { padding: 0 16px; gap: 15px; }
+  #app > header #mainNavigation button { padding-inline: 2px; }
+  #app > header > .search { min-width: 280px; flex: 1 1 300px; }
+}
+
+.viewer-selected-person {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 100%;
+  margin-bottom: 16px;
+  padding: 6px 8px 6px 14px;
+  border-radius: 24px;
+  background: #edf2e6;
+  color: var(--green);
+}
+.viewer-selected-person > span { overflow-wrap: anywhere; }
+.viewer-selected-person > button {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+}
+.viewer-selected-person > button:hover { background: var(--line); }

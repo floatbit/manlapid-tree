@@ -1,6 +1,5 @@
 <script setup lang="js">
 import { computed, nextTick } from 'vue';
-import { PhSparkle, PhArrowRight } from '@phosphor-icons/vue';
 import TimelineIcon from './TimelineIcon.vue';
 import { family, useRuntime } from '../ui/runtime.js';
 
@@ -13,8 +12,8 @@ const events = computed(() => {
 });
 
 const iconType = (event) => {
-  if (event.kind === 'Birthday') return 'birth';
-  if (event.kind === 'Remembrance') return 'death';
+  if (event.kind === 'Birthday') return 'birthday_party';
+  if (event.kind === 'Remembrance') return 'remembrance';
   if (event.kind === 'Wedding Anniversary') return 'marriage';
   return event.type || 'other';
 };
@@ -66,9 +65,8 @@ async function open(event) {
 <template>
   <div v-if="events.length" class="on-this-day-card">
     <div class="on-this-day-heading">
-      <span class="on-this-day-icon" aria-hidden="true"><PhSparkle :size="20" weight="fill" /></span>
       <div>
-        <p class="on-this-day-eyebrow">ON THIS DAY · {{ todayFormatted.toUpperCase() }}</p>
+        <p class="on-this-day-eyebrow anniversaries-eyebrow">ON THIS DAY · {{ todayFormatted.toUpperCase() }}</p>
         <h2>Moments in History</h2>
       </div>
     </div>
@@ -77,23 +75,22 @@ async function open(event) {
         v-for="event in events"
         :key="event.personId || event.milestoneId"
         type="button"
-        class="on-this-day-item"
+        class="on-this-day-item anniversary-card"
         @click="open(event)"
       >
-        <span class="on-this-day-years-badge">
+        <span class="on-this-day-years-badge anniversary-date">
           <strong>{{ event.yearsAgo }}</strong>
-          <small>{{ event.yearsAgo === 1 ? 'yr ago' : 'yrs ago' }}</small>
+          <small>{{ event.yearsAgo === 1 ? 'year' : 'years' }}<br />ago</small>
         </span>
-        <span class="on-this-day-info">
-          <span class="on-this-day-kind">
+        <span class="on-this-day-info anniversary-info">
+          <span class="on-this-day-kind anniversary-kind">
             <span class="anniversary-event-icon" aria-hidden="true">
-              <TimelineIcon :type="iconType(event)" :size="13" />
+              <TimelineIcon :type="iconType(event)" :size="14" />
             </span>
             {{ event.kind }} · {{ event.year }}
           </span>
-          <strong class="on-this-day-title">{{ event.title }}</strong>
+          <strong class="on-this-day-title anniversary-name">{{ event.title }}</strong>
         </span>
-        <PhArrowRight :size="14" class="ui-icon on-this-day-arrow" aria-hidden="true" />
       </button>
     </div>
   </div>

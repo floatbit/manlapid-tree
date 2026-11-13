@@ -2,7 +2,6 @@
 import { PhArrowRight } from '@phosphor-icons/vue';
 import TimelineIcon from './TimelineIcon.vue';
 import { computed, nextTick, ref } from 'vue';
-import { PhCalendarDots as CalendarDays } from '@phosphor-icons/vue';
 import { family, useRuntime } from '../ui/runtime.js';
 const expanded = ref(window.sessionStorage.getItem('anniversaries-expanded') === 'true');
 function toggle() { expanded.value = !expanded.value; window.sessionStorage.setItem('anniversaries-expanded', String(expanded.value)); }
@@ -35,7 +34,6 @@ async function open(event) {
 <template>
   <aside id="upcomingAnniversaries" class="upcoming-anniversaries">
     <button class="anniversaries-toggle anniversaries-heading" type="button" :aria-expanded="expanded" aria-controls="anniversaryEntries" @click="toggle">
-      <span class="anniversaries-heading-icon" aria-hidden="true"><CalendarDays :size="21" /></span>
       <span class="anniversaries-toggle-copy">
         <span class="anniversaries-eyebrow">DATES TO REMEMBER</span>
         <span class="anniversaries-toggle-title">Upcoming Anniversaries</span>
@@ -44,7 +42,6 @@ async function open(event) {
       <span class="anniversaries-toggle-arrow" aria-hidden="true"><PhArrowRight :size="16" class="ui-icon" aria-hidden="true" /></span>
     </button>
     <div class="anniversaries-desktop-heading anniversaries-heading">
-      <span class="anniversaries-heading-icon" aria-hidden="true"><CalendarDays :size="21" /></span>
       <div>
         <p class="anniversaries-eyebrow">DATES TO REMEMBER</p>
         <h2>Upcoming Anniversaries</h2>

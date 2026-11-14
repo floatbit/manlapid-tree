@@ -19,7 +19,7 @@ async function openSharedLink() {
     if (!p) { notify('This person is no longer available.'); return; }
     try {
       await loadFamilyAlbums();
-      const photos = Object.entries(data.photoTags || {}).filter(([photo, ids]) => ids.includes(id) && !/\.(mp4|mov)$/i.test(photo)).map(([photo]) => photo);
+      const photos = Object.entries(data.photoTags || {}).filter(([photo, ids]) => ids.includes(id) && photo!==p.photo && photo!==p.headshotOriginal && !/\.(mp4|mov)$/i.test(photo)).map(([photo]) => photo).sort((a,b)=>((data.photoPins?.[id] || []).indexOf(a)<0?Infinity:data.photoPins[id].indexOf(a))-((data.photoPins?.[id] || []).indexOf(b)<0?Infinity:data.photoPins[id].indexOf(b)));
       start(id);
       if (!photos.length) { notify('No tagged photos are available for this person.'); return; }
       const index = photos.indexOf(params.get('media'));

@@ -1,9 +1,20 @@
 <script setup lang="js">
+import PersonPhotoEditor from '../components/PersonPhotoEditor.vue';
 import DirectorySearch from '../components/DirectorySearch.vue';
 import NicknameTags from '../components/NicknameTags.vue';
 </script>
 <template>
   <main id="editor" hidden>
+    <dialog id="headshotCropDialog" aria-labelledby="headshotCropTitle">
+      <h2 id="headshotCropTitle">Crop Headshot</h2>
+      <p>Drag to position, or use the controls. The original stays available for future crops.</p>
+      <canvas id="headshotCropCanvas" width="550" height="580" aria-label="Headshot crop preview"></canvas>
+      <label>Zoom<input id="headshotCropZoom" type="range" min="1" max="4" step="0.01" value="1" /></label>
+      <label>Horizontal Position<input id="headshotCropX" type="range" min="0" max="1" step="0.001" value="0.5" /></label>
+      <label>Vertical Position<input id="headshotCropY" type="range" min="0" max="1" step="0.001" value="0.5" /></label>
+      <button id="applyHeadshotCrop" type="button">Use Crop</button>
+      <button id="cancelHeadshotCrop" type="button">Cancel</button>
+    </dialog>
     <div class="intro">
       <div>
         <p class="eyebrow">THE PEOPLE BEHIND THE TREE</p>
@@ -88,11 +99,13 @@ import NicknameTags from '../components/NicknameTags.vue';
                 <p class="dropzone-instructions">Drop a portrait here</p>
                 <label>or choose a photo<input id="photo" type="file" accept="image/*" /></label>
                 <div id="personPhotoPreview"></div>
+                <button id="cropHeadshot" type="button" hidden>Crop Headshot</button>
               </div>
               <label
                 >About<textarea id="bio" rows="3" placeholder="A little of their story…"></textarea>
               </label>
             </section>
+            <PersonPhotoEditor />
             <section class="profile-section">
               <details class="person-connections">
                 <summary>

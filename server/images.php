@@ -4,7 +4,7 @@ function imageFilePath(string $path): ?string {
     if (!preg_match('~^uploads/(people|milestones|albums|recipes)/[a-zA-Z0-9_-]{1,64}/[0-9]{4}/[0-9]{2}/[a-f0-9]{64}\.(jpg|png|webp|mp4|mov)$~D',$path)) return null;
     return uploadRoot().'/'.substr($path,8);
 }
-function validateStoredImage(string $photo,string $kind,string $id): string {
+function validateStoredImage(string $photo,string $kind,string $id,bool $original=false): string {
     if ($photo === '') return '';
     if (!in_array($kind,['milestones','albums'],true) && (str_starts_with($photo,'data:video/') || preg_match('/\.(mp4|mov)$/',$photo))) throw new InvalidArgumentException('Portraits must be images.');
     if (str_starts_with($photo,'uploads/')) {
@@ -21,11 +21,11 @@ function validateStoredImage(string $photo,string $kind,string $id): string {
     }
     if (!preg_match('~^data:image/(jpeg|png|webp);base64,([A-Za-z0-9+/=]+)$~D',$photo,$match)) throw new InvalidArgumentException('Invalid photo format.');
     $bytes=base64_decode($match[2],true);$size=$bytes===false?false:@getimagesizefromstring($bytes);
-    if (!$size || strlen($bytes)>2500000 || $size[0]>2400 || $size[1]>2400 || !in_array($size['mime'],['image/jpeg','image/png','image/webp'],true)) throw new InvalidArgumentException('Invalid photo or photo too large.');
+    if (!$size || strlen($bytes)>($original?20000000:2500000) || $size[0]>($original?30000:2400) || $size[1]>($original?30000:2400) || !in_array($size['mime'],['image/jpeg','image/png','image/webp'],true)) throw new InvalidArgumentException('Invalid photo or photo too large.');
     return $photo;
 }
-function storeImage(string $photo,string $kind,string $id): string {
-    validateStoredImage($photo,$kind,$id);
+function storeImage(string $photo,string $kind,string $id,bool $original=false): string {
+    validateStoredImage($photo,$kind,$id,$original);
     if ($photo==='') return $photo;
     if (str_starts_with($photo,'uploads/')) return str_ends_with($photo,'.mov')?convertMovFile(imageFilePath($photo),substr($photo,8)):$photo;
     $bytes=base64_decode(explode(',',$photo,2)[1],true);

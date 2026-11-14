@@ -11,7 +11,7 @@ function familyMediaRows(PDO $db): array {
 function syncFamilyMedia(PDO $db,array $people,array $milestones): void {
     $wanted=[];foreach($people as $p)if($p['photo']!=='')$wanted[]=['person',$p['id'],$p['photo'],0];
     $overridden=[];foreach($milestones as $event){$albumId=$event['albumId']??$event['album_id']??null;if($albumId)$overridden[$albumId]=true;foreach($event['photos'] as $position=>$path)$wanted[]=[$albumId?'album':'milestone',$albumId?:$event['id'],$path,$position];}
-    foreach(familyMediaRows($db) as $row)if($row['owner_type']==='recipe'||($row['owner_type']==='album'&&!isset($overridden[$row['owner_id']])))$wanted[]=[$row['owner_type'],$row['owner_id'],$row['file_path'],(int)$row['display_order']];
+    foreach(familyMediaRows($db) as $row)if($row['owner_type']==='person_photo'||$row['owner_type']==='recipe'||($row['owner_type']==='album'&&!isset($overridden[$row['owner_id']])))$wanted[]=[$row['owner_type'],$row['owner_id'],$row['file_path'],(int)$row['display_order']];
     reconcileMediaRows($db,$wanted);
 }
 function syncAlbumMedia(PDO $db,string $albumId,array $photos): void {

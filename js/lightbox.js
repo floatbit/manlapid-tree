@@ -34,3 +34,23 @@ async function deletePhotoFromLightbox(photo) {
     if(!$('#timeline').hidden)renderTimeline();
   } finally {savingShared=false;}
 }
+
+async function savePersonPhotos(personId, photos, albumId='', albumTitle='') {
+  if(!document.body.classList.contains('is-editor'))throw new Error('Log in to add photos.');
+  if(!sharedReady || savingShared)throw new Error('Please wait for the current save to finish.');
+  savingShared=true;
+  try {
+    const result=await requestDatabase({action:'save_person_photos',personId,photos,albumId,albumTitle,revision:sharedRevision});
+    applyShared(result);ui.sync(data);notify('Photos saved');
+  } finally {savingShared=false;}
+}
+
+async function pinPersonPhoto(personId,photo,pinned) {
+  if(!document.body.classList.contains('is-editor'))throw new Error('Log in to pin photos.');
+  if(!sharedReady||savingShared)throw new Error('Please wait for the current save to finish.');
+  savingShared=true;
+  try {
+    const result=await requestDatabase({action:'pin_person_photo',personId,photo,pinned,revision:sharedRevision});
+    applyShared(result);ui.sync(data);notify(pinned?'Photo pinned':'Photo unpinned');
+  } finally {savingShared=false;}
+}

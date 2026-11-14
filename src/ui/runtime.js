@@ -4,6 +4,7 @@ import PersonAutocomplete from '../components/PersonAutocomplete.vue';
 import PersonPhotos from '../components/PersonPhotos.vue';
 import ConnectionRow from '../components/ConnectionRow.vue';
 export const canEdit = shallowRef(false);
+export const editorPersonId = shallowRef('');
 export const ready = shallowRef(false);
 export const family = shallowRef({
   people: [],
@@ -56,6 +57,7 @@ watch([ready, family], () => { if (ready.value && viewerId.value && !family.valu
 if (typeof window !== 'undefined') window.addEventListener('storage', event => { if (event.key === VIEWER_KEY || event.key === null) viewerId.value = storedViewer(); });
 
 export const ui = {
+  setEditorPerson(id) { editorPersonId.value=id || ''; },
   viewerRelation,
   get viewerId() { return viewerId.value; },
   setEditing(allowed) {

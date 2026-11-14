@@ -1,11 +1,11 @@
 <script setup lang="js">
 import ViewerIdentity from './ViewerIdentity.vue';
 import SearchField from './SearchField.vue';
-import { PhMagnifyingGlass as Search, PhList as Menu, PhX as X, PhCaretDown } from '@phosphor-icons/vue';
+import { PhMagnifyingGlass as Search, PhList as Menu, PhX as X } from '@phosphor-icons/vue';
 import { ref, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
 import { activePage, ready, canEdit, useRuntime, ui } from '../ui/runtime.js';
-const links=[['treeTab','tree','Tree'],['timelineTab','timeline','Timeline'],['familiesTab','families','Families'],['peopleTab','people','People'],['mapTab','map','Map'],['albumsTab','albums','Albums'],['insightsTab','insights','Insights']];
-const moreLinks=[['storiesTab','stories','Stories'],['recipesTab','recipes','Recipes'],['overviewTab','overview','Contribute']];
+const links=[['treeTab','tree','Tree'],['timelineTab','timeline','Timeline'],['familiesTab','families','Families'],['peopleTab','people','People'],['mapTab','map','Map'],['insightsTab','insights','Insights']];
+const moreLinks=[['albumsTab','albums','Albums'],['storiesTab','stories','Stories'],['recipesTab','recipes','Recipes'],['overviewTab','overview','Contribute']];
 const moreOpen=ref(false), identity=ref(null);
 async function selectMe() { closeMenu(); await nextTick(); identity.value?.open(); }
 let moreCloseTimer;
@@ -48,7 +48,7 @@ onBeforeUnmount(() => { cancelMoreClose(); media?.removeEventListener('change', 
         {{ label }}
       </button>
       <div class="header-more" @mouseenter="cancelMoreClose" @mouseleave="scheduleMoreClose" @focusout="!$event.currentTarget.contains($event.relatedTarget) && (moreOpen=false)" @keydown.esc="moreOpen=false">
-        <button class="header-more-trigger" type="button" :class="{active:moreLinks.some(link=>link[1]===activePage)}" :aria-expanded="moreOpen" aria-controls="headerMoreLinks" @click="moreOpen=!moreOpen">More <PhCaretDown :size="14" aria-hidden="true" /></button>
+        <button class="header-more-trigger" type="button" :class="{active:moreLinks.some(link=>link[1]===activePage)}" :aria-expanded="moreOpen" aria-controls="headerMoreLinks" @click="moreOpen=!moreOpen">More...</button>
         <div id="headerMoreLinks" class="header-more-links" :hidden="!moreOpen">
           <button v-for="[id,page,label] in moreLinks" :key="id" :id="id" :class="{active:activePage===page}" :disabled="!ready" @click="closeMenu();useRuntime()?.showSection(page)">{{label}}</button>
           <button type="button" :disabled="!ready" @click="selectMe">Select Me</button>

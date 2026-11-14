@@ -1,12 +1,13 @@
 <script setup>
 import { PhArrowRight } from '@phosphor-icons/vue';
+import { photosOfPerson } from '../domain/person-photos.js';
 import {computed,ref} from 'vue';
 import {family,useRuntime} from '../ui/runtime.js';
 const props=defineProps({personId:{type:String,required:true},showEmpty:Boolean,showName:Boolean,inSidebar:Boolean,limit:{type:Number,default:6},columns:{type:Number,default:3}});
 const loading=ref(false);
 const person=computed(()=>family.value.people.find(p=>p.id===props.personId));
 const name=computed(()=>person.value ? useRuntime()?.displayName(person.value) || person.value.name : 'This Person');
-const photos=computed(()=>Object.entries(family.value.photoTags || {}).filter(([photo,ids])=>ids.includes(props.personId) && !/\.(mp4|mov)$/i.test(photo)).map(([photo])=>photo));
+const photos=computed(()=>photosOfPerson(family.value,props.personId));
 async function open(photo) {
   if(loading.value)return;
   loading.value=true;

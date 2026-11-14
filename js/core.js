@@ -220,6 +220,7 @@ function applyShared(result) {
   data.selected = resolve(data.selected);
   delete data.pendingPhotoTagImports;
   data.photoTags = result.photoTags || {};
+  data.photoPins = result.photoPins || {};
   data.familyGroups = result.familyGroups || [];
   data.people = result.people;
   data.links = result.links;

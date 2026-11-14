@@ -434,3 +434,9 @@
   .insights-main { padding: var(--page-padding); }
   .insights-sidebar { position: static; width: 100%; height: auto; max-height: none; overflow: visible; padding: 24px 16px; border-left: 0; border-top: 1px solid var(--line); scroll-margin-top: 80px; }
 }
+@media(max-width:1023px) {
+  #mobileMainMenu #mainNavigation button:hover,
+  #mobileMainMenu #mainNavigation button.active { background: transparent; color: var(--green); }
+  #mobileMainMenu #mainNavigation button:hover:not(.active) { border-bottom-color: #edf2e6; }
+  #mobileMainMenu #mainNavigation button.active { border-bottom-color: var(--green); }
+}

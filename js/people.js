@@ -12,6 +12,7 @@ function personEditSnapshot() {
       ? [droppedPortraitFile.name, droppedPortraitFile.size, droppedPortraitFile.lastModified]
       : draftPhoto,
     headshotOriginal: draftHeadshotOriginal,
+    headshotCrop: draftHeadshotCrop,
     birthplace: draftBirthplace,
     places: livedDraft,
   });
@@ -86,6 +87,7 @@ function relationRow(value = {}) {
   updateConnectionsCount();
 }
 
+let draftHeadshotCrop = null;
 let draftHeadshotOriginal = '', pendingHeadshotOriginal = '', cropImage = null;
 let droppedPortraitFile = null,
   portraitPreviewVersion = 0;
@@ -118,6 +120,7 @@ function edit(id, { updateUrl = true } = {}) {
   resetLocationFinder();
   draftPhoto = p?.photo || '';
   draftHeadshotOriginal = p?.headshotOriginal || '';
+  draftHeadshotCrop = p?.headshotCrop ? {...p.headshotCrop} : null;
   $('#cropHeadshot').hidden = !draftPhoto;
   $('#headshotCropDialog').close();
   $('#personPhotoPreview').innerHTML = draftPhoto
@@ -177,6 +180,7 @@ $('#personForm').onsubmit = async (event) => {
     lastName,
     photo,
     headshotOriginal: draftHeadshotOriginal,
+    headshotCrop: draftHeadshotCrop,
     deceased: $('#deceased').checked,
     bio: $('#bio').value.trim(),
     birthday: /^\d{4}-\d{2}-\d{2}$/.test(dateDetails.birth) ? dateDetails.birth : '',
@@ -235,8 +239,8 @@ function resizePhoto(file, maxDimension = 320) {
   });
 }
 function headshotCropRect(width,height,zoom,x,y) {
-  const scale=Math.max(550/width,580/height)*zoom;
-  return {x:-(width*scale-550)*x,y:-(height*scale-580)*y,width:width*scale,height:height*scale};
+  const scale=Math.max(550/width,550/height)*zoom;
+  return {x:-(width*scale-550)*x,y:-(height*scale-550)*y,width:width*scale,height:height*scale};
 }
 function drawHeadshotCrop() {
   if (!cropImage) return;
@@ -245,13 +249,14 @@ function drawHeadshotCrop() {
   canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
   canvas.getContext('2d').drawImage(cropImage,rect.x,rect.y,rect.width,rect.height);
 }
-async function openHeadshotCrop(source, version=portraitPreviewVersion) {
+async function openHeadshotCrop(source, version=portraitPreviewVersion, selection=null) {
   const image=new Image();
   await new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=()=>reject(new Error('Could not open this headshot.'));image.src=source;});
   if(version!==portraitPreviewVersion)return;
   cropImage=image;pendingHeadshotOriginal=source;
-  for(const id of ['headshotCropX','headshotCropY'])$('#'+id).value='0.5';
-  $('#headshotCropZoom').value='1';drawHeadshotCrop();
+  $('#headshotCropX').value=String(selection?.x ?? 0.5);
+  $('#headshotCropY').value=String(selection?.y ?? 0.5);
+  $('#headshotCropZoom').value=String(selection?.zoom ?? 1);drawHeadshotCrop();
   $('#headshotCropDialog').showModal();
 }
 async function previewPortrait(file) {
@@ -264,10 +269,11 @@ async function previewPortrait(file) {
   } catch(error){if(version===portraitPreviewVersion)$('#formError').textContent=error.message;}
 }
 for(const id of ['headshotCropZoom','headshotCropX','headshotCropY'])$('#'+id).oninput=drawHeadshotCrop;
-$('#cropHeadshot').onclick=()=>openHeadshotCrop(draftHeadshotOriginal||draftPhoto).catch(error=>{$('#formError').textContent=error.message;});
+$('#cropHeadshot').onclick=()=>openHeadshotCrop(draftHeadshotOriginal||draftPhoto,portraitPreviewVersion,draftHeadshotCrop).catch(error=>{$('#formError').textContent=error.message;});
 $('#applyHeadshotCrop').onclick=()=>{
   draftPhoto=$('#headshotCropCanvas').toDataURL('image/jpeg',0.92);
   draftHeadshotOriginal=pendingHeadshotOriginal;
+  draftHeadshotCrop={zoom:Number($('#headshotCropZoom').value),x:Number($('#headshotCropX').value),y:Number($('#headshotCropY').value)};
   $('#personPhotoPreview').innerHTML=`<img src="${esc(draftPhoto)}" alt="Portrait preview">`;
   $('#cropHeadshot').hidden=false;$('#headshotCropDialog').close();updatePersonUnsaved();
 };
@@ -277,10 +283,10 @@ let cropDrag;
 $('#headshotCropCanvas').onpointerdown=event=>{cropDrag={x:event.clientX,y:event.clientY};event.currentTarget.setPointerCapture(event.pointerId);};
 $('#headshotCropCanvas').onpointermove=event=>{
   if(!cropDrag||!cropImage)return;
-  const canvas=event.currentTarget,scale=Math.max(550/cropImage.width,580/cropImage.height)*Number($('#headshotCropZoom').value),rect=canvas.getBoundingClientRect();
-  const dx=(event.clientX-cropDrag.x)*550/rect.width,dy=(event.clientY-cropDrag.y)*580/rect.height;
+  const canvas=event.currentTarget,scale=Math.max(550/cropImage.width,550/cropImage.height)*Number($('#headshotCropZoom').value),rect=canvas.getBoundingClientRect();
+  const dx=(event.clientX-cropDrag.x)*550/rect.width,dy=(event.clientY-cropDrag.y)*550/rect.height;
   const move=(id,delta,overflow)=>{if(overflow>0)$('#'+id).value=Math.max(0,Math.min(1,Number($('#'+id).value)-delta/overflow));};
-  move('headshotCropX',dx,cropImage.width*scale-550);move('headshotCropY',dy,cropImage.height*scale-580);
+  move('headshotCropX',dx,cropImage.width*scale-550);move('headshotCropY',dy,cropImage.height*scale-550);
   cropDrag={x:event.clientX,y:event.clientY};drawHeadshotCrop();
 };
 $('#headshotCropCanvas').onpointerup=$('#headshotCropCanvas').onpointercancel=()=>{cropDrag=null;};

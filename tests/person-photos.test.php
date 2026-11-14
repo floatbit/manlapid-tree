@@ -5,6 +5,11 @@ function checkPersonPhoto($value,$message){if(!$value)throw new RuntimeException
 try{
  $db=familyDatabase();foreach(['one','two'] as $id)$db->prepare("INSERT INTO family_people(id,name,photo,bio,location) VALUES (?,?,'','','')")->execute([$id,$id]);
  $image='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aD1sAAAAASUVORK5CYII=';
+ checkPersonPhoto(cleanHeadshotCrop(['zoom'=>10,'x'=>0.5,'y'=>0.5])['zoom']===10.0,'Maximum 10x zoom accepted');
+ $crop=cleanHeadshotCrop(['zoom'=>2.3,'x'=>0.25,'y'=>0.8]);
+ $db->prepare('UPDATE family_people SET headshot_crop=? WHERE id=?')->execute([json_encode($crop),'one']);
+ checkPersonPhoto(json_decode($db->query("SELECT headshot_crop FROM family_people WHERE id='one'")->fetchColumn(),true)===$crop,'Crop settings round trip');
+ foreach([['zoom'=>11,'x'=>0.5,'y'=>0.5],['zoom'=>1,'x'=>-1,'y'=>0.5],['zoom'=>1,'x'=>0.5],['zoom'=>'2','x'=>0,'y'=>0]] as $bad){try{cleanHeadshotCrop($bad);throw new RuntimeException('Expected invalid crop rejection');}catch(InvalidArgumentException $e){}}
  $original=storeImage($image,'people','one',true);
  $db->prepare('UPDATE family_people SET headshot_original=? WHERE id=?')->execute([$original,'one']);
  checkPersonPhoto(file_get_contents(imageFilePath($original))===base64_decode(explode(',',$image)[1]),'Original bytes preserved');

@@ -8,8 +8,8 @@ import NicknameTags from '../components/NicknameTags.vue';
     <dialog id="headshotCropDialog" aria-labelledby="headshotCropTitle">
       <h2 id="headshotCropTitle">Crop Headshot</h2>
       <p>Drag to position, or use the controls. The original stays available for future crops.</p>
-      <canvas id="headshotCropCanvas" width="550" height="580" aria-label="Headshot crop preview"></canvas>
-      <label>Zoom<input id="headshotCropZoom" type="range" min="1" max="4" step="0.01" value="1" /></label>
+      <canvas id="headshotCropCanvas" width="550" height="550" aria-label="Circular headshot crop preview"></canvas>
+      <label>Zoom<input id="headshotCropZoom" type="range" min="1" max="10" step="0.01" value="1" /></label>
       <label>Horizontal Position<input id="headshotCropX" type="range" min="0" max="1" step="0.001" value="0.5" /></label>
       <label>Vertical Position<input id="headshotCropY" type="range" min="0" max="1" step="0.001" value="0.5" /></label>
       <button id="applyHeadshotCrop" type="button">Use Crop</button>

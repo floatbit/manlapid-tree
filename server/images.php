@@ -56,3 +56,16 @@ function convertMovFile(string $file,string $relative): string {
     if(!rename($temp,$target)){@unlink($temp);throw new RuntimeException('Could not save the converted video.');}
     chmod($target,0644);return 'uploads/'.$converted;
 }
+
+function cleanHeadshotCrop($value): ?array {
+    if($value===null)return null;
+    if(!is_array($value))throw new InvalidArgumentException('Invalid headshot crop.');
+    $clean=[];
+    foreach(['zoom'=>[1,10],'x'=>[0,1],'y'=>[0,1]] as $key=>[$min,$max]){
+        $number=$value[$key]??null;
+        if(!is_int($number)&&!is_float($number))throw new InvalidArgumentException('Invalid headshot crop.');
+        if(!is_finite((float)$number)||$number<$min||$number>$max)throw new InvalidArgumentException('Invalid headshot crop.');
+        $clean[$key]=(float)$number;
+    }
+    return $clean;
+}

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { familyInsights, dateParts, agePyramid, migrationDisplayLabel } from '../src/domain/insights.js';
+import { familyInsights, dateParts, agePyramid, migrationDisplayLabel, compareMigrationBirthplaces } from '../src/domain/insights.js';
 const people=[{id:'a',name:'A',birthday:'1900-12-25',deceased:true,dateDetails:{death:'1972-01-01'},birthplace:{location:'Manila',placeId:'google-place',lat:14.6,lng:121},location:'New York'},{id:'b',name:'B',dateDetails:{birth:'About 1980'},birthplace:'Manila',location:'New York'},{id:'c',name:'C',birthday:'2000-12-01',location:'Paris'},{id:'d',name:'Unknown'}];
 const result=familyInsights(people,[{id:'w',type:'marriage',date:'2010-06-12'}],new Date(2026,0,1));
 assert.equal(result.lives.length,3);assert.equal(result.average,36);
@@ -15,3 +15,6 @@ assert.equal(migrationDisplayLabel('Waimea, HI 96743, USA'),'Waimea, HI, USA');
 assert.equal(migrationDisplayLabel('Pahala, HI 96777-1234, USA'),'Pahala, HI, USA');
 assert.equal(migrationDisplayLabel('Waikoloa Village, HI, USA'),'Waikoloa Village, HI, USA');
 assert.equal(migrationDisplayLabel('Paris 12, France'),'Paris 12, France');
+
+assert.deepEqual(['Waimea, HI 96743, USA','Manila, Philippines','Paris, France','Aritao, Philippines','Austin, TX, USA'].sort(compareMigrationBirthplaces),['Paris, France','Aritao, Philippines','Manila, Philippines','Austin, TX, USA','Waimea, HI 96743, USA']);
+console.log('Passed: migration birthplaces sort by country, then address.');

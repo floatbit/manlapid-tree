@@ -3757,7 +3757,7 @@ body:not(.is-editor) .lightbox-people:not(:has(.lightbox-person-tag)) { display:
 
 #headshotCropDialog { width:min(520px,95vw); max-height:95dvh; overflow:auto; padding:24px; border:1px solid var(--line); border-radius:20px; background:var(--paper,#faf9f5); color:var(--ink,#263e36); }
 #headshotCropDialog::backdrop { background:#182b25b3; }
-#headshotCropCanvas { display:block; width:275px; max-width:100%; height:auto; margin:16px auto; touch-action:none; cursor:move; }
+#headshotCropCanvas { border-radius:50%; display:block; width:275px; max-width:100%; height:auto; margin:16px auto; touch-action:none; cursor:move; }
 #headshotCropDialog label { display:block; margin:12px 0; }
 #headshotCropDialog input[type=range] { display:block; width:100%; }
 .person-editor-photo { position:relative; min-width:0; }

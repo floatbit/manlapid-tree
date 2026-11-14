@@ -39,3 +39,13 @@ export function agePyramid(people, now=new Date()) {
 export function migrationDisplayLabel(value) {
   return String(value || '').replace(/\b([A-Z]{2})\s+\d{5}(?:-\d{4})?\b/g,'$1').replace(/\s+,/g,',');
 }
+
+/** Google formatted addresses end with their country; sort within country by display address. */
+export function compareMigrationBirthplaces(a,b) {
+  const country=value=>{
+    const last=migrationDisplayLabel(value).split(',').at(-1).trim();
+    return ({USA:'United States',US:'United States',UK:'United Kingdom'})[last] || last;
+  };
+  const compare=(a,b)=>a.localeCompare(b,'en',{sensitivity:'base',numeric:true});
+  return compare(country(a),country(b)) || compare(migrationDisplayLabel(a),migrationDisplayLabel(b));
+}

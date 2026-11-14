@@ -2,7 +2,7 @@
 import { computed, ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { PhArrowRight, PhX } from '@phosphor-icons/vue';
 import { family, useRuntime, viewerRelation } from '../ui/runtime.js';
-import { familyInsights, locationLabel, agePyramid, migrationDisplayLabel } from '../domain/insights.js';
+import { familyInsights, locationLabel, agePyramid, migrationDisplayLabel, compareMigrationBirthplaces } from '../domain/insights.js';
 import InsightPersonDetails from '../components/InsightPersonDetails.vue';
 import PersonAvatar from '../components/PersonAvatar.vue';
 import PersonAutocomplete from '../components/PersonAutocomplete.vue';
@@ -43,7 +43,7 @@ const overlaps=p=>!chosen.value || (p.birth.year<=chosen.value.end && p.end>=cho
 const routes=computed(()=>data.value.flows);
 const drawnRoutes=computed(()=>[...routes.value.filter(r=>!routeSelected(r)),...routes.value.filter(routeSelected)]);
 const placeSelected=(place,side)=>routes.value.some(r=>routeSelected(r) && r[side]===place);
-const sources=computed(()=>[...new Set(routes.value.map(f=>f.from))]);
+const sources=computed(()=>[...new Set(routes.value.map(f=>f.from))].sort(compareMigrationBirthplaces));
 const destinations=computed(()=>[...new Set(routes.value.map(f=>f.to))]);
 const routeHeight=computed(()=>Math.max(180,Math.max(sources.value.length,destinations.value.length)*55));
 const tooltip=p=>`${name(p.person)} · ${p.birth.approximate?'About ':''}${p.birth.year}${viewerRelation(p.person.id)?' · '+viewerRelation(p.person.id):''}`;

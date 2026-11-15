@@ -1,4 +1,6 @@
 <script setup lang="js">
+import {openMobileSidebar} from '../ui/mobile-sidebar.js';
+import MobileSidebar from '../components/MobileSidebar.vue';
 import ViewerRelation from '../components/ViewerRelation.vue';
 import { PhArrowRight, PhArrowLeft, PhArrowUp, PhArrowDown, PhHeart, PhHouse, PhMapPin, PhPlus, PhMinus } from '@phosphor-icons/vue';
 import MediaPreview from '../components/MediaPreview.vue';
@@ -53,6 +55,7 @@ async function changeView(key, value) {
   catch(e){api.value.notify(e.message);} finally {savingView.value=false;}
 }
 function toggleChild(id) {changeView('expandedChildren',view.value.expandedChildren.includes(id) ? view.value.expandedChildren.filter((child) => child!==id) : [...view.value.expandedChildren,id]);}
+function selectMember(id){personId.value=id;openMobileSidebar('families');}
 const selectedPerson = computed(() => people.value.find((p) => p.id === personId.value));
 const selectedAge = computed(() => {
   const p=selectedPerson.value, birth=p?.dateDetails?.birth || p?.birthday;
@@ -247,7 +250,7 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
                     type="button"
                     class="family-member"
                     :class="{ active: personId === p.id }"
-                    @click="personId = p.id"
+                    @click="selectMember(p.id)"
                   >
                     <PersonAvatar :person="p" /><span class="family-member-info"><strong>{{ api.displayName(p) }}</strong><ViewerRelation :person-id="p.id" /><small v-if="p.dateDetails?.birth || p.birthday">Born {{ api.familyDateLabel(p.dateDetails?.birth || p.birthday) }}</small><small v-if="p.deceased">Deceased</small></span><span class="family-member-arrow" aria-hidden="true"><PhArrowRight :size="16" class="arrow-link-icon ui-icon" aria-hidden="true" /></span></button
                   ><button
@@ -278,7 +281,7 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
                       type="button"
                       class="family-member family-spouse-member"
                       :class="{ active: personId === spouse.id }"
-                      @click="personId = spouse.id"
+                      @click="selectMember(spouse.id)"
                     >
                       <PersonAvatar :person="spouse" />
                       <span class="family-member-info">
@@ -335,7 +338,7 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
             </button>
           </section>
         </div>
-        <aside class="family-person-sidebar" aria-label="Family member details">
+        <MobileSidebar sidebar-key="families" label="Families details"><aside class="family-person-sidebar" aria-label="Family member details">
           <template v-if="selectedPerson"
             ><div class="map-profile-header">
               <PersonAvatar :person="selectedPerson" />
@@ -365,7 +368,7 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
             <h2>Meet the Family.</h2>
             <p>Select a parent or child to see their details.</p></template
           >
-        </aside>
+        </aside></MobileSidebar>
       </div>
     </template>
     <dialog

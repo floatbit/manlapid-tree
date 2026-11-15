@@ -1,9 +1,11 @@
 <script setup>
+import MobileSidebar from '../components/MobileSidebar.vue';
 import { computed, ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { PhArrowRight, PhX } from '@phosphor-icons/vue';
 import { family, useRuntime, viewerRelation } from '../ui/runtime.js';
 import { familyInsights, locationLabel, agePyramid, migrationDisplayLabel, compareMigrationBirthplaces } from '../domain/insights.js';
 import { insightSuperlatives } from '../domain/insight-superlatives.js';
+import {openMobileSidebar,isMobileSidebar} from '../ui/mobile-sidebar.js';
 import InsightStatGroup from '../components/InsightStatGroup.vue';
 import InsightPersonDetails from '../components/InsightPersonDetails.vue';
 import PersonAvatar from '../components/PersonAvatar.vue';
@@ -15,7 +17,7 @@ const routeSelected=r=>highlightedRoutes.value.includes(routeKey(r));
 let headerObserver;
 onMounted(()=>{const header=document.querySelector('#app > header');if(!header)return;const measure=()=>page.value?.style.setProperty('--insights-header-height',header.getBoundingClientRect().height+'px');measure();if(window.ResizeObserver){headerObserver=new window.ResizeObserver(measure);headerObserver.observe(header);}});
 onBeforeUnmount(()=>headerObserver?.disconnect());
-async function revealPanel(){await nextTick();if(sidebar.value)sidebar.value.scrollTop=0;if(window.matchMedia('(max-width: 900px)').matches)sidebar.value?.scrollIntoView?.({behavior:'smooth',block:'start'});}
+async function revealPanel(){await nextTick();if(sidebar.value)sidebar.value.scrollTop=0;if(isMobileSidebar())openMobileSidebar('insights');else if(window.matchMedia('(max-width: 900px)').matches)sidebar.value?.scrollIntoView?.({behavior:'smooth',block:'start'});}
 function showPerson(person){selected.value=person;panel.value='person';revealPanel();}
 function showFlow(value){highlightedRoutes.value=[routeKey(value)];flow.value=value;context.value={title:migrationDisplayLabel(value.from)+' → '+migrationDisplayLabel(value.to),people:value.people,routes:[value]};selected.value=null;panel.value='people';revealPanel();}
 function showBracket(value){highlightedRoutes.value=[];flow.value=value;context.value={title:value.from+' · '+value.to,people:value.people};selected.value=null;panel.value='people';revealPanel();}
@@ -43,6 +45,7 @@ const swarmHeight=computed(()=>Math.max(120,...swarm.value.map(p=>80+p.row*36)))
 const lives=computed(()=>data.value.lives.filter(p=>!p.person.deceased || p.death).map(p=>({...p,end:p.person.deceased?p.death.year:now})).filter(p=>p.end>=p.birth.year));
 const chosen=computed(()=>lives.value.find(p=>p.person.id===overlapId.value));
 watch(overlapId,id=>{if(!id){if(panel.value==='overlap')clearPanel();return;}highlightedRoutes.value=[];selected.value=null;panel.value='overlap';revealPanel();});
+function showOverlap(id){const unchanged=overlapId.value===id;overlapId.value=id;if(unchanged){panel.value='overlap';revealPanel();}}
 const overlaps=p=>!chosen.value || (p.birth.year<=chosen.value.end && p.end>=chosen.value.birth.year);
 const routes=computed(()=>data.value.flows);
 const drawnRoutes=computed(()=>[...routes.value.filter(r=>!routeSelected(r)),...routes.value.filter(routeSelected)]);
@@ -107,8 +110,8 @@ const statGroups=computed(()=>{
   </section>
   <InsightStatGroup :cards="statGroups[3]" label="Local Presence &amp; Gatherings" />
   <section class="insights-section"><p class="eyebrow">LIVES THAT TOUCHED</p><h2>Who Overlapped?</h2><p>Choose a relative to highlight recorded lifetimes that overlap theirs. Years show possible overlap, rather than exact dates.</p>
-    <PersonAutocomplete v-if="api" input-id="insightsOverlapSearch" list-id="insightsOverlapMatches" :options="()=>lives.map(p=>p.person)" :matches="api.personMatchesQuery" :display="name" placeholder="Choose a relative…" :validate-selection="false" @select="overlapId=$event.id" @query="!$event && (overlapId='')" />
-    <div class="insights-lifespans"><div class="insights-life-axis" aria-hidden="true"><span></span><div><span v-for="year in lifespanTicks" :key="year" :style="{left:yearPosition(year)+'%'}" :class="{'life-tick-first':year===minimum,'life-tick-last':year===now}">{{year===now?'Today · '+year:year}}</span></div></div><div class="insights-life-guides" aria-hidden="true"><span v-for="year in lifespanTicks" :key="year" :class="{'life-guide-today':year===now}" :style="{left:yearPosition(year)+'%'}"></span></div><button v-for="p in lives" :key="p.person.id" class="insights-life" :class="{'insights-life-muted':!overlaps(p), 'insights-life-selected':p.person.id===overlapId}" @click="overlapId=p.person.id" :aria-label="tooltip(p)+' to '+p.end"><span>{{name(p.person)}}</span><span class="insights-life-track"><span :style="{left:((p.birth.year-minimum)/(now-minimum||1)*100)+'%',width:Math.max(1,(p.end-p.birth.year)/(now-minimum||1)*100)+'%'}"></span></span><small>{{p.birth.approximate?'c. ':''}}{{p.birth.year}}–{{p.person.deceased?p.end:'Present'}}</small></button><div class="insights-life-axis" aria-hidden="true"><span></span><div><span v-for="year in lifespanTicks" :key="year" :style="{left:yearPosition(year)+'%'}" :class="{'life-tick-first':year===minimum,'life-tick-last':year===now}">{{year===now?'Today · '+year:year}}</span></div></div></div>
+    <PersonAutocomplete v-if="api" input-id="insightsOverlapSearch" list-id="insightsOverlapMatches" :options="()=>lives.map(p=>p.person)" :matches="api.personMatchesQuery" :display="name" placeholder="Choose a relative…" :validate-selection="false" @select="showOverlap($event.id)" @query="!$event && (overlapId='')" />
+    <div class="insights-lifespans"><div class="insights-life-axis" aria-hidden="true"><span></span><div><span v-for="year in lifespanTicks" :key="year" :style="{left:yearPosition(year)+'%'}" :class="{'life-tick-first':year===minimum,'life-tick-last':year===now}">{{year===now?'Today · '+year:year}}</span></div></div><div class="insights-life-guides" aria-hidden="true"><span v-for="year in lifespanTicks" :key="year" :class="{'life-guide-today':year===now}" :style="{left:yearPosition(year)+'%'}"></span></div><button v-for="p in lives" :key="p.person.id" class="insights-life" :class="{'insights-life-muted':!overlaps(p), 'insights-life-selected':p.person.id===overlapId}" @click="showOverlap(p.person.id)" :aria-label="tooltip(p)+' to '+p.end"><span>{{name(p.person)}}</span><span class="insights-life-track"><span :style="{left:((p.birth.year-minimum)/(now-minimum||1)*100)+'%',width:Math.max(1,(p.end-p.birth.year)/(now-minimum||1)*100)+'%'}"></span></span><small>{{p.birth.approximate?'c. ':''}}{{p.birth.year}}–{{p.person.deceased?p.end:'Present'}}</small></button><div class="insights-life-axis" aria-hidden="true"><span></span><div><span v-for="year in lifespanTicks" :key="year" :style="{left:yearPosition(year)+'%'}" :class="{'life-tick-first':year===minimum,'life-tick-last':year===now}">{{year===now?'Today · '+year:year}}</span></div></div></div>
     <small>Deceased relatives without a recorded death year are omitted. Select a name or a bar to see overlapping lifetimes in the sidebar.</small>
   </section>
 
@@ -116,7 +119,7 @@ const statGroups=computed(()=>{
 
   </section>
 </div>
-<aside ref="sidebar" class="insights-sidebar" aria-label="Insight details" tabindex="0">
+<MobileSidebar sidebar-key="insights" label="Insights details"><aside ref="sidebar" class="insights-sidebar" aria-label="Insight details" tabindex="0">
   <div class="insights-sidebar-heading"><p class="eyebrow">A CLOSER LOOK</p><button v-if="panel" type="button" aria-label="Clear insight selection" @click="clearPanel"><PhX :size="20"/></button></div>
   <template v-if="panel==='person' && selected">
     <InsightPersonDetails :person="selected" @select="showPerson" @tree="api.openTaggedPerson($event.id)" />
@@ -137,7 +140,7 @@ const statGroups=computed(()=>{
     <div class="insights-sidebar-people"><button v-for="p in lives.filter(overlaps)" :key="p.person.id" @click="showPerson(p.person)"><PersonAvatar :person="p.person"/><span>{{name(p.person)}}<small>{{p.birth.year}}–{{p.person.deceased?p.end:'Present'}}</small></span><PhArrowRight class="arrow-link-icon" :size="16"/></button></div>
   </template>
   <template v-else><h2>Explore Your Family</h2><p>Select a portrait, age bracket, lifespan, location, or calendar month. Its details will appear here.</p></template>
-</aside>
+</aside></MobileSidebar>
 </div>
 </main>
 </template>

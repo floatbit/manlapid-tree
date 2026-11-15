@@ -376,6 +376,7 @@ $('#search').oninput = search;
 $('#searchGo').onclick = search;
 $('#search').onkeydown = handleSearchKey;
 function clearTreeView() {
+  ui.closeSidebar?.('tree');
   relationshipTrace = null;
   data.visible = [];
   data.expanded = [];

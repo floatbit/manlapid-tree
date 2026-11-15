@@ -440,3 +440,37 @@
   #mobileMainMenu #mainNavigation button:hover:not(.active) { border-bottom-color: #edf2e6; }
   #mobileMainMenu #mainNavigation button.active { border-bottom-color: var(--green); }
 }
+
+/* Non-modal detail cards: the page above remains live and scrollable. */
+.mobile-sidebar-shell, .mobile-sidebar-body { display:contents; }
+.mobile-sidebar-chrome, .mobile-sidebar-launch { display:none; }
+@media (max-width:760px) {
+  .mobile-sidebar-shell {
+    display:flex; flex-direction:column; position:fixed; inset:auto 0 0; z-index:45;
+    height:var(--sheet-height,50dvh); max-height:90dvh; min-height:22dvh;
+    border:1px solid var(--line); border-bottom:0; border-radius:24px 24px 0 0;
+    background:var(--paper,#fffefa); box-shadow:0 -8px 32px #263c3624;
+    transform:translateY(calc(100% + 40px)); visibility:hidden; pointer-events:none;
+    transition:transform .3s cubic-bezier(.22,1,.36,1),visibility .3s;
+  }
+  .mobile-sidebar-shell.is-open { transform:translateY(var(--sheet-drag,0px)); visibility:visible; pointer-events:auto; }
+  .mobile-sidebar-shell.is-dragging { transition:none; user-select:none; }
+  .mobile-sidebar-chrome { display:flex; align-items:center; position:relative; min-height:42px; flex-shrink:0; }
+  .mobile-sidebar-grip { width:100%; height:42px; display:grid; place-items:center; touch-action:none; cursor:ns-resize; }
+  .mobile-sidebar-grip > span { width:44px; height:4px; border-radius:4px; background:#b7c0b1; }
+  .mobile-sidebar-close { position:absolute; right:12px; top:4px; display:grid; place-items:center; width:34px; height:34px; padding:4px; border:0; background:transparent; }
+  .mobile-sidebar-body { display:block; flex:1; min-height:0; overflow-y:auto; overscroll-behavior-y:contain; padding:0 20px calc(24px + env(safe-area-inset-bottom)); }
+  .mobile-sidebar-body > :is(#details,#familyMapPeople,.family-person-sidebar,.insights-sidebar,.timeline-sidebar-stack) {
+    position:static !important; display:block; width:100% !important; min-width:0 !important;
+    height:auto !important; min-height:0 !important; max-height:none !important; overflow:visible !important;
+    padding:0 !important; margin:0 !important; border:0 !important; border-radius:0 !important; box-shadow:none !important; background:transparent !important;
+  }
+  .mobile-sidebar-body .insights-sidebar-heading > button { display:none; }
+  .mobile-sidebar-body .map-person-popup { max-height:none; overflow:visible; }
+  .mobile-sidebar-launch { display:block; margin:16px 20px 0; }
+  #mapMobileStopSelection { margin-bottom:24px; padding-bottom:20px; border-bottom:1px solid var(--line); }
+  @media (prefers-reduced-motion:reduce) { .mobile-sidebar-shell { transition:none; } }
+}
+
+.mobile-sidebar-clearance { display:none; }
+@media (max-width:760px) { .mobile-sidebar-clearance { display:block; grid-column:1 / -1; width:100%; pointer-events:none; } }

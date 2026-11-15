@@ -108,7 +108,7 @@ function renderDetailsContent() {
   const openPlaces = index => openPersonPlaces(p.id, index);
   $('#treePersonPlaces').onclick = () => openPlaces();
   document.querySelectorAll('[data-tree-stop]').forEach(button => button.onclick = () => openPlaces(Number(button.dataset.treeStop)));
-  document.querySelectorAll('#details .connection').forEach((b) => (b.onclick = () => { expand(b.dataset.id); window.scrollTo({ top: 0, behavior: 'smooth' }); }));
+  document.querySelectorAll('#details .connection').forEach((b) => (b.onclick = () => { expand(b.dataset.id); if(!window.matchMedia('(max-width: 760px)').matches)window.scrollTo({ top: 0, behavior: 'smooth' }); }));
   $('#editSelected').onclick = () => {
     tab(true);
     edit(p.id);

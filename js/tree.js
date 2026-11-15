@@ -21,6 +21,7 @@ function expand(id, { fit = false } = {}) {
   save();
   render({ expanding: !fit, centerId: fit ? null : id, fit, resetPersonZoom: true });
   $('#details').scrollTop = 0;
+  ui.openSidebar?.('tree');
 }
 function start(id) {
   ui.closeMobileMenu?.();

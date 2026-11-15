@@ -1,4 +1,5 @@
 <script setup lang="js">
+import MobileSidebar from '../components/MobileSidebar.vue';
 import { PhArrowRight } from '@phosphor-icons/vue';
 import { PhLock as LockKeyhole, PhLockOpen as LockKeyholeOpen, PhCornersOut as Scan, PhEraser as Eraser, PhTreeStructure as Network, PhArrowsClockwise as RefreshCw, PhLink, PhArrowUUpLeft, PhX, PhHeart } from '@phosphor-icons/vue';
 </script>
@@ -98,14 +99,14 @@ import { PhLock as LockKeyhole, PhLockOpen as LockKeyholeOpen, PhCornersOut as S
         </div>
         <div class="canvas-bottom"><span id="count">0 people in view</span></div>
       </section>
-      <aside id="details" aria-label="Selected person details">
+      <MobileSidebar sidebar-key="tree" label="Tree details"><aside id="details" aria-label="Selected person details">
         <p class="eyebrow">A CLOSER LOOK</p>
         <div class="aside-empty">
           <span><PhHeart :size="42" aria-hidden="true" /></span>
           <h2>Meet Your People.</h2>
           <p>Select a person to see their story and family connections.</p>
         </div>
-      </aside>
+      </aside></MobileSidebar>
     </div>
   </main>
 </template>

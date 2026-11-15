@@ -1,3 +1,6 @@
+<script setup>
+import MobileSidebar from '../components/MobileSidebar.vue';
+</script>
 <template>
   <main id="familyMapPage" hidden>
     <div class="family-map-workspace">
@@ -11,7 +14,7 @@
           <button id="fitFamilyMap" type="button">Fit everyone</button>
         </div>
       </div>
-      <aside id="familyMapPeople">
+      <MobileSidebar sidebar-key="map" label="Map details"><aside id="familyMapPeople">
         <p class="eyebrow">OUR FAMILY, AROUND THE WORLD</p>
         <h1>Family Map.</h1>
         <p id="familyMapSummary">Current locations of your people.</p>
@@ -23,7 +26,7 @@
           <h3>Location Needed</h3>
           <div id="unmappedPeople"></div>
         </div>
-      </aside>
+      </aside></MobileSidebar>
     </div>
   </main>
 </template>

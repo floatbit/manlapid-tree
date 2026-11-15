@@ -1,3 +1,4 @@
+import {openMobileSidebar,closeMobileSidebar} from './mobile-sidebar.js';
 import { viewerRelationshipLabels } from '../domain/viewer-relationships.js';
 import { shallowRef, createApp, nextTick, computed, watch } from 'vue';
 import PersonAutocomplete from '../components/PersonAutocomplete.vue';
@@ -57,6 +58,8 @@ watch([ready, family], () => { if (ready.value && viewerId.value && !family.valu
 if (typeof window !== 'undefined') window.addEventListener('storage', event => { if (event.key === VIEWER_KEY || event.key === null) viewerId.value = storedViewer(); });
 
 export const ui = {
+  openSidebar:openMobileSidebar,
+  closeSidebar:closeMobileSidebar,
   setEditorPerson(id) { editorPersonId.value=id || ''; },
   viewerRelation,
   get viewerId() { return viewerId.value; },
@@ -178,6 +181,7 @@ ui.mountSearch = (options) => {
 
 export const activePage = shallowRef('tree');
 ui.setSection = (section) => {
+  if(activePage.value!==section)closeMobileSidebar();
   activePage.value = section;
 };
 

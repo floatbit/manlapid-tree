@@ -1,4 +1,6 @@
 <script setup lang="js">
+import {openMobileSidebar} from '../ui/mobile-sidebar.js';
+import MobileSidebar from '../components/MobileSidebar.vue';
 import { onMounted, onBeforeUnmount, ref } from 'vue';
 import { PhArrowRight } from '@phosphor-icons/vue';
 import SearchField from '../components/SearchField.vue';
@@ -18,6 +20,7 @@ onBeforeUnmount(() => headerObserver?.disconnect());
 </script>
 <template>
   <main id="timeline" ref="page" hidden>
+    <button class="mobile-sidebar-launch" type="button" @click="openMobileSidebar('timeline')">Dates to Remember</button>
     <div class="timeline-workspace">
       <section class="timeline-main" aria-label="Family timeline">
     <div class="timeline-heading">
@@ -38,10 +41,10 @@ onBeforeUnmount(() => headerObserver?.disconnect());
     <p id="timelineSummary" class="hint" role="status"></p>
         <TimelineEvents />
       </section>
-      <aside class="timeline-sidebar-stack" tabindex="0" aria-label="Family dates and upcoming anniversaries">
+      <MobileSidebar sidebar-key="timeline" label="Timeline details"><aside class="timeline-sidebar-stack" tabindex="0" aria-label="Family dates and upcoming anniversaries">
         <OnThisDay />
         <UpcomingAnniversaries />
-      </aside>
+      </aside></MobileSidebar>
     </div>
   </main>
 </template>

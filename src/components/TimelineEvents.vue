@@ -2,13 +2,31 @@
 import ViewerRelation from './ViewerRelation.vue';
 import { PhArrowRight } from '@phosphor-icons/vue';
 import { computed, ref } from 'vue';
-import { family, timelineView, timelineQuery, useRuntime } from '../ui/runtime.js';
+import { family, canEdit, timelineView, timelineQuery, useRuntime } from '../ui/runtime.js';
 import PersonAvatar from './PersonAvatar.vue';
 import MediaPreview from './MediaPreview.vue';
 import TimelineIcon from './TimelineIcon.vue';
 import { ageAtPassing } from '../ui/age.js';
 const api=computed(useRuntime);
 const albumDialog = ref(null), albumPerson = ref(null), selectedAlbum = ref(''), albumBusy = ref(false), albumError = ref('');
+function openEvent(event) {
+  if (event.person) {
+    if (event.kind === 'birth' && event.person.birthAlbumId) return viewBirthAlbum(event);
+    return api.value.openPersonDetails(event.person.id);
+  }
+  if (event.photos?.length) return api.value.openPhotoLightbox(event.photos, 0, event.title);
+  return api.value.openMilestone(event.id);
+}
+function clickCard(event, click) {
+  if (click.target.closest('button, a, input')) return;
+  openEvent(event);
+}
+function editEvent(event) {
+  if (event.person) {
+    api.value.showSection('people');
+    api.value.selectPersonFromDirectory(event.person.id);
+  } else api.value.openMilestone(event.id);
+}
 function birthAlbum(event) { return (family.value.albums || []).find(a => a.id === event.person.birthAlbumId); }
 const availableAlbums = computed(() => (family.value.albums || []).filter(a => !a.milestoneId && !(family.value.people || []).some(p => p.id !== albumPerson.value?.id && p.birthAlbumId === a.id)));
 async function openBirthAlbum(event) {
@@ -72,9 +90,9 @@ function marriagePeople(event) {
               class="birth-event"
               :id="'timeline-' + event.kind + '-' + event.person.id"
               :class="{ 'welcome-birth-event': event.kind === 'birth' }"
-              @click="api.start(event.person.id)"
+              @click="clickCard(event, $event)"
               role="link" tabindex="0"
-              @keydown.enter.self="api.start(event.person.id)"
+              @keydown.enter.self="openEvent(event)"
             >
               <PersonAvatar :person="event.person" /><span
                 ><small>{{
@@ -84,9 +102,9 @@ function marriagePeople(event) {
                   >{{ api.displayName(event.person) }}
                   {{ event.kind === 'death' ? 'passed away' : 'was born' }}</strong
                 ><ViewerRelation :person-id="event.person.id" /><time>{{ api.familyDateLabel(event.date) }}<template v-if="event.kind === 'death' && ageAtPassing(event.person.dateDetails?.birth || event.person.birthday, event.date)"> · {{ ageAtPassing(event.person.dateDetails?.birth || event.person.birthday, event.date) }}</template></time>
-                <span v-if="event.kind === 'birth'" class="birth-album-actions" @click.stop>
-                  <button v-if="event.person.birthAlbumId" type="button" @click="viewBirthAlbum(event)">View Album<span v-if="birthAlbum(event)"> · {{ birthAlbum(event).photos.length }} photos</span> <PhArrowRight :size="16" class="arrow-link-icon ui-icon" aria-hidden="true" /></button>
-                  <button type="button" class="birth-album-edit" @click="openBirthAlbum(event)">{{ event.person.birthAlbumId ? 'Change Album' : 'Attach Album' }}</button>
+                <span class="birth-album-actions" @click.stop>
+                  <button v-if="event.kind === 'birth' && event.person.birthAlbumId" type="button" @click="viewBirthAlbum(event)">View Album<span v-if="birthAlbum(event)"> · {{ birthAlbum(event).photos.length }} photos</span> <PhArrowRight :size="16" class="arrow-link-icon ui-icon" aria-hidden="true" /></button>
+                  <button v-if="event.kind === 'birth'" type="button" class="birth-album-edit" @click="openBirthAlbum(event)">{{ event.person.birthAlbumId ? 'Change Album' : 'Attach Album' }}</button>
                 </span></span
               ><span class="birth-arrow" aria-hidden="true"><PhArrowRight :size="16" class="arrow-link-icon ui-icon" aria-hidden="true" /></span>
               <span class="timeline-rail-icon"><TimelineIcon :type="event.kind" /></span>
@@ -95,7 +113,7 @@ function marriagePeople(event) {
               v-else
               class="birth-event milestone-event"
               :id="'timeline-milestone-' + event.id"
-              tabindex="-1"
+              tabindex="0" role="button" @click="clickCard(event, $event)" @keydown.enter.self="openEvent(event)" @keydown.space.self.prevent="openEvent(event)"
               :class="{
                 'marriage-event': event.type === 'marriage',
                 'easter-event': event.type === 'easter',
@@ -109,7 +127,7 @@ function marriagePeople(event) {
               }"
             >
               <span v-if="marriagePeople(event).length === 2" class="marriage-portraits">
-                <button v-for="person in marriagePeople(event)" :key="person.id" type="button" :aria-label="'Open ' + api.displayName(person) + ' in Tree'" @click="api.start(person.id)"><PersonAvatar :person="person" /></button>
+                <button v-for="person in marriagePeople(event)" :key="person.id" type="button" :aria-label="'Open ' + api.displayName(person) + ' details'" @click="api.openPersonDetails(person.id)"><PersonAvatar :person="person" /></button>
               </span>
               <button
                 v-else-if="event.photos?.length"
@@ -123,18 +141,19 @@ function marriagePeople(event) {
                   :alt="event.title"
                 /></button
               ><span v-else class="avatar milestone-icon"><TimelineIcon :type="event.type" :size="28" /></span
-              ><button class="milestone-details" @click="api.openMilestone(event.id)">
-                <span
-                  ><strong>{{ event.title }}</strong
-                  ><time :datetime="event.date"
-                    >{{ api.familyDateLabel(event.date)
-                    }}{{ event.location ? ' · ' + event.location : '' }}</time
-                  ><span v-if="names(event)" class="milestone-people">{{ names(event) }}</span
-                  ><span v-if="event.photos?.length" class="milestone-photo-count"
-                    >▧ {{ api.milestoneMediaCount(event.photos) }}</span
-                  ></span
-                ><span class="birth-arrow" aria-hidden="true"><PhArrowRight :size="16" class="arrow-link-icon ui-icon" aria-hidden="true" /></span>
-              </button>
+              > <div class="milestone-details">
+                <span>
+                  <button type="button" class="milestone-open" @click="openEvent(event)">
+                    <strong>{{ event.title }}</strong>
+                    <time :datetime="event.date">{{ api.familyDateLabel(event.date) }}{{ event.location ? ' · ' + event.location : '' }}</time>
+                    <span v-if="names(event)" class="milestone-people">{{ names(event) }}</span>
+                  </button>
+                  <span class="birth-album-actions">
+                    <button v-if="event.photos?.length" type="button" @click="api.openPhotoLightbox(event.photos, 0, event.title)">View Album · {{ api.milestoneMediaCount(event.photos) }} <PhArrowRight :size="16" class="arrow-link-icon ui-icon" aria-hidden="true" /></button><button v-if="canEdit" type="button" class="birth-album-edit" @click="editEvent(event)">Edit Milestone <PhArrowRight :size="16" class="arrow-link-icon" /></button>
+                  </span>
+                </span>
+                <button type="button" class="milestone-open birth-arrow" :aria-label="'View ' + event.title + ' details'" @click="openEvent(event)"><PhArrowRight :size="16" class="arrow-link-icon ui-icon" aria-hidden="true" /></button>
+              </div>
               <span class="timeline-rail-icon"><TimelineIcon :type="event.type" /></span>
             </article>
           </template>

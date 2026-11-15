@@ -41,7 +41,7 @@ $('#deceased').addEventListener('change', updateDeathDateVisibility);
 $('#personForm').addEventListener('input', updatePersonUnsaved);
 $('#personForm').addEventListener('change', updatePersonUnsaved);
 function selectPersonFromDirectory(id) {
-  if (!document.body.classList.contains('is-editor')) { start(id); return; }
+  if (!document.body.classList.contains('is-editor')) { openPersonDetails(id); return; }
   const selected = person(id);
   if (!selected) return;
   edit(id);

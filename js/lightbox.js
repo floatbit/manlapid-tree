@@ -13,9 +13,15 @@ async function savePhotoPeople(photo, people) {
     applyShared(result);ui.sync(data);
   } finally {savingShared=false;}
 }
+function openPersonDetails(id) {
+  if (!person(id)) return;
+  ui.closeMobileMenu?.();
+  if (!$('#explore').hidden) expand(id);
+  else ui.showPersonDetails(id);
+}
 function openTaggedPerson(id) {
   document.querySelector('#photoLightbox').close();
-  start(id);
+  openPersonDetails(id);
 }
 
 async function deletePhotoFromLightbox(photo) {

@@ -272,3 +272,13 @@ console.log(
  assert.equal(camera.left,400);assert.equal(camera.top,248);
  assert.deepEqual(Array.from(env.ctx.data.visible),['one','two']);
 }
+
+{
+ let camera;
+ const graph={clientHeight:800,scrollLeft:0,scrollTop:0,scrollTo(value){camera=value;}};
+ const context=vm.createContext({graphLayout:{positions:new Map([['person',{x:400,y:500}]])},graphScale:1,cameraPadded:false,$:id=>id==='#graph'?graph:{style:{}},setGraphScale(){},window:{matchMedia:()=>({matches:true})},document:{querySelectorAll:()=>[],querySelector:()=>null}});
+ vm.runInContext(tree.slice(tree.indexOf('function centerGraphOnPerson('),tree.indexOf('function animateFamilyLines(')),context);
+ vm.runInContext("centerGraphOnPerson('person',1,'none')",context);
+ assert.equal(camera.left,400);assert.equal(camera.top,698,'Mobile person sits 5% lower below the toolbar');
+ context.window.matchMedia=()=>({matches:false});vm.runInContext("centerGraphOnPerson('person',1,'none')",context);assert.equal(camera.top,500,'Desktop person centering unchanged');
+}

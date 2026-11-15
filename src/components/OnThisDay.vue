@@ -3,6 +3,7 @@ import { computed, nextTick } from 'vue';
 import TimelineIcon from './TimelineIcon.vue';
 import { family, useRuntime } from '../ui/runtime.js';
 
+const props=defineProps({showEmpty:Boolean});
 const api = computed(useRuntime);
 const today = new Date();
 const todayFormatted = today.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
@@ -19,6 +20,7 @@ const iconType = (event) => {
 };
 
 async function open(event) {
+  if (event.personId) { api.value.openPersonDetails(event.personId); return; }
   if (event.personId || event.milestoneId) {
     const search = document.getElementById('timelineSearch');
     if (search?.value) {
@@ -63,13 +65,14 @@ async function open(event) {
 </script>
 
 <template>
-  <div v-if="events.length" class="on-this-day-card">
+  <div v-if="events.length || props.showEmpty" class="on-this-day-card" :class="{'is-empty':!events.length}">
     <div class="on-this-day-heading">
       <div>
         <p class="eyebrow">ON THIS DAY · {{ todayFormatted.toUpperCase() }}</p>
         <h2>Moments in History</h2>
       </div>
     </div>
+    <p v-if="!events.length" class="hint">No recorded family events on this day.</p>
     <div class="on-this-day-entries">
       <button
         v-for="event in events"

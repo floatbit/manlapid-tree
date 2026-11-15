@@ -32,3 +32,4 @@ function openSavedFamilyTree(group, visibleMembers = [...group.parents, ...group
 }
 
 async function loadFamilyAlbums() { await ensureCollection('albums'); ui.sync(data); }
+async function loadFamilyTimeline() { await ensureCollection('milestones'); ui.sync(data); }

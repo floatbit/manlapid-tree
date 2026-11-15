@@ -7,7 +7,8 @@ import SearchField from '../components/SearchField.vue';
 import TimelineEvents from '../components/TimelineEvents.vue';
 import UpcomingAnniversaries from '../components/UpcomingAnniversaries.vue';
 import OnThisDay from '../components/OnThisDay.vue';
-const page = ref(null);
+const page = ref(null),timelinePanel=ref('anniversaries');
+function openDates(panel){timelinePanel.value=panel;openMobileSidebar('timeline');}
 let headerObserver;
 onMounted(() => {
   const header = document.querySelector('#app > header');
@@ -20,7 +21,6 @@ onBeforeUnmount(() => headerObserver?.disconnect());
 </script>
 <template>
   <main id="timeline" ref="page" hidden>
-    <button class="mobile-sidebar-launch" type="button" @click="openMobileSidebar('timeline')">Dates to Remember</button>
     <div class="timeline-workspace">
       <section class="timeline-main" aria-label="Family timeline">
     <div class="timeline-heading">
@@ -37,13 +37,17 @@ onBeforeUnmount(() => headerObserver?.disconnect());
         ><button id="addMilestone" class="primary">＋ Add milestone</button>
       </div>
     </div>
+    <div class="timeline-mobile-date-actions">
+      <button type="button" @click="openDates('history')">Moments in History</button>
+      <button type="button" @click="openDates('anniversaries')">Dates to Remember</button>
+    </div>
     <SearchField class="timeline-search"><input id="timelineSearch" type="search" aria-label="Search timeline" placeholder="Search people, events, places, or years…" /></SearchField>
     <p id="timelineSummary" class="hint" role="status"></p>
         <TimelineEvents />
       </section>
-      <MobileSidebar sidebar-key="timeline" label="Timeline details"><aside class="timeline-sidebar-stack" tabindex="0" aria-label="Family dates and upcoming anniversaries">
-        <OnThisDay />
-        <UpcomingAnniversaries />
+      <MobileSidebar sidebar-key="timeline" label="Timeline details"><aside :data-mobile-view="timelinePanel" class="timeline-sidebar-stack" tabindex="0" aria-label="Family dates and upcoming anniversaries">
+        <OnThisDay show-empty />
+        <UpcomingAnniversaries force-open />
       </aside></MobileSidebar>
     </div>
   </main>

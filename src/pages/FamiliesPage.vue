@@ -1,5 +1,6 @@
 <script setup lang="js">
 import {openMobileSidebar} from '../ui/mobile-sidebar.js';
+import FamilyTimeline from '../components/FamilyTimeline.vue';
 import MobileSidebar from '../components/MobileSidebar.vue';
 import ViewerRelation from '../components/ViewerRelation.vue';
 import { PhArrowRight, PhArrowLeft, PhArrowUp, PhArrowDown, PhHeart, PhHouse, PhMapPin, PhPlus, PhMinus } from '@phosphor-icons/vue';
@@ -11,6 +12,16 @@ import { defaultFamilyView, familyGenerationBands, familyGenerationTitle } from 
 import PersonPhotos from '../components/PersonPhotos.vue';
 import PersonAvatar from '../components/PersonAvatar.vue';
 import PersonAutocomplete from '../components/PersonAutocomplete.vue';
+const page = ref(null);
+let headerObserver;
+onMounted(() => {
+  const header = document.querySelector('#app > header');
+  if (!header) return;
+  const measure = () => page.value?.style.setProperty('--families-header-height', header.getBoundingClientRect().height + 'px');
+  measure();
+  if (window.ResizeObserver) { headerObserver = new window.ResizeObserver(measure); headerObserver.observe(header); }
+});
+onBeforeUnmount(() => headerObserver?.disconnect());
 const FAMILY_LAST_VIEW_KEY = 'kinfolk-family-last-view-v1';
 function rememberedFamily() { try { return localStorage.getItem(FAMILY_LAST_VIEW_KEY); } catch { return null; } }
 const api = computed(useRuntime), query = ref(''), selectedId = ref(rememberedFamily()), personId = ref(null);
@@ -140,7 +151,8 @@ function openLocation(place) {
 function editPerson() {api.value.showSection('people');api.value.edit(selectedPerson.value.id);}
 </script>
 <template>
-  <main id="familiesPage" hidden>
+  <main id="familiesPage" ref="page" hidden>
+    <div class="families-workspace"><div class="families-main">
     <div v-if="!selected" class="intro families-intro">
       <div>
         <p class="eyebrow">THE FAMILIES THAT CONNECT US</p>
@@ -196,8 +208,8 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
       <p v-else-if="!filtered.length" class="hint">No families match that search.</p>
     </template>
     <template v-else>
-      <MediaPreview v-if="selected.cover" :src="selected.cover" :alt="selected.name" class-name="family-detail-cover" />
       <button type="button" class="family-back" @click="select(null)"><PhArrowLeft :size="16" class="ui-icon" aria-hidden="true" /> All Families</button>
+      <MediaPreview v-if="selected.cover" :src="selected.cover" :alt="selected.name" class-name="family-detail-cover" />
       <div class="family-detail-heading">
         <div>
           <p class="eyebrow">{{ bands.length }} GENERATIONS</p>
@@ -313,6 +325,21 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
           >
             No further descendants are recorded for these children yet.
           </p>
+          <div class="family-timeline-locations">
+      <FamilyTimeline :group="selected" :visible-ids="visibleIds" @select="selectMember" />
+          <section class="family-locations">
+            <h3>Family Locations</h3>
+            <p v-if="!locations.length" class="hint">No family locations recorded yet.</p>
+            <button
+              v-for="place in locations"
+              :key="place"
+              type="button"
+              @click="openLocation(place)"
+            >
+              <PhMapPin :size="16" class="ui-icon" aria-hidden="true" /> {{ place }} <span aria-hidden="true"><PhArrowRight :size="16" class="arrow-link-icon ui-icon" aria-hidden="true" /></span>
+            </button>
+          </section>
+          </div>
           <section class="family-photos">
             <div class="family-photos-heading"><h3>Family Photos <span v-if="selected.photoCount">({{ selected.photoCount }})</span></h3>
               <button v-if="canEdit" type="button" @click="edit(selected)">{{ selected.albumId ? 'Add / Manage Photos' : 'Create Family Album' }} <PhArrowRight :size="16" class="arrow-link-icon ui-icon" aria-hidden="true" /></button>
@@ -326,19 +353,13 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
           <section class="family-member-photos"><h3>Photos by Family Member</h3>
             <div class="family-member-photo-grid"><PersonPhotos v-for="member in members(visibleIds)" :key="member.id" :person-id="member.id" :limit="8" :columns="4" show-empty show-name /></div>
           </section>
-          <section v-if="locations.length" class="family-locations">
-            <h3>Family Locations</h3>
-            <button
-              v-for="place in locations"
-              :key="place"
-              type="button"
-              @click="openLocation(place)"
-            >
-              <PhMapPin :size="16" class="ui-icon" aria-hidden="true" /> {{ place }} <span aria-hidden="true"><PhArrowRight :size="16" class="arrow-link-icon ui-icon" aria-hidden="true" /></span>
-            </button>
-          </section>
+
         </div>
-        <MobileSidebar v-if="selectedPerson" sidebar-key="families" label="Families details"><aside class="family-person-sidebar" aria-label="Family member details">
+
+      </div>
+    </template>
+    </div>
+        <MobileSidebar sidebar-key="families" label="Families details"><aside class="family-person-sidebar" aria-label="Family member details">
           <template v-if="selectedPerson"
             ><div class="map-profile-header">
               <PersonAvatar :person="selectedPerson" />
@@ -352,7 +373,7 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
                 <span v-if="selectedPerson.deceased" class="deceased-badge">Deceased</span>
               </div>
             </div>
-            <div class="map-profile-actions"><button type="button" @click="api.openSavedFamilyTree(selected, visibleIds)">Open Family Tree <PhArrowRight :size="16" class="arrow-link-icon ui-icon" aria-hidden="true" /></button></div>
+            <div class="map-profile-actions"><button type="button" @click="api.openSavedFamilyTree(selected, visibleIds)">Open Family Tree <PhArrowRight :size="16" class="arrow-link-icon ui-icon" aria-hidden="true" /></button><button type="button" @click="api.copyDirectLink({person:selectedPerson.id})">Copy Person Link <PhArrowRight :size="16" class="arrow-link-icon ui-icon" aria-hidden="true" /></button></div>
             <section class="map-profile-locations tree-location-history">
               <h3>Locations</h3>
               <p v-if="!(api.migrationStopsForPerson?.(selectedPerson) || []).length" class="hint">No places recorded yet.</p>
@@ -363,9 +384,13 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
             <div class="family-person-actions">
 <button v-if="canEdit" type="button" @click="editPerson">Edit Person <PhArrowRight :size="16" class="arrow-link-icon ui-icon" aria-hidden="true" /></button>
             </div></template>
+          <div v-else class="family-sidebar-empty">
+            <p class="eyebrow">A CLOSER LOOK</p>
+            <h2>Meet the Family</h2>
+            <p>Choose a person to see their details, locations, and photos.</p>
+          </div>
         </aside></MobileSidebar>
-      </div>
-    </template>
+    </div>
     <dialog
       ref="dialog"
       id="familyGroupDialog"

@@ -1957,12 +1957,12 @@ gmp-place-autocomplete {
 }
 #timeline .birth-event > :first-child { justify-self: center; }
 #timeline .birth-event > .milestone-details { width: 100%; }
-#timeline .birth-album-actions { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+#timeline .birth-album-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
 #timeline .birth-album-edit { opacity: 0; pointer-events: none; transition: opacity .15s; }
 #timeline .birth-event:hover .birth-album-edit,
 #timeline .birth-event:focus-within .birth-album-edit { opacity: 1; pointer-events: auto; }
 @media (hover: none) { #timeline .birth-album-edit { opacity: 1; pointer-events: auto; } }
-#timeline .birth-album-actions button { width: auto; padding: 0; border: 0; background: transparent; color: var(--green); font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
+#timeline .birth-album-actions button { display: inline-flex; align-items: center; gap: 5px; width: auto; padding: 0; border: 0; background: transparent; color: var(--green); font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
 .birth-album-dialog { width: min(520px, calc(100vw - 32px)); padding: 28px; }
 .birth-album-dialog select { display: block; width: 100%; margin: 10px 0 20px; }
 .birth-album-dialog-actions { display: flex; gap: 10px; margin-top: 24px; }
@@ -3796,3 +3796,58 @@ body:not(.is-editor) .lightbox-people:not(:has(.lightbox-person-tag)) { display:
 .insights-main > .intro + .insights-stats { border-top:0; padding-top:0; }
 .insights-main > .insights-section:has(+ .insights-stats) { border-bottom:0; }
 .family-detail-layout:not(:has(.family-person-sidebar)) { grid-template-columns:minmax(0,1fr); }
+
+#timeline .milestone-open { display:grid; gap:7px; text-align:left; padding:0; border:0; background:transparent; color:inherit; }
+#timeline .milestone-details > span:first-child { flex:1; }
+
+@media (min-width:761px) {
+  #explore #details, #familyMapPeople, .family-person-sidebar,
+  .insights-sidebar, #timeline .timeline-sidebar-stack,
+  .person-details-sidebar, .mobile-sidebar-shell { border-radius:0; }
+  .family-person-sidebar {
+    top:88px; height:calc(100dvh - 88px); max-height:calc(100dvh - 88px);
+    border:0; border-left:1px solid var(--line); padding:25px 18px;
+  }
+}
+
+@media (min-width:761px) {
+  #familiesPage { width:100%; max-width:none; margin:0; padding:0; --families-header-height:88px; }
+  .families-workspace { display:grid; grid-template-columns:minmax(0,1fr) 300px; align-items:start; }
+  .families-main { min-width:0; padding:var(--page-padding); }
+  #familiesPage .family-detail-layout { display:block; }
+  #familiesPage .family-person-sidebar {
+    position:sticky; top:var(--families-header-height);
+    height:calc(100dvh - var(--families-header-height)); max-height:calc(100dvh - var(--families-header-height));
+    width:100%; margin:0; border-radius:0;
+  }
+}
+
+.family-mini-timeline { margin:36px 0 48px; padding:28px 0; border-block:1px solid var(--line); }
+.family-mini-heading { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom:24px; }
+.family-mini-heading h2 { margin:0; }
+.family-mini-scope { display:flex; flex-wrap:wrap; gap:6px; }
+.family-mini-scope button { padding:8px 12px; font-size:12px; }
+.family-mini-scope button[aria-pressed="true"] { background:var(--green); color:white; }
+.family-mini-events { list-style:none; margin:0; padding:0; }
+.family-mini-events li { display:grid; grid-template-columns:64px minmax(0,1fr); gap:16px; }
+.family-mini-year { color:var(--green); font-size:18px; font-weight:600; padding-top:12px; }
+.family-mini-entry { display:flex; align-items:center; gap:12px; position:relative; border-left:1px solid var(--line); padding:12px 0 20px 20px; }
+.family-mini-entry::before { content:''; position:absolute; left:-4px; top:20px; width:7px; height:7px; border-radius:50%; background:var(--green); }
+.family-mini-portraits { display:flex; flex-shrink:0; }
+.family-mini-portraits button { padding:0; border:0; background:transparent; }
+.family-mini-portraits button + button { margin-left:-12px; }
+.family-mini-portraits .avatar { width:36px; height:36px; }
+.family-mini-event { display:grid; gap:4px; text-align:left; padding:0; border:0; background:transparent; color:var(--ink); min-width:0; }
+.family-mini-event strong { font-size:14px; }
+.family-mini-event span { color:var(--muted); font-size:12px; }
+.family-mini-event small,.family-mini-more { display:inline-flex; align-items:center; gap:5px; color:var(--green); }
+.family-mini-event:hover strong { text-decoration:underline; text-underline-offset:3px; }
+.family-mini-more { margin-top:16px; }
+@media (max-width:480px) { .family-mini-events li { grid-template-columns:48px minmax(0,1fr); gap:8px; } .family-mini-entry { padding-left:14px; } }
+
+.family-timeline-locations { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:28px; margin-top:36px; padding-block:28px; border-block:1px solid var(--line); align-items:start; }
+.family-timeline-locations .family-mini-timeline { margin:0; padding:0; border:0; }
+.family-timeline-locations .family-locations { margin:0; min-width:0; }
+@media (max-width:760px) { .family-timeline-locations { grid-template-columns:minmax(0,1fr); } }
+
+.family-mini-heading { flex-direction:column; align-items:flex-start; }

@@ -767,9 +767,16 @@ function centerGraphOnPerson(id, scale, oldTransform) {
     top = graph.scrollTop;
   cameraPadded = true;
   setGraphScale(scale, { animate: false });
+  let targetTop = position.y * graphScale;
+  if (window.matchMedia('(max-width: 760px)').matches) {
+    const node = [...document.querySelectorAll('#nodes .node')].find(node => node.dataset.id === id);
+    const halfHeight = Math.max(90, (node?.offsetHeight || 0) / 2) * graphScale;
+    const topInset = (document.querySelector('.tree-view-actions')?.offsetHeight || 40) + 32 + graph.clientHeight * 0.05;
+    targetTop = Math.max(0, graph.clientHeight / 2 + position.y * graphScale - halfHeight - topInset);
+  }
   graph.scrollTo({
     left: position.x * graphScale,
-    top: position.y * graphScale,
+    top: targetTop,
     behavior: 'instant',
   });
   // Compensate for the new scroll position so the camera has one continuous transition.

@@ -323,7 +323,7 @@ function showMapPerson(id) {
       ? `<p>Died · ${esc(familyDateLabel(p.dateDetails.death))}</p>`
       : ''
   }${viewerBadge(p.id)}</div></div>
-    <div class="map-profile-actions"><button type="button" id="mapPersonTree">Open Family Tree ${uiIcon('arrowRight')}</button></div>
+    <div class="map-profile-actions"><button type="button" id="mapPersonTree">Open Family Tree ${uiIcon('arrowRight')}</button><button type="button" id="mapPersonCopy">Copy Person Link ${uiIcon('arrowRight')}</button></div>
     <section class="map-profile-locations tree-location-history"><h3>Locations</h3>${!migrationStopsForPerson(p).length ? '<p class="hint">No places recorded yet.</p>' : ''}<ol class="migration-stops">${migrationStopsForPerson(p).map((stop,i) => `<li><button type="button" data-map-person-stop="${i}"><strong>${esc(locationStopLabel(stop))}</strong><span>${esc(stop.location)}</span></button></li>`).join('')}</ol><button type="button" id="mapPersonPlaces">View Places Lived ${uiIcon('arrowRight')}</button></section>
     <section class="map-profile-shared"><h3>At This Location <span>${shared.length}</span></h3>${
     shared
@@ -349,6 +349,7 @@ function showMapPerson(id) {
   details.querySelectorAll('[data-map-person-stop]').forEach(button => button.onclick = () => openPersonPlaces(id, Number(button.dataset.mapPersonStop)));
   $('#mapBackToLocations').onclick = closeMapPerson;
   $('#mapPersonTree').onclick = () => start(id);
+  $('#mapPersonCopy').onclick = () => copyDirectLink({person:id});
   $('#mapPersonEdit').onclick = () => {
     showSection('people');
     edit(id);

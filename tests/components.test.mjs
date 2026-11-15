@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { mount, flushPromises } from './mount-component.mjs';
 import { nextTick } from 'vue';
+import PersonDetailsSidebar from '../src/components/PersonDetailsSidebar.vue';
+import TimelineEvents from '../src/components/TimelineEvents.vue';
 import UpcomingAnniversaries from '../src/components/UpcomingAnniversaries.vue';
 import PersonPhotos from '../src/components/PersonPhotos.vue';
 import PersonAutocomplete from '../src/components/PersonAutocomplete.vue';
@@ -14,7 +16,7 @@ import RelationshipDialog from '../src/dialogs/RelationshipDialog.vue';
 import AppHeader from '../src/components/AppHeader.vue';
 import AccessControls from '../src/components/AccessControls.vue';
 import TreePage from '../src/pages/TreePage.vue';
-import { bindRuntime, ui, family, activePage, nicknameDraft, lightbox } from '../src/ui/runtime.js';
+import { bindRuntime, ui, family, activePage, nicknameDraft, lightbox, sidebarPersonId, showPersonDetails, timelineView } from '../src/ui/runtime.js';
 const people = [
   { id: 'melissa', name: 'Melissa Manlapig', nicknames: ['Mimi'], photo: '' },
   { id: 'chris', name: 'Chris Manlapid', photo: 'portrait.jpg', birthday: '1980-12-25' },
@@ -361,16 +363,15 @@ console.log(
   target.getBoundingClientRect = () => ({ top: 240 });
   const birth = document.createElement('article'); birth.id = 'timeline-birth-chris';
   document.body.append(target, birth);
-  bindRuntime({ upcomingAnniversaries: () => [{ kind: 'Remembrance', personId: 'chris', title: 'Chris', next: new Date(), days: 0, years: 1 }] });
+  const opened = [];
+  bindRuntime({ openPersonDetails: id => opened.push(id), upcomingAnniversaries: () => [{ kind: 'Remembrance', personId: 'chris', title: 'Chris', next: new Date(), days: 0, years: 1 }] });
   const wrapper = mount(UpcomingAnniversaries);
   await wrapper.find('.anniversary-card').trigger('click'); await flushPromises();
-  assert(target.classList.contains('anniversary-highlight'), 'Remembrance highlights the death entry');
-  assert(!birth.classList.contains('anniversary-highlight'));
-  assert.equal(document.activeElement, target, 'Timeline entry receives keyboard focus');
-  assert(scrolls.length > 0, 'Remembrance scrolls to its timeline entry');
+  assert.deepEqual(opened, ['chris'], 'Remembrance opens person details');
+  assert.equal(scrolls.length, 0, 'Person selection preserves the page position');
   wrapper.unmount(); target.remove(); birth.remove();
   window.scrollTo = originalScroll; window.matchMedia = originalMedia;
-  console.log('Passed: remembrance focuses, scrolls to, and highlights the death entry.');
+  console.log('Passed: remembrance opens person details without moving the timeline.');
 }
 
 {
@@ -382,4 +383,29 @@ console.log(
   assert.equal(directory.findAll('[role="option"]').length, people.length, 'Clearing restores everyone');
   directory.unmount();
   console.log('Passed: full directory shows everyone, filters searches, and restores the full list when cleared.');
+}
+
+{
+  const selected = [], tree = [], copies = [];
+  family.value = { people, links: [], photoTags: {} };
+  activePage.value = 'timeline';
+  bindRuntime({ displayName: display, initials: p => p.name[0], familyDateYear: () => 1980,
+    familyDateLabel: v => v, connections: () => [], migrationStopsForPerson: () => [],
+    openPersonDetails: id => { selected.push(id); showPersonDetails(id); },
+    start: id => tree.push(id), copyDirectLink: value => copies.push(value) });
+  timelineView.value = [{ id: 'birth-chris', kind: 'birth', person: people[1], date: '1980-12-25' }];
+  const entries = mount(TimelineEvents);
+  await entries.find('.birth-event').trigger('click');
+  assert.deepEqual(selected, ['chris']);
+  assert.equal(activePage.value, 'timeline');
+  const sidebar = mount(PersonDetailsSidebar);
+  assert(sidebar.text().includes('Chris Manlapid'));
+  const actions = sidebar.findAll('.map-profile-actions button');
+  await actions.find(b => b.text().includes('Copy Person Link')).trigger('click');
+  assert.deepEqual(copies, [{ person: 'chris' }]);
+  await actions.find(b => b.text().includes('Open Family Tree')).trigger('click');
+  assert.deepEqual(tree, ['chris']);
+  sidebarPersonId.value = null;
+  entries.unmount(); sidebar.unmount();
+  console.log('Passed: Timeline people open sidebar details in place with explicit Tree and Copy actions.');
 }

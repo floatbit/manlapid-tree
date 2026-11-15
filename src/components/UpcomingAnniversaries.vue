@@ -3,12 +3,14 @@ import { PhArrowRight } from '@phosphor-icons/vue';
 import TimelineIcon from './TimelineIcon.vue';
 import { computed, nextTick, ref } from 'vue';
 import { family, useRuntime } from '../ui/runtime.js';
+const props=defineProps({forceOpen:Boolean});
 const expanded = ref(window.sessionStorage.getItem('anniversaries-expanded') === 'true');
 function toggle() { expanded.value = !expanded.value; window.sessionStorage.setItem('anniversaries-expanded', String(expanded.value)); }
 const api = computed(useRuntime);
 const events = computed(() => api.value?.upcomingAnniversaries(family.value.people, family.value.milestones || []) || []);
 const iconType = (event) => event.kind === 'Birthday' ? 'birthday_party' : event.kind === 'Wedding Anniversary' ? 'marriage' : 'remembrance';
 async function open(event) {
+  if (event.personId) { api.value.openPersonDetails(event.personId); return; }
   if (event.personId || event.milestoneId) {
     const search = document.getElementById('timelineSearch');
     if (search?.value) { search.value = ''; search.dispatchEvent(new Event('input', { bubbles: true })); }
@@ -51,7 +53,8 @@ async function open(event) {
       Next 90 days
       <span>{{ events.length }} {{ events.length === 1 ? 'occasion' : 'occasions' }}</span>
     </p>
-    <div id="anniversaryEntries" :class="{ 'mobile-collapsed': !expanded }">
+    <div id="anniversaryEntries" :class="{ 'mobile-collapsed': !expanded && !props.forceOpen }">
+    <p v-if="!events.length" class="hint">No upcoming anniversaries in the next 90 days.</p>
     <button
       v-for="event in events"
       :key="event.personId || event.milestoneId"

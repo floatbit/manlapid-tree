@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { nextTick } from 'vue';
 import { mount, flushPromises } from './mount-component.mjs';
+import FamilyTimeline from '../src/components/FamilyTimeline.vue';
 import FamiliesPage from '../src/pages/FamiliesPage.vue';
 import AppHeader from '../src/components/AppHeader.vue';
 import { ui, family, activePage, bindRuntime } from '../src/ui/runtime.js';
@@ -134,3 +135,23 @@ visitor.unmount();ui.setEditing(true);
 console.log(
   'Passed: Family menu order, create form, direct-child suggestions, save, two generations, person sidebar and URL restoration.',
 );
+
+{
+ const opened=[], selected=[];
+ const relatives=Array.from({length:8},(_,i)=>({id:'r'+i,name:'Relative '+i,birthday:String(1950+i)}));
+ family.value={people:relatives,links:[{type:'child',a:'r1',b:'r7'}],milestones:[{id:'w',title:'Family wedding',date:'1970-01-01',participants:['r0'],photos:['wedding.jpg']}],albums:[]};
+ bindRuntime({displayName:p=>p.name,initials:p=>p.name[0],familyDateYear:d=>Number(String(d).slice(0,4)),familyDateLabel:d=>d,openPhotoLightbox:(...args)=>opened.push(args)});
+ const timeline=mount(FamilyTimeline,{props:{group:{id:'f',parents:['r0'],children:relatives.slice(1,7).map(p=>p.id)},visibleIds:['r7'],onSelect:id=>selected.push(id)}});
+ assert.equal(timeline.findAll('.family-mini-events li').length,6);
+ await timeline.find('.family-mini-more').trigger('click');
+ assert.equal(timeline.findAll('.family-mini-events li').length,9,'Visible grandchildren are included in the timeline');
+ await timeline.findAll('.family-mini-event').at(-1).trigger('click');
+ assert.deepEqual(opened[0],[['wedding.jpg'],0,'Family wedding']);
+ await timeline.find('.family-mini-portraits button').trigger('click');
+ assert.deepEqual(selected,['r0']);
+ await timeline.findAll('.family-mini-scope button')[1].trigger('click');
+ assert.equal(timeline.findAll('.family-mini-more').length,0,'All generations needs no expansion button');
+ assert.equal(timeline.findAll('.family-mini-events li').length,9,'All generations includes recorded descendants');
+ timeline.unmount();
+ console.log('Passed: compact family timeline scope, expansion, portrait selection and album opening.');
+}

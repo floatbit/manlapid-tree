@@ -122,7 +122,7 @@ const statGroups=computed(()=>{
 <MobileSidebar sidebar-key="insights" label="Insights details"><aside ref="sidebar" class="insights-sidebar" aria-label="Insight details" tabindex="0">
   <div class="insights-sidebar-heading"><p class="eyebrow">A CLOSER LOOK</p><button v-if="panel" type="button" aria-label="Clear insight selection" @click="clearPanel"><PhX :size="20"/></button></div>
   <template v-if="panel==='person' && selected">
-    <InsightPersonDetails :person="selected" @select="showPerson" @tree="api.openTaggedPerson($event.id)" />
+    <InsightPersonDetails :person="selected" @select="showPerson" @tree="api.start($event.id)" />
   </template>
   <template v-else-if="panel==='people' && context">
     <template v-if="!context.routes"><h2>{{context.title}}</h2><p v-if="context.description">{{context.description}}</p><p>{{context.people.length}} relatives</p></template>

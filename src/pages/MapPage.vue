@@ -1,8 +1,22 @@
 <script setup>
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import MobileSidebar from '../components/MobileSidebar.vue';
+const page = ref(null);
+let headerObserver;
+onMounted(() => {
+  const header = document.querySelector('#app > header');
+  if (!header) return;
+  const measure = () => page.value?.style.setProperty('--map-header-height', header.getBoundingClientRect().height + 'px');
+  measure();
+  if (window.ResizeObserver) {
+    headerObserver = new window.ResizeObserver(measure);
+    headerObserver.observe(header);
+  }
+});
+onBeforeUnmount(() => headerObserver?.disconnect());
 </script>
 <template>
-  <main id="familyMapPage" hidden>
+  <main id="familyMapPage" ref="page" hidden>
     <div class="family-map-workspace">
       <div class="family-map-stage">
         <div id="familyMapCanvas" aria-label="Map of family members’ current locations"></div>

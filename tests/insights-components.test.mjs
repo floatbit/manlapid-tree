@@ -4,7 +4,7 @@ import InsightsPage from '../src/pages/InsightsPage.vue';
 import AppHeader from '../src/components/AppHeader.vue';
 import { bindRuntime, ui } from '../src/ui/runtime.js';
 const opened=[];
-bindRuntime({displayName:p=>p.name,initials:p=>p.name[0],familyDateLabel:d=>d,personMatchesQuery:(p,q)=>p.name.toLowerCase().includes(q.toLowerCase()),openTaggedPerson:id=>opened.push(id),showSection:()=>{},connections:id=>id==='a'?[{id:'b',type:'child'}]:[],migrationStopsForPerson:p=>p.location?[{id:'current',location:p.location}]:[],locationStopLabel:()=> 'Current Location'});
+bindRuntime({displayName:p=>p.name,initials:p=>p.name[0],familyDateLabel:d=>d,personMatchesQuery:(p,q)=>p.name.toLowerCase().includes(q.toLowerCase()),start:id=>opened.push(id),showSection:()=>{},connections:id=>id==='a'?[{id:'b',type:'child'}]:[],migrationStopsForPerson:p=>p.location?[{id:'current',location:p.location}]:[],locationStopLabel:()=> 'Current Location'});
 ui.sync({people:[{id:'a',name:'Ancestor',birthday:'1900-12-25',deceased:true,dateDetails:{death:'1970-01-01'},birthplace:{location:'Manila',placeId:'google-place',lat:14.6,lng:121},location:'New York'},{id:'b',name:'Younger',birthday:'2000-05-12',birthplace:'Manila',location:'Paris'}],milestones:[{id:'w',type:'marriage',title:'Family Wedding',date:'2010-05-01',participants:['a','b']}],links:[]});
 const page=mount(InsightsPage);
 assert(page.findAll('.insights-stats article')[13].text().includes('May & December'));

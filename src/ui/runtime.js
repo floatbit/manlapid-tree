@@ -4,6 +4,12 @@ import { shallowRef, createApp, nextTick, computed, watch } from 'vue';
 import PersonAutocomplete from '../components/PersonAutocomplete.vue';
 import PersonPhotos from '../components/PersonPhotos.vue';
 import ConnectionRow from '../components/ConnectionRow.vue';
+export const sidebarPersonId = shallowRef(null);
+export function showPersonDetails(id) {
+  if (!family.value.people.some(p => p.id === id)) return;
+  sidebarPersonId.value = id;
+  openMobileSidebar('person-details');
+}
 export const canEdit = shallowRef(false);
 export const editorPersonId = shallowRef('');
 export const ready = shallowRef(false);
@@ -58,6 +64,7 @@ watch([ready, family], () => { if (ready.value && viewerId.value && !family.valu
 if (typeof window !== 'undefined') window.addEventListener('storage', event => { if (event.key === VIEWER_KEY || event.key === null) viewerId.value = storedViewer(); });
 
 export const ui = {
+  showPersonDetails,
   openSidebar:openMobileSidebar,
   closeSidebar:closeMobileSidebar,
   setEditorPerson(id) { editorPersonId.value=id || ''; },
@@ -181,7 +188,7 @@ ui.mountSearch = (options) => {
 
 export const activePage = shallowRef('tree');
 ui.setSection = (section) => {
-  if(activePage.value!==section)closeMobileSidebar();
+  if(activePage.value!==section){closeMobileSidebar();sidebarPersonId.value=null;}
   activePage.value = section;
 };
 

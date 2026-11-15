@@ -487,3 +487,50 @@
     mask-image:linear-gradient(to bottom,transparent 0,#000 22px);
   }
 }
+
+.timeline-mobile-date-actions { display:none; }
+@media (max-width:760px) {
+  .timeline-mobile-date-actions { display:flex; flex-wrap:wrap; gap:10px; margin:0 0 20px; }
+  #timeline .mobile-sidebar-body .anniversaries-toggle { display:none; }
+  #timeline .mobile-sidebar-body .anniversaries-desktop-heading { display:block; }
+  #timeline .mobile-sidebar-body .anniversaries-window { display:flex; }
+  #timeline .mobile-sidebar-body #anniversaryEntries.mobile-collapsed { display:block; }
+  #timeline .timeline-sidebar-stack[data-mobile-view="history"] #upcomingAnniversaries,
+  #timeline .timeline-sidebar-stack[data-mobile-view="anniversaries"] .on-this-day-card { display:none; }
+  #timeline .timeline-sidebar-stack[data-mobile-view="history"] .on-this-day-card.is-empty { display:block; }
+  #timeline .timeline-sidebar-stack #upcomingAnniversaries { margin-top:0; padding-top:0; border-top:0; }
+}
+
+@media (max-width:760px) {
+  /* Keep the timeline in document order; the floating card's clearance belongs last. */
+  #timeline .timeline-workspace { display:block; }
+  #timeline .timeline-main { display:block; width:100%; padding:0; }
+  #timeline .timeline-sidebar-stack[data-mobile-view="anniversaries"] #upcomingAnniversaries {
+    margin-top:0; padding-top:0; border-top:0;
+  }
+}
+
+@media (max-width:760px) {
+  #familyMapPage { position:fixed; inset:var(--map-header-height,68px) 0 0; overflow:hidden; }
+  #familyMapPage .family-map-workspace,
+  #familyMapPage .family-map-stage { height:100%; min-height:0; max-height:none; }
+  #familyMapPage .mobile-sidebar-clearance { display:none; }
+}
+
+@media (min-width:761px) {
+  .person-details-sidebar { position:fixed; right:0; top:88px; bottom:0; width:300px; z-index:44; background:#fffefa; }
+  .person-details-sidebar .insights-sidebar { position:static; height:100%; }
+}
+@media (max-width:760px) {
+  .person-details-sidebar .mobile-sidebar-clearance { display:none; }
+}
+
+@media (max-width:760px) {
+  #explore:has(#graph:not([hidden])) { position:fixed; inset:var(--tree-header-height,68px) 0 0; overflow:hidden; }
+  #explore:has(#graph:not([hidden])) .workspace,
+  #explore .canvas:has(#graph:not([hidden])) { height:100%; min-height:0; max-height:none; }
+  #explore .mobile-sidebar-clearance { display:none; }
+}
+@media (max-width:760px) {
+  #explore .canvas-bottom { display:none; }
+}

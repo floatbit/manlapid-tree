@@ -1,10 +1,24 @@
 <script setup lang="js">
+import { ref, onMounted, onBeforeUnmount } from 'vue';
 import MobileSidebar from '../components/MobileSidebar.vue';
 import { PhArrowRight } from '@phosphor-icons/vue';
 import { PhLock as LockKeyhole, PhLockOpen as LockKeyholeOpen, PhCornersOut as Scan, PhEraser as Eraser, PhTreeStructure as Network, PhArrowsClockwise as RefreshCw, PhLink, PhArrowUUpLeft, PhX, PhHeart } from '@phosphor-icons/vue';
+const page = ref(null);
+let headerObserver;
+onMounted(() => {
+  const header = document.querySelector('#app > header');
+  if (!header) return;
+  const measure = () => page.value?.style.setProperty('--tree-header-height', header.getBoundingClientRect().height + 'px');
+  measure();
+  if (window.ResizeObserver) {
+    headerObserver = new window.ResizeObserver(measure);
+    headerObserver.observe(header);
+  }
+});
+onBeforeUnmount(() => headerObserver?.disconnect());
 </script>
 <template>
-  <main id="explore">
+  <main id="explore" ref="page">
     <div class="workspace">
       <section class="canvas" id="canvas">
         <div id="empty">

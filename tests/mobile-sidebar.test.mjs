@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import {nextTick,defineComponent,h,ref} from 'vue';
 import {mount} from './mount-component.mjs';
+import TimelinePage from '../src/pages/TimelinePage.vue';
+import {bindRuntime,ui} from '../src/ui/runtime.js';
 import MobileSidebar from '../src/components/MobileSidebar.vue';
 import {openMobileSidebar,closeMobileSidebar,mobileSidebar,mobileSidebarHeight,readMobileSidebarHeight,MOBILE_SIDEBAR_HEIGHT_KEY} from '../src/ui/mobile-sidebar.js';
 const original=window.matchMedia;
@@ -36,5 +38,25 @@ assert(card.find('.mobile-sidebar-shell').attributes('class').includes('is-scrol
 for(const invalid of ['oops','0','100','']){localStorage.setItem(MOBILE_SIDEBAR_HEIGHT_KEY,invalid);assert.equal(readMobileSidebarHeight(),40);}
 localStorage.removeItem(MOBILE_SIDEBAR_HEIGHT_KEY);
 closeMobileSidebar();isMobile=false;openMobileSidebar('test');assert.equal(mobileSidebar.value.key,null,'Desktop sidebar stays inline');
-card.unmount();window.matchMedia=original;
+card.find('.mobile-sidebar-body').element.scrollTop=120;
+card.find('aside').element.scrollTop=80;
+text.value='Third person';await nextTick();await nextTick();
+assert.equal(card.find('.mobile-sidebar-body').element.scrollTop,0,'Content changes reset the mobile scroll container');
+assert.equal(card.find('aside').element.scrollTop,0,'Content changes reset the desktop sidebar too');
+card.unmount();isMobile=true;
+bindRuntime({upcomingAnniversaries:()=>[{personId:'p',kind:'Birthday',title:'Test birthday',next:new Date(2026,10,20),days:5,years:10}],onThisDayEvents:()=>[],milestoneTypes:{},familyDateLabel:d=>d});
+ui.sync({people:[],links:[],milestones:[],albums:[]});
+window.sessionStorage.setItem('anniversaries-expanded','false');
+const timeline=mount(TimelinePage);
+const dateButtons=timeline.findAll('.timeline-mobile-date-actions button');
+await dateButtons[1].trigger('click');
+assert.equal(mobileSidebar.value.key,'timeline');
+assert.equal(timeline.find('.timeline-sidebar-stack').attributes('data-mobile-view'),'anniversaries');
+assert(!timeline.find('#anniversaryEntries').attributes('class').includes('mobile-collapsed'),'Card entries ignore old collapsed preference');
+assert(timeline.find('#anniversaryEntries').text().includes('Test birthday'));
+await dateButtons[0].trigger('click');
+assert.equal(timeline.find('.timeline-sidebar-stack').attributes('data-mobile-view'),'history');
+assert(timeline.find('.on-this-day-card').text().includes('No recorded family events on this day.'));
+assert(timeline.find('.timeline-mobile-date-actions').element.compareDocumentPosition(timeline.find('.timeline-search').element)&Node.DOCUMENT_POSITION_FOLLOWING,'Date actions precede Search');
+timeline.unmount();closeMobileSidebar();window.matchMedia=original;
 console.log('Passed: 40%-height cards, resizing, content swaps, close, swipe dismissal, desktop guard and live background.');

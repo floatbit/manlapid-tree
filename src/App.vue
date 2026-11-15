@@ -1,4 +1,5 @@
 <script setup lang="js">
+import PersonDetailsSidebar from './components/PersonDetailsSidebar.vue';
 import AppHeader from './components/AppHeader.vue';
 import AccessControls from './components/AccessControls.vue';
 import InsightsPage from './pages/InsightsPage.vue';
@@ -36,6 +37,7 @@ import SystemNotices from './components/SystemNotices.vue';
   <TimelinePage />
   <StoriesPage />
   <PeoplePage />
+  <PersonDetailsSidebar />
   <BulkLocationDialog />
   <SiblingGroupDialog />
   <ChildrenGroupDialog />

@@ -146,7 +146,7 @@ function renderSuggestions(reshuffle = false) {
   }${data.people.length ? `<button id="shufflePeople" type="button"><span>Show other people</span>${uiIcon('shuffle')}</button>` : ''}</div>`;
   document
     .querySelectorAll('[data-suggested]')
-    .forEach((button) => (button.onclick = () => start(button.dataset.suggested)));
+    .forEach((button) => (button.onclick = () => openPersonDetails(button.dataset.suggested)));
   if ($('#shufflePeople')) $('#shufflePeople').onclick = () => renderSuggestions(true);
 }
 function setupSuggestionSearch() {
@@ -203,7 +203,7 @@ function setupSuggestionSearch() {
     input.setAttribute('aria-expanded', 'true');
     list
       .querySelectorAll('button')
-      .forEach((button, i) => (button.onclick = () => start(matches[i].id)));
+      .forEach((button, i) => (button.onclick = () => openPersonDetails(matches[i].id)));
   }
   input.oninput = search;
   input.onfocus = search;
@@ -223,7 +223,7 @@ function setupSuggestionSearch() {
       }
     } else if (event.key === 'Enter') {
       event.preventDefault();
-      if (!list.hidden && matches.length) start(matches[Math.max(0, active)].id);
+      if (!list.hidden && matches.length) openPersonDetails(matches[Math.max(0, active)].id);
     } else if (event.key === 'Escape' || event.key === 'Tab') close();
   };
   input.parentElement.onfocusout = (event) => {
@@ -297,15 +297,15 @@ function handleSearchKey(event) {
     event.preventDefault();
     const options = [...document.querySelectorAll('[data-match]')];
     if (activeSearchIndex >= 0 && options[activeSearchIndex]) {
-      start(options[activeSearchIndex].dataset.match);
+      openPersonDetails(options[activeSearchIndex].dataset.match);
       return;
     }
     const q = $('#search').value.trim().toLowerCase(),
       exact = data.people.filter((p) =>
         [p.name, ...(p.nicknames || [])].some((name) => name.toLowerCase() === q),
       );
-    if (exact.length === 1) start(exact[0].id);
-    else if (options.length) start(options[0].dataset.match);
+    if (exact.length === 1) openPersonDetails(exact[0].id);
+    else if (options.length) openPersonDetails(options[0].dataset.match);
     else search();
   }
 }
@@ -338,7 +338,7 @@ function search() {
       matches.length ? 'Someone missing?' : 'No matching people yet.'
     }</p><button id="request">Request “${esc(query)}” by email ${uiIcon('arrowRight')}</button>`;
   document.querySelectorAll('[data-match]').forEach((b, i) => {
-    b.onclick = () => start(b.dataset.match);
+    b.onclick = () => openPersonDetails(b.dataset.match);
     b.onmouseenter = () => highlightSearch(i);
   });
   $('#request').onclick = () => {

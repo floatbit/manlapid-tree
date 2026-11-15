@@ -66,7 +66,7 @@ async function open(event) {
   <div v-if="events.length" class="on-this-day-card">
     <div class="on-this-day-heading">
       <div>
-        <p class="on-this-day-eyebrow anniversaries-eyebrow">ON THIS DAY · {{ todayFormatted.toUpperCase() }}</p>
+        <p class="eyebrow">ON THIS DAY · {{ todayFormatted.toUpperCase() }}</p>
         <h2>Moments in History</h2>
       </div>
     </div>

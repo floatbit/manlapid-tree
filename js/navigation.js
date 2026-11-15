@@ -17,6 +17,8 @@ function renderDetails() {
   }
   const addFamily = $('#details .tree-profile-add');
   if (addFamily) $('#details').append(addFamily);
+  const editActions = $('#details .sidebar-edit-actions');
+  if (editActions) $('#details').append(editActions);
 }
 function renderDetailsContent() {
   ui.unmountPersonPhotos('tree');
@@ -79,7 +81,7 @@ function renderDetailsContent() {
     ${
       p.nicknames?.length ? `<p class="hint">Also known as: ${esc(p.nicknames.join(', '))}</p>` : ''
     }
-    <div class="map-profile-actions"><button id="editSelected" type="button">Edit Person ${uiIcon('arrowRight')}</button><button id="sharePerson" type="button">Copy Person Link ${uiIcon('arrowRight')}</button></div>
+    <div class="map-profile-actions"><button id="sharePerson" type="button">Copy Person Link ${uiIcon('arrowRight')}</button></div>
     <div class="person-view-actions tree-profile-tools"><button id="traceSelected" ${
       !data.root || data.root === p.id ? 'hidden' : ''
     }>Show Path from Starting Person</button><button id="centerSelected">◎ Center Person</button><button id="collapseSelected" ${
@@ -100,6 +102,7 @@ function renderDetailsContent() {
     )}’s Family</h3><div class="quick-add">${['parent', 'sibling', 'spouse', 'child']
     .map((type) => `<button type="button" data-add-family="${type}">＋ Add ${type}</button>`)
     .join('')}</div></section>
+    <div class="map-profile-actions sidebar-edit-actions"><button id="editSelected" type="button">Edit Person ${uiIcon('arrowRight')}</button></div>
 `;
   ui.mountPersonPhotos($('#treePersonPhotos'),p.id,'tree');
   const openPlaces = index => openPersonPlaces(p.id, index);
@@ -135,9 +138,9 @@ function renderSuggestions(reshuffle = false) {
     suggestedPeople
       .map((id) => {
         const p = person(id);
-        return `<button data-suggested="${id}">${avatar(p)}<span>${esc(
+        return `<button data-suggested="${id}">${avatar(p)}<span><strong>${esc(
           displayName(p),
-        )}${viewerBadge(p.id)}</span><span aria-hidden="true">${uiIcon('arrowRight')}</span></button>`;
+        )}</strong>${viewerBadge(p.id)}</span><span aria-hidden="true">${uiIcon('arrowRight')}</span></button>`;
       })
       .join('') || '<p>Add a person to begin your family tree.</p>'
   }${data.people.length ? `<button id="shufflePeople" type="button"><span>Show other people</span>${uiIcon('shuffle')}</button>` : ''}</div>`;

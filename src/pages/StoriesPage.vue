@@ -53,7 +53,7 @@ onBeforeUnmount(()=>{for(const url of objectUrls)URL.revokeObjectURL(url);});
     <div class="stories-list">
       <article v-for="story in filtered" :key="story.id" class="story-card">
         <div><time :datetime="story.date">{{ dateLabel(story.date) }}</time><span class="story-sample-label">{{ story.sample ? 'Sample Story' : 'Temporary Draft' }}</span></div>
-        <h2><button type="button" @click="open(story)">{{ story.title }}<PhArrowRight :size="20" aria-hidden="true" /></button></h2>
+        <h2><button type="button" @click="open(story)">{{ story.title }}<PhArrowRight class="arrow-link-icon" :size="20" aria-hidden="true" /></button></h2>
         <p>{{ story.excerpt }}</p><span class="story-byline">By {{ authorName(story) }}</span>
       </article>
       <p v-if="!filtered.length">No stories match your search.</p>

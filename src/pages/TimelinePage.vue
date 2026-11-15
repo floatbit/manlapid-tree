@@ -30,7 +30,7 @@ onBeforeUnmount(() => headerObserver?.disconnect());
         </p>
       </div>
       <div class="timeline-actions">
-        <button id="addBirthdays">Add birthdays <PhArrowRight :size="16" class="ui-icon" aria-hidden="true" /></button
+        <button id="addBirthdays">Add birthdays <PhArrowRight :size="16" class="arrow-link-icon ui-icon" aria-hidden="true" /></button
         ><button id="addMilestone" class="primary">＋ Add milestone</button>
       </div>
     </div>

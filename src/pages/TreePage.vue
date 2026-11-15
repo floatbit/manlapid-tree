@@ -10,7 +10,7 @@ import { PhLock as LockKeyhole, PhLockOpen as LockKeyholeOpen, PhCornersOut as S
           <h2>Discover Your Roots.</h2>
           <p>Choose a person to explore your family.</p>
           <div id="emptySuggestions"></div>
-          <button id="addFirst">Add person <PhArrowRight :size="16" class="ui-icon" aria-hidden="true" /></button>
+          <button id="addFirst">Add person <PhArrowRight :size="16" class="arrow-link-icon ui-icon" aria-hidden="true" /></button>
         </div>
         <div id="graph">
           <div id="graphSpace">

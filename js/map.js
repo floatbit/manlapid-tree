@@ -321,7 +321,7 @@ function showMapPerson(id) {
       ? `<p>Died · ${esc(familyDateLabel(p.dateDetails.death))}</p>`
       : ''
   }${viewerBadge(p.id)}</div></div>
-    <div class="map-profile-actions"><button type="button" id="mapPersonTree">Open Family Tree ${uiIcon('arrowRight')}</button><button type="button" id="mapPersonEdit">Edit Person ${uiIcon('arrowRight')}</button></div>
+    <div class="map-profile-actions"><button type="button" id="mapPersonTree">Open Family Tree ${uiIcon('arrowRight')}</button></div>
     <section class="map-profile-locations tree-location-history"><h3>Locations</h3>${!migrationStopsForPerson(p).length ? '<p class="hint">No places recorded yet.</p>' : ''}<ol class="migration-stops">${migrationStopsForPerson(p).map((stop,i) => `<li><button type="button" data-map-person-stop="${i}"><strong>${esc(locationStopLabel(stop))}</strong><span>${esc(stop.location)}</span></button></li>`).join('')}</ol><button type="button" id="mapPersonPlaces">View Places Lived ${uiIcon('arrowRight')}</button></section>
     <section class="map-profile-shared"><h3>At This Location <span>${shared.length}</span></h3>${
     shared
@@ -338,7 +338,7 @@ function showMapPerson(id) {
       p.bio?.trim()
         ? `<section class="map-profile-story"><h3>About</h3><p>${esc(p.bio)}</p></section>`
         : ''
-    }`;
+    }<div class="map-profile-actions sidebar-edit-actions"><button type="button" id="mapPersonEdit">Edit Person ${uiIcon('arrowRight')}</button></div>`;
   ui.mountPersonPhotos($('#mapPersonPhotos'),id,'map');
   $('#mapPersonPlaces').onclick = () => {
     migrationPersonId = id;

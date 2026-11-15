@@ -35,15 +35,15 @@ async function open(event) {
   <aside id="upcomingAnniversaries" class="upcoming-anniversaries">
     <button class="anniversaries-toggle anniversaries-heading" type="button" :aria-expanded="expanded" aria-controls="anniversaryEntries" @click="toggle">
       <span class="anniversaries-toggle-copy">
-        <span class="anniversaries-eyebrow">DATES TO REMEMBER</span>
+        <span class="eyebrow">DATES TO REMEMBER</span>
         <span class="anniversaries-toggle-title">Upcoming Anniversaries</span>
         <span class="anniversaries-toggle-count">{{ events.length }} {{ events.length === 1 ? 'occasion' : 'occasions' }}</span>
       </span>
-      <span class="anniversaries-toggle-arrow" aria-hidden="true"><PhArrowRight :size="16" class="ui-icon" aria-hidden="true" /></span>
+      <span class="anniversaries-toggle-arrow" aria-hidden="true"><PhArrowRight :size="16" class="arrow-link-icon ui-icon" aria-hidden="true" /></span>
     </button>
     <div class="anniversaries-desktop-heading anniversaries-heading">
       <div>
-        <p class="anniversaries-eyebrow">DATES TO REMEMBER</p>
+        <p class="eyebrow">DATES TO REMEMBER</p>
         <h2>Upcoming Anniversaries</h2>
       </div>
     </div>

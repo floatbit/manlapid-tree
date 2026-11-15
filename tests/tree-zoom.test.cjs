@@ -250,3 +250,25 @@ console.log(
   }
   console.log('Passed: mobile person navigation and Center Person reset zoom to 100% instead of fitting or retaining the old scale.');
 }
+
+// Entire-tree action explicitly requests 100%, even while locked, and centers the full layout.
+{
+ const env=environment();
+ vm.runInContext('setGraphZoomLocked(true)',env.ctx);
+ vm.runInContext('graphLayout.positions = new Map([["one",{x:100,y:110}],["two",{x:700,y:110}],["child",{x:1400,y:500}]]);',env.ctx);
+ env.ctx.document={querySelectorAll:()=>[],querySelector:()=>null};
+ env.ctx.data={people:[{id:'one'},{id:'two'}],root:null,selected:null};
+ env.ctx.person=id=>env.ctx.data.people.find(p=>p.id===id);
+ let cleared=false;
+ env.ctx.clearTreeView=()=>{cleared=true;env.ctx.data.root=null;env.ctx.data.selected=null;env.ctx.data.visible=[];env.ctx.data.expanded=[];};
+ env.ctx.save=()=>{};env.ctx.render=()=>{};env.ctx.notify=()=>{};
+ let camera;
+ env.$('#graph').scrollTo=value=>{camera=value;};
+ vm.runInContext(controls.slice(controls.indexOf('function showEntireTree()'),controls.indexOf("$('#showEntireTree').onclick")),env.ctx);
+ vm.runInContext('showEntireTree()',env.ctx);
+ assert.equal(vm.runInContext('graphScale',env.ctx),1);
+ assert.equal(vm.runInContext('zoomLocked',env.ctx),true,'Explicit zoom preserves lock');
+ assert.equal(cleared,true,'Entire tree clears the previous view first');
+ assert.equal(camera.left,400);assert.equal(camera.top,248);
+ assert.deepEqual(Array.from(env.ctx.data.visible),['one','two']);
+}

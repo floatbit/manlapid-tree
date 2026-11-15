@@ -144,14 +144,32 @@ function showEntireTree() {
     notify('Add a person to begin your family tree.');
     return;
   }
-  relationshipTrace = null;
+  clearTreeView();
   data.root = person(data.root) ? data.root : data.people[0].id;
   data.selected = person(data.selected) ? data.selected : data.root;
   data.visible = data.people.map((p) => p.id);
   data.expanded = [...data.visible];
   save();
   render();
-  fitGraph();
+  treeCenterRequest++;
+  cameraPadded = true;
+  setGraphScale(1, { animate: false, manual: true });
+  if (graphLayout) {
+    const graph = $('#graph');
+    const positions = [...graphLayout.positions.values()];
+    const oldestY = Math.min(...positions.map(position => position.y));
+    const oldest = positions.filter(position => position.y === oldestY);
+    const centerX = (Math.min(...oldest.map(position => position.x)) + Math.max(...oldest.map(position => position.x))) / 2;
+    const nodes = [...document.querySelectorAll('#nodes .node')].filter(node => Number.parseFloat(node.style.top) === oldestY);
+    const halfHeight = Math.max(90, ...nodes.map(node => node.offsetHeight / 2));
+    const toolbar = document.querySelector('.tree-view-actions');
+    const topInset = (toolbar?.offsetHeight || 40) + 32;
+    graph.scrollTo({
+      left: centerX,
+      top: Math.max(0, graph.clientHeight / 2 + oldestY - halfHeight - topInset),
+      behavior: 'instant',
+    });
+  }
 }
 $('#showEntireTree').onclick = showEntireTree;
 $('#zoomSlider').oninput = (event) => {

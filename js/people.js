@@ -375,7 +375,7 @@ $('#addRelation').onclick = () => relationRow();
 $('#search').oninput = search;
 $('#searchGo').onclick = search;
 $('#search').onkeydown = handleSearchKey;
-$('#reset').onclick = () => {
+function clearTreeView() {
   relationshipTrace = null;
   data.visible = [];
   data.expanded = [];
@@ -385,7 +385,8 @@ $('#reset').onclick = () => {
   closeSearch();
   save();
   render();
-};
+}
+$('#reset').onclick = clearTreeView;
 $('#requestEmail').onchange = async (e) => {
   if (e.target.validity.valid) {
     const previous = data.email;

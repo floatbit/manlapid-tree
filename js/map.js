@@ -242,23 +242,13 @@ function openFamilyMapGroup(group, marker, { restore = false } = {}) {
     entry.append(actions);
     content.append(entry);
   }
-  if (window.matchMedia('(max-width: 760px)').matches) {
-    ui.unmountPersonPhotos('map');
-    mapSelectedPersonId = null;
-    $('#familyMapPeople').classList.add('showing-person');
-    $('#mapLocationDirectory').hidden = true;
-    $('#mapSelectedPerson').hidden = false;
-    $('#mapSelectedPerson').replaceChildren(content);
-    familyMapPopup.close();
-    if (!restore) { ui.openSidebar?.('map'); familyMap.panTo(group.position); }
-    persistMapView();
-    return;
-  }
-  if (!restore && group.people.length === 1) showMapPerson(group.people[0].id);
+  const mobile = window.matchMedia('(max-width: 760px)').matches;
+  if (mobile) ui.closeSidebar?.('map');
+  if (!mobile && !restore && group.people.length === 1) showMapPerson(group.people[0].id);
   familyMapPopup.setContent(content);
   familyMapPopup.setOptions({ disableAutoPan: restore, maxWidth: Math.max(180, Math.min(302, $('#familyMapCanvas').clientWidth - 24)) });
   familyMapPopup.open({ map: familyMap, anchor: marker, shouldFocus: !restore });
-  if (!restore) { familyMap.panTo(group.position); scrollToFamilyMap(); }
+  if (!restore) { familyMap.panTo(group.position); if (!mobile) scrollToFamilyMap(); }
   persistMapView();
 }
 function showMapPerson(id) {
@@ -697,15 +687,7 @@ async function renderMigrationView() {
       content.innerHTML = `<h3>${esc(stop.location)}</h3><p>${esc(
         familyDateLabel(stop.date),
       )}</p><p>${esc(stop.note)}</p>`;
-      if (window.matchMedia('(max-width: 760px)').matches) {
-        const previous = $('#mapMobileStopSelection');
-        if (previous) previous.remove();
-        content.id = 'mapMobileStopSelection';
-        $('#mapSelectedPerson').prepend(content);
-        familyMapPopup.close();
-        ui.openSidebar?.('map');
-        return;
-      }
+      if (window.matchMedia('(max-width: 760px)').matches) ui.closeSidebar?.('map');
       familyMapPopup.setContent(content);
       familyMapPopup.open({ map: familyMap, anchor: marker });
     });

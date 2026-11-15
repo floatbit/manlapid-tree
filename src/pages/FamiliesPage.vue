@@ -338,7 +338,7 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
             </button>
           </section>
         </div>
-        <MobileSidebar sidebar-key="families" label="Families details"><aside class="family-person-sidebar" aria-label="Family member details">
+        <MobileSidebar v-if="selectedPerson" sidebar-key="families" label="Families details"><aside class="family-person-sidebar" aria-label="Family member details">
           <template v-if="selectedPerson"
             ><div class="map-profile-header">
               <PersonAvatar :person="selectedPerson" />
@@ -362,12 +362,7 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
             <PersonPhotos :person-id="selectedPerson.id" in-sidebar />
             <div class="family-person-actions">
 <button v-if="canEdit" type="button" @click="editPerson">Edit Person <PhArrowRight :size="16" class="arrow-link-icon ui-icon" aria-hidden="true" /></button>
-            </div></template
-          ><template v-else
-            ><span class="family-sidebar-symbol" aria-hidden="true"><PhHeart :size="42" aria-hidden="true" /></span>
-            <h2>Meet the Family.</h2>
-            <p>Select a parent or child to see their details.</p></template
-          >
+            </div></template>
         </aside></MobileSidebar>
       </div>
     </template>

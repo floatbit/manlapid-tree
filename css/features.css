@@ -3795,3 +3795,4 @@ body:not(.is-editor) .lightbox-people:not(:has(.lightbox-person-tag)) { display:
 
 .insights-main > .intro + .insights-stats { border-top:0; padding-top:0; }
 .insights-main > .insights-section:has(+ .insights-stats) { border-bottom:0; }
+.family-detail-layout:not(:has(.family-person-sidebar)) { grid-template-columns:minmax(0,1fr); }

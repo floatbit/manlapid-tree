@@ -134,7 +134,7 @@ console.log('Passed: independent map cameras, selected person, and active mode s
 
 {
  const grouping=source.slice(source.indexOf('function mapLocationGroups('),source.indexOf('\nfunction ',source.indexOf('function mapLocationGroups(')+1));
- const ctx=vm.createContext({});vm.runInContext(grouping,ctx);
+ const ctx=vm.createContext({comparePeople:(a,b)=>(a.name || a.id).localeCompare(b.name || b.id)});vm.runInContext(grouping,ctx);
  const result=ctx.mapLocationGroups([
   {id:'living',location:'Boston',locationLat:42,locationLng:-71},
   {id:'historical',deceased:true,location:'Boston',locationLat:42,locationLng:-71},

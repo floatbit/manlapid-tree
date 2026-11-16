@@ -55,7 +55,7 @@ function renderDetailsContent() {
     ['child', 'Children'],
   ]
     .map(([kind, title]) => {
-      const members = relatives.filter((relative) => relative.type === kind);
+      const members = relatives.filter((relative) => relative.type === kind).sort((a,b)=>comparePeople(person(a.id),person(b.id)));
       return members.length
         ? `<section class="map-profile-family-group"><h4>${title} <span>${
             members.length

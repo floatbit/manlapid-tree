@@ -1,4 +1,5 @@
 <script setup>
+import {sortPeople,comparePeople} from '../domain/people-order.js';
 import MobileSidebar from '../components/MobileSidebar.vue';
 import { computed, ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { PhArrowRight, PhX } from '@phosphor-icons/vue';
@@ -126,18 +127,18 @@ const statGroups=computed(()=>{
   </template>
   <template v-else-if="panel==='people' && context">
     <template v-if="!context.routes"><h2>{{context.title}}</h2><p v-if="context.description">{{context.description}}</p><p>{{context.people.length}} relatives</p></template>
-    <div v-if="context.routes" class="insights-sidebar-routes"><section v-for="route in context.routes" :key="routeKey(route)" class="insights-sidebar-route"><h3>{{migrationDisplayLabel(route.from)}} <PhArrowRight class="arrow-link-icon" :size="14" aria-hidden="true"/> {{migrationDisplayLabel(route.to)}}</h3><p>{{route.people.length}} {{route.people.length===1?'relative':'relatives'}}</p><div class="insights-sidebar-people"><button v-for="p in route.people" :key="p.id" @click="showPerson(p)"><PersonAvatar :person="p"/><span>{{name(p)}}<small v-if="viewerRelation(p.id)">{{viewerRelation(p.id)}}</small></span><PhArrowRight class="arrow-link-icon" :size="16"/></button></div></section></div>
-    <div v-else class="insights-sidebar-people"><button v-for="p in context.people" :key="p.id" @click="showPerson(p)"><PersonAvatar :person="p"/><span>{{name(p)}}<small v-if="viewerRelation(p.id)">{{viewerRelation(p.id)}}</small></span><PhArrowRight class="arrow-link-icon" :size="16"/></button></div><p v-if="!context.people.length">No relatives in this group.</p>
+    <div v-if="context.routes" class="insights-sidebar-routes"><section v-for="route in context.routes" :key="routeKey(route)" class="insights-sidebar-route"><h3>{{migrationDisplayLabel(route.from)}} <PhArrowRight class="arrow-link-icon" :size="14" aria-hidden="true"/> {{migrationDisplayLabel(route.to)}}</h3><p>{{route.people.length}} {{route.people.length===1?'relative':'relatives'}}</p><div class="insights-sidebar-people"><button v-for="p in sortPeople(route.people)" :key="p.id" @click="showPerson(p)"><PersonAvatar :person="p"/><span>{{name(p)}}<small v-if="viewerRelation(p.id)">{{viewerRelation(p.id)}}</small></span><PhArrowRight class="arrow-link-icon" :size="16"/></button></div></section></div>
+    <div v-else class="insights-sidebar-people"><button v-for="p in sortPeople(context.people)" :key="p.id" @click="showPerson(p)"><PersonAvatar :person="p"/><span>{{name(p)}}<small v-if="viewerRelation(p.id)">{{viewerRelation(p.id)}}</small></span><PhArrowRight class="arrow-link-icon" :size="16"/></button></div><p v-if="!context.people.length">No relatives in this group.</p>
   </template>
   <template v-else-if="panel==='month' && month">
     <h2>{{monthName(month.month)}}</h2><p>Birthdays &amp; Wedding Anniversaries</p>
-    <div class="insights-sidebar-people"><button v-for="p in month.birthdays" :key="p.id" @click="showPerson(p)"><PersonAvatar :person="p"/><span>{{name(p)}}<small>Birthday · {{api.familyDateLabel(p.dateDetails?.birth || p.birthday)}}</small></span><PhArrowRight class="arrow-link-icon" :size="16"/></button></div>
+    <div class="insights-sidebar-people"><button v-for="p in sortPeople(month.birthdays)" :key="p.id" @click="showPerson(p)"><PersonAvatar :person="p"/><span>{{name(p)}}<small>Birthday · {{api.familyDateLabel(p.dateDetails?.birth || p.birthday)}}</small></span><PhArrowRight class="arrow-link-icon" :size="16"/></button></div>
     <article v-for="w in month.weddings" :key="w.id" class="insights-sidebar-event insights-wedding-event"><div v-if="weddingPeople(w).length" class="insights-wedding-portraits"><button v-for="p in weddingPeople(w)" :key="p.id" type="button" :aria-label="'View '+name(p)" @click="showPerson(p)"><PersonAvatar :person="p"/></button></div><div><strong>{{w.title}}</strong><p>Wedding Anniversary · {{api.familyDateLabel(w.date)}}</p></div></article>
     <p v-if="!month.birthdays.length && !month.weddings.length">No celebrations recorded for this month.</p>
   </template>
   <template v-else-if="panel==='overlap' && chosen">
     <h2>Lifetimes Overlapping {{name(chosen.person)}}</h2><p>{{lives.filter(overlaps).length}} recorded lifetimes · year-based estimates</p>
-    <div class="insights-sidebar-people"><button v-for="p in lives.filter(overlaps)" :key="p.person.id" @click="showPerson(p.person)"><PersonAvatar :person="p.person"/><span>{{name(p.person)}}<small>{{p.birth.year}}–{{p.person.deceased?p.end:'Present'}}</small></span><PhArrowRight class="arrow-link-icon" :size="16"/></button></div>
+    <div class="insights-sidebar-people"><button v-for="p in lives.filter(overlaps).slice().sort((a,b)=>comparePeople(a.person,b.person))" :key="p.person.id" @click="showPerson(p.person)"><PersonAvatar :person="p.person"/><span>{{name(p.person)}}<small>{{p.birth.year}}–{{p.person.deceased?p.end:'Present'}}</small></span><PhArrowRight class="arrow-link-icon" :size="16"/></button></div>
   </template>
   <template v-else><h2>Explore Your Family</h2><p>Select a portrait, age bracket, lifespan, location, or calendar month. Its details will appear here.</p></template>
 </aside></MobileSidebar>

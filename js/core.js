@@ -418,3 +418,5 @@ function personMatchesQuery(p, query) {
 }
 
 function personStory(p) { return ui.personStory(p); }
+
+function comparePeople(a,b) { return ui.comparePeople(a,b); }

@@ -1,3 +1,4 @@
+import {comparePeople} from '../domain/people-order.js';
 import {personStory} from '../domain/person-story.js';
 import {openMobileSidebar,closeMobileSidebar} from './mobile-sidebar.js';
 import { viewerRelationshipLabels } from '../domain/viewer-relationships.js';
@@ -65,6 +66,7 @@ watch([ready, family], () => { if (ready.value && viewerId.value && !family.valu
 if (typeof window !== 'undefined') window.addEventListener('storage', event => { if (event.key === VIEWER_KEY || event.key === null) viewerId.value = storedViewer(); });
 
 export const ui = {
+  comparePeople,
   personStory(person) { return personStory(person,{formatDate:runtime.value?.familyDateLabel,people:family.value.people,milestones:family.value.milestones || [],relatives:runtime.value?.connections?.(person.id) || []}); },
   clearPersonDetails() { sidebarPersonId.value=null; closeMobileSidebar('person-details'); },
   showPersonDetails,

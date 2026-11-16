@@ -1,4 +1,5 @@
 <script setup>
+import { comparePeople } from '../domain/people-order.js';
 import { computed } from 'vue';
 import { PhArrowRight } from '@phosphor-icons/vue';
 import { family, canEdit, ui, useRuntime } from '../ui/runtime.js';
@@ -9,7 +10,7 @@ const props=defineProps({person:{type:Object,required:true}});
 const emit=defineEmits(['select','tree']);
 const api=computed(useRuntime);
 const relatives=computed(()=>{family.value.links;return api.value?.connections?.(props.person.id) || [];});
-const groups=computed(()=>[['parent','Parents'],['sibling','Siblings'],['spouse','Spouse'],['child','Children']].map(([type,title])=>({title,members:relatives.value.filter(r=>r.type===type).map(r=>family.value.people.find(p=>p.id===r.id)).filter(Boolean)})).filter(g=>g.members.length));
+const groups=computed(()=>[['parent','Parents'],['sibling','Siblings'],['spouse','Spouse'],['child','Children']].map(([type,title])=>({title,members:relatives.value.filter(r=>r.type===type).map(r=>family.value.people.find(p=>p.id===r.id)).filter(Boolean).sort(comparePeople)})).filter(g=>g.members.length));
 const stops=computed(()=>api.value?.migrationStopsForPerson?.(props.person) || []);
 const birth=computed(()=>props.person.dateDetails?.birth || props.person.birthday);
 const age=computed(()=>{if(props.person.deceased || !/^\d{4}-\d{2}-\d{2}$/.test(birth.value || ''))return null;const [y,m,d]=birth.value.split('-').map(Number),today=new Date();const years=today.getFullYear()-y-(today.getMonth()+1<m || (today.getMonth()+1===m && today.getDate()<d)?1:0);return years>=0?years:null;});

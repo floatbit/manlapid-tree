@@ -85,6 +85,8 @@ function mapLocationGroups(people) {
     if (!groups.has(key)) groups.set(key, { position: { lat, lng }, people: [] });
     groups.get(key).people.push(p);
   }
+  for (const group of groups.values()) group.people.sort(comparePeople);
+  missing.sort(comparePeople);
   return { groups: [...groups.values()], missing };
 }
 function clusterFamilyLocations(groups, zoom) {
@@ -301,7 +303,7 @@ function showMapPerson(id) {
     ['child', 'Children'],
   ]
     .map(([kind, title]) => {
-      const members = relatives.filter((relative) => relative.type === kind);
+      const members = relatives.filter((relative) => relative.type === kind).sort((a,b)=>comparePeople(person(a.id),person(b.id)));
       return members.length
         ? `<section class="map-profile-family-group"><h4>${title} <span>${
             members.length

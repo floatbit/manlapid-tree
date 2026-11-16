@@ -108,9 +108,11 @@ let sharedReady = false,
   sharedRevision = 0,
   csrfToken = '',
   savingShared = false;
+let hadBrowserView = false;
 try {
   const view = JSON.parse(localStorage.getItem(VIEW_KEY));
   if (view && Array.isArray(view.visible)) {
+    hadBrowserView = true;
     for (const key of ['visible', 'expanded', 'selected', 'root'])
       if (key in view) data[key] = view[key];
   }
@@ -364,7 +366,7 @@ async function connectDatabase() {
     if (result.revision === 0 && hadBrowserData)
       result = await requestDatabase(sharedPayload('bootstrap'));
     applyShared(result);
-    if (!hadBrowserData) {
+    if (!hadBrowserData && !hadBrowserView) {
       data.visible = []; data.expanded = []; data.selected = null; data.root = null;
       save();
     }
@@ -375,7 +377,7 @@ async function connectDatabase() {
     edit();
     const initialSection = sectionFromUrl() || 'tree';
     const initialParams = new URLSearchParams(location.hash.slice(1));
-    if (initialSection === 'tree' && !initialParams.has('person') && !initialParams.has('photosOf')) clearTreeView();
+    if (initialSection === 'tree' && !initialParams.has('person') && !initialParams.has('photosOf') && (!hadBrowserView || initialParams.get('page') !== 'tree')) clearTreeView();
     showSection(initialSection, { replace: true });
     if (data.root) $('#search').value = person(data.root) ? displayName(person(data.root)) : '';
     openSharedLink();

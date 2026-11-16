@@ -68,6 +68,7 @@ function mapLocationGroups(people) {
   const groups = new Map(),
     missing = [];
   for (const p of people) {
+    if (p.deceased) continue;
     const lat = p.locationLat === null || p.locationLat === '' ? NaN : Number(p.locationLat),
       lng = p.locationLng === null || p.locationLng === '' ? NaN : Number(p.locationLng);
     if (

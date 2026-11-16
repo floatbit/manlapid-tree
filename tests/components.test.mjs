@@ -492,7 +492,24 @@ console.log(
  bindRuntime({openTreeLanding:()=>landing++,displayName:display,personMatchesQuery:matches});
  const header=mount(AppHeader);
  await header.find('#treeTab').trigger('click');
- assert.equal(landing,1,'Tree menu explicitly opens the empty discovery landing');
+ assert.equal(landing,1,'Tree menu returns to Tree without resetting its state');
  header.unmount();
- console.log('Passed: Tree menu opens discovery rather than restoring a selected person.');
+ console.log('Passed: Tree menu returns to the existing Tree view.');
+}
+
+{
+ const {default:PhotoPeopleTags}=await import('../src/components/PhotoPeopleTags.vue');
+ const saved=[];
+ family.value={people,links:[],photoTags:{'lightbox.jpg':['melissa']}};
+ ui.setEditing(true);
+ bindRuntime({displayName:display,personMatchesQuery:matches,
+   savePhotoPeople:async(photo,ids)=>{saved.push(ids);family.value={...family.value,photoTags:{[photo]:ids}};}});
+ const tagger=mount(PhotoPeopleTags,{props:{photo:'lightbox.jpg'}});
+ await tagger.find('input').setValue('chris');
+ assert.equal(tagger.findAll('[role="option"]').length,1,'Lightbox name search finds matching untagged people');
+ await tagger.find('[role="option"]').trigger('click');await flushPromises();
+ assert.deepEqual(saved,[['melissa','chris']]);
+ assert(tagger.find('.lightbox-person-tags').text().includes('Chris Manlapid'));
+ tagger.unmount();
+ console.log('Passed: lightbox tag search selects and saves a person alongside existing tags.');
 }

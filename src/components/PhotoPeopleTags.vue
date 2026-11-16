@@ -4,7 +4,7 @@ import {family,useRuntime,canEdit} from '../ui/runtime.js';
 import {recentPhotoTags,rememberPhotoTags} from '../ui/recent-photo-tags.js';
 import PersonAvatar from './PersonAvatar.vue';
 import PersonAutocomplete from './PersonAutocomplete.vue';
-const props=defineProps({photo:String,showRecent:Boolean,prefix:{type:String,default:'photoPeople'}});
+const props=defineProps({photo:String,showRecent:Boolean,selectedTagsTarget:String,prefix:{type:String,default:'photoPeople'}});
 const media=computed(()=>props.photo);
 const picker=ref(null), draftPeople=ref([]), savingTags=ref(false), tagError=ref('');
 const recentPeople=computed(()=>recentPhotoTags.value.map(id=>family.value.people.find(p=>p.id===id)).filter(Boolean).sort((a,b)=>useRuntime().displayName(a).localeCompare(useRuntime().displayName(b),undefined,{sensitivity:'base'})));
@@ -40,7 +40,7 @@ defineExpose({saving:savingTags,closeSearch});
           <h3 v-if="showRecent && canEdit" class="photo-tag-heading">Tag People</h3>
 
           <PersonAutocomplete v-if="canEdit" ref="picker" :key="media" :input-id="prefix + 'Search'" :list-id="prefix + 'Matches'" label="Find people in this photo" placeholder="Tag people" :options="()=>family.people.filter(p=>!draftPeople.includes(p.id))" :matches="useRuntime().personMatchesQuery" :display="useRuntime().displayName" keep-results clear-when-exhausted :validate-selection="false" @select="p=>updateTags([...draftPeople,p.id])" />
-          <div class="lightbox-person-tags"><span v-for="id in draftPeople" :key="id" class="lightbox-person-tag"><button type="button" @click="openPerson(id)">{{ useRuntime().displayName(family.people.find(p=>p.id===id)) }}</button><button v-if="canEdit" type="button" :aria-label="'Remove ' + useRuntime().displayName(family.people.find(p=>p.id===id))" @click="updateTags(draftPeople.filter(value=>value!==id))">×</button></span></div>
+          <Teleport defer :to="selectedTagsTarget || 'body'" :disabled="!selectedTagsTarget"><div class="lightbox-person-tags"><span v-for="id in draftPeople" :key="id" class="lightbox-person-tag"><button type="button" @click="openPerson(id)">{{ useRuntime().displayName(family.people.find(p=>p.id===id)) }}</button><button v-if="canEdit" type="button" :aria-label="'Remove ' + useRuntime().displayName(family.people.find(p=>p.id===id))" @click="updateTags(draftPeople.filter(value=>value!==id))">×</button></span></div></Teleport>
           </div>
           <div v-if="showRecent && canEdit" class="recent-photo-tags">
             <h3>Recently tagged</h3>

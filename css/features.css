@@ -3895,3 +3895,15 @@ button.album-milestone-badge:focus-visible { outline:2px solid var(--green); out
 
 .person-sidebar-story p { white-space:pre-line; }
 :is(#details,#mapSelectedPerson,.family-person-sidebar,.insights-person-details) > .person-sidebar-story { margin-block:20px; }
+
+/* The tagging wrapper is shared with Contribute; anchor lightbox matches to its input. */
+#photoLightbox .photo-tag-primary > .person-autocomplete {
+  position:relative; flex:0 0 240px; width:240px; max-width:100%; min-width:0;
+}
+
+.report-photo-column { min-width:0; }
+#reportRandomPhoto .report-random-image { aspect-ratio:580 / 380; height:auto; }
+#reportRandomPhoto .report-random-image img { width:100%; height:100%; max-height:none; object-fit:contain; }
+#reportSelectedTags { margin-top:14px; }
+#reportSelectedTags .lightbox-person-tags { display:flex; flex-wrap:wrap; gap:8px; }
+#reportSelectedTags .lightbox-person-tag button { padding:6px 10px; border:0; background:transparent; color:var(--green); }

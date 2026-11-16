@@ -131,3 +131,20 @@ assert.equal(vm.runInContext('migrationPersonId', restored), 'person');
 assert.equal(vm.runInContext("historyMapCameras.get('person').zoom", restored), 7);
 assert.equal(vm.runInContext('currentLocationsCamera.zoom', restored), 10);
 console.log('Passed: independent map cameras, selected person, and active mode survive reload.');
+
+{
+ const grouping=source.slice(source.indexOf('function mapLocationGroups('),source.indexOf('\nfunction ',source.indexOf('function mapLocationGroups(')+1));
+ const ctx=vm.createContext({});vm.runInContext(grouping,ctx);
+ const result=ctx.mapLocationGroups([
+  {id:'living',location:'Boston',locationLat:42,locationLng:-71},
+  {id:'historical',deceased:true,location:'Boston',locationLat:42,locationLng:-71},
+  {id:'missing-deceased',deceased:true},
+  {id:'missing-living'}
+ ]);
+ assert.equal(result.groups.length,1);
+ assert.equal(result.groups[0].people.length,1);
+ assert.equal(result.groups[0].people[0].id,'living');
+ assert.equal(result.missing.length,1);
+ assert.equal(result.missing[0].id,'missing-living');
+ console.log('Passed: Current Locations excludes deceased people from markers and missing-location counts.');
+}

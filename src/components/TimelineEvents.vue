@@ -21,11 +21,10 @@ function clickCard(event, click) {
   if (click.target.closest('button, a, input')) return;
   openEvent(event);
 }
-function editEvent(event) {
-  if (event.person) {
-    api.value.showSection('people');
-    api.value.selectPersonFromDirectory(event.person.id);
-  } else api.value.openMilestone(event.id);
+async function editEvent(event) {
+  if (event.kind !== 'milestone' || ['birth','birthday','death','remembrance'].includes(event.type)) return;
+  try { await api.value.editMilestone(event.id); }
+  catch(error) { api.value.notify('Could not open milestone editor. '+error.message); }
 }
 function birthAlbum(event) { return (family.value.albums || []).find(a => a.id === event.person.birthAlbumId); }
 const availableAlbums = computed(() => (family.value.albums || []).filter(a => !a.milestoneId && !(family.value.people || []).some(p => p.id !== albumPerson.value?.id && p.birthAlbumId === a.id)));
@@ -149,7 +148,7 @@ function marriagePeople(event) {
                     <span v-if="names(event)" class="milestone-people">{{ names(event) }}</span>
                   </button>
                   <span class="birth-album-actions">
-                    <button v-if="event.photos?.length" type="button" @click="api.openPhotoLightbox(event.photos, 0, event.title)">View Album · {{ api.milestoneMediaCount(event.photos) }} <PhArrowRight :size="16" class="arrow-link-icon ui-icon" aria-hidden="true" /></button><button v-if="canEdit" type="button" class="birth-album-edit" @click="editEvent(event)">Edit Milestone <PhArrowRight :size="16" class="arrow-link-icon" /></button>
+                    <button v-if="event.photos?.length" type="button" @click="api.openPhotoLightbox(event.photos, 0, event.title)">View Album · {{ api.milestoneMediaCount(event.photos) }} <PhArrowRight :size="16" class="arrow-link-icon ui-icon" aria-hidden="true" /></button><button v-if="canEdit && event.kind === 'milestone' && !['birth','birthday','death','remembrance'].includes(event.type)" type="button" class="birth-album-edit" @click.stop.prevent="editEvent(event)">Edit Milestone <PhArrowRight :size="16" class="arrow-link-icon" /></button>
                   </span>
                 </span>
                 <button type="button" class="milestone-open birth-arrow" :aria-label="'View ' + event.title + ' details'" @click="openEvent(event)"><PhArrowRight :size="16" class="arrow-link-icon ui-icon" aria-hidden="true" /></button>

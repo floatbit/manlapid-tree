@@ -375,7 +375,15 @@ $('#addRelation').onclick = () => relationRow();
 $('#search').oninput = search;
 $('#searchGo').onclick = search;
 $('#search').onkeydown = handleSearchKey;
+function openTreeLanding() {
+  clearTreeView();
+  showSection('tree');
+  const url = new URL(location.href);
+  url.hash = new URLSearchParams({page:'tree'}).toString();
+  history.replaceState(null, '', url);
+}
 function clearTreeView() {
+  ui.clearPersonDetails?.();
   ui.closeSidebar?.('tree');
   relationshipTrace = null;
   data.visible = [];

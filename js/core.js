@@ -160,6 +160,7 @@ function showDatabaseError(message) {
 const collectionRevisions = new Map();
 const collectionRequests = new Map();
 async function ensureCollection(kind) {
+  if (!['albums','recipes'].includes(kind)) throw new Error('Unsupported collection: '+kind);
   if (collectionRevisions.get(kind) === sharedRevision) return;
   if (collectionRequests.has(kind)) return collectionRequests.get(kind);
   const pending = (async () => {
@@ -167,6 +168,7 @@ async function ensureCollection(kind) {
     const result = await requestDatabase(undefined, 'collections', [kind]);
     if (revision !== sharedRevision)
       throw new Error('Family data changed while loading. Please try again.');
+    if (!Array.isArray(result[kind])) throw new Error('Invalid '+kind+' response.');
     data[kind] = result[kind];
     collectionRevisions.set(kind, revision);
     ui.sync(data);
@@ -362,12 +364,19 @@ async function connectDatabase() {
     if (result.revision === 0 && hadBrowserData)
       result = await requestDatabase(sharedPayload('bootstrap'));
     applyShared(result);
+    if (!hadBrowserData) {
+      data.visible = []; data.expanded = []; data.selected = null; data.root = null;
+      save();
+    }
     sharedReady = true;
     $('#setupNotice').hidden = result.revision !== 0;
     $('#databaseNotice').hidden = true;
     syncStatus('● Saved to MySQL');
     edit();
-    showSection(sectionFromUrl() || savedSection(), { replace: true });
+    const initialSection = sectionFromUrl() || 'tree';
+    const initialParams = new URLSearchParams(location.hash.slice(1));
+    if (initialSection === 'tree' && !initialParams.has('person') && !initialParams.has('photosOf')) clearTreeView();
+    showSection(initialSection, { replace: true });
     if (data.root) $('#search').value = person(data.root) ? displayName(person(data.root)) : '';
     openSharedLink();
   } catch (error) {
@@ -405,3 +414,5 @@ function personMatchesQuery(p, query) {
   const text = normalize(query);
   return !text || [p.name, displayName(p), firstLastName(p), ...(p.nicknames || [])].some(name => normalize(name).includes(text));
 }
+
+function personStory(p) { return ui.personStory(p); }

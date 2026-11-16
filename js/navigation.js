@@ -81,6 +81,7 @@ function renderDetailsContent() {
     ${
       p.nicknames?.length ? `<p class="hint">Also known as: ${esc(p.nicknames.join(', '))}</p>` : ''
     }
+    <section class="map-profile-story person-sidebar-story"><p>${esc(personStory(p))}</p></section>
     <div class="map-profile-actions"><button id="sharePerson" type="button">Copy Person Link ${uiIcon('arrowRight')}</button></div>
     <div class="person-view-actions tree-profile-tools"><button id="traceSelected" ${
       !data.root || data.root === p.id ? 'hidden' : ''
@@ -92,11 +93,7 @@ function renderDetailsContent() {
     }</span></h3>${grouped || '<p class="hint">No connections added yet.</p>'}</section>
     <section class="map-profile-locations tree-location-history"><h3>Locations</h3>${!migrationStopsForPerson(p).length ? '<p class="hint">No places recorded yet.</p>' : ''}<ol class="migration-stops">${migrationStopsForPerson(p).map((stop, i) => `<li><button type="button" data-tree-stop="${i}"><strong>${esc(locationStopLabel(stop))}</strong><span>${esc(stop.location)}</span></button></li>`).join('')}</ol><button type="button" id="treePersonPlaces">View Places Lived ${uiIcon('arrowRight')}</button></section>
     <div id="treePersonPhotos"></div>
-    ${
-      p.bio?.trim()
-        ? `<section class="map-profile-story"><h3>About</h3><p>${esc(p.bio)}</p></section>`
-        : ''
-    }
+
     <section class="tree-profile-add"><h3>Add to ${esc(
       p.firstName || p.name.split(/\s+/)[0],
     )}’s Family</h3><div class="quick-add">${['parent', 'sibling', 'spouse', 'child']
@@ -374,9 +371,9 @@ function savedSection() {
       'insights',
     ].includes(section)
       ? section
-      : 'overview';
+      : 'tree';
   } catch {
-    return 'overview';
+    return 'tree';
   }
 }
 function rememberSection(section) {

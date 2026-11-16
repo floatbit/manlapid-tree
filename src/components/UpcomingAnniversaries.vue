@@ -10,7 +10,6 @@ const api = computed(useRuntime);
 const events = computed(() => api.value?.upcomingAnniversaries(family.value.people, family.value.milestones || []) || []);
 const iconType = (event) => event.kind === 'Birthday' ? 'birthday_party' : event.kind === 'Wedding Anniversary' ? 'marriage' : 'remembrance';
 async function open(event) {
-  if (event.personId) { api.value.openPersonDetails(event.personId); return; }
   if (event.personId || event.milestoneId) {
     const search = document.getElementById('timelineSearch');
     if (search?.value) { search.value = ''; search.dispatchEvent(new Event('input', { bubbles: true })); }

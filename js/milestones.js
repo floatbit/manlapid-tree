@@ -200,6 +200,15 @@ $('#clearMilestoneLocation').onclick = () => {
   $('#milestoneLocation').value = '';
   setupMilestoneLocationFinder();
 };
+async function editMilestone(id) {
+  if (!id) throw new Error('No milestone was selected.');
+  await loadFamilyTimeline();
+  await ensureCollection('albums');
+  const selected = (data.milestones || []).find(item => item.id === id);
+  if (!selected) throw new Error('This milestone is no longer available.');
+  if (!document.body.classList.contains('is-editor')) throw new Error('Log in to edit milestones.');
+  openMilestone(selected.id);
+}
 function openMilestone(id) {
   if (collectionRevisions.get('albums') !== sharedRevision)
     return withCollection('albums', () => openMilestone(id));

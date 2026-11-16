@@ -367,11 +367,13 @@ console.log(
   bindRuntime({ openPersonDetails: id => opened.push(id), upcomingAnniversaries: () => [{ kind: 'Remembrance', personId: 'chris', title: 'Chris', next: new Date(), days: 0, years: 1 }] });
   const wrapper = mount(UpcomingAnniversaries);
   await wrapper.find('.anniversary-card').trigger('click'); await flushPromises();
-  assert.deepEqual(opened, ['chris'], 'Remembrance opens person details');
-  assert.equal(scrolls.length, 0, 'Person selection preserves the page position');
+  assert(target.classList.contains('anniversary-highlight'), 'Remembrance highlights its timeline entry');
+  assert.equal(document.activeElement,target);
+  assert.equal(scrolls.length,1,'Sidebar selection scrolls to the timeline entry');
+  assert.deepEqual(opened,[],'Date links stay in the timeline');
   wrapper.unmount(); target.remove(); birth.remove();
   window.scrollTo = originalScroll; window.matchMedia = originalMedia;
-  console.log('Passed: remembrance opens person details without moving the timeline.');
+  console.log('Passed: sidebar remembrance scrolls to and highlights its timeline entry.');
 }
 
 {
@@ -408,4 +410,89 @@ console.log(
   sidebarPersonId.value = null;
   entries.unmount(); sidebar.unmount();
   console.log('Passed: Timeline people open sidebar details in place with explicit Tree and Copy actions.');
+}
+
+{
+  const { default: PhotoPeopleTags } = await import('../src/components/PhotoPeopleTags.vue');
+  const { recentPhotoTags, rememberPhotoTags } = await import('../src/ui/recent-photo-tags.js');
+  const saved=[];
+  family.value={people,links:[],photoTags:{}};
+  recentPhotoTags.value=[];
+  rememberPhotoTags(Array.from({length:20},(_,i)=>'id'+i));
+  assert.equal(recentPhotoTags.value.length,12,'Recent names are capped at 12');
+  rememberPhotoTags(['melissa','chris']);
+  rememberPhotoTags(['melissa']);
+  assert.equal(recentPhotoTags.value[0],'melissa','Reused names move to the front');
+  ui.setEditing(true);
+  bindRuntime({displayName:display,initials:p=>p.name[0],personMatchesQuery:matches,
+    savePhotoPeople:async(photo,ids)=>{saved.push([...ids]);family.value={...family.value,photoTags:{...family.value.photoTags,[photo]:ids}};}});
+  const tags=mount(PhotoPeopleTags,{props:{photo:'test.jpg',showRecent:true}});
+  assert.deepEqual(tags.findAll('.recent-photo-tag-list button').map(b=>b.element.getAttribute('aria-label')),['Tag Chris Manlapid','Tag Melissa Manlapig'],'Recent names display alphabetically');
+  await tags.findAll('.recent-photo-tag-list button')[1].trigger('click');await flushPromises();
+  assert.deepEqual(saved,[['melissa']],'Clicking a recent name saves the photo tag');
+  assert(tags.findAll('.recent-photo-tag-list button')[1].element.disabled,'Already tagged suggestions cannot be added twice');
+  assert(tags.find('.lightbox-person-tags').text().includes('Melissa'));
+  tags.unmount();
+  console.log('Passed: recent photo names are limited, ordered and saved with one click.');
+}
+
+{
+ const edits=[],albums=[];
+ family.value={people:[],links:[]};ui.setEditing(true);
+ timelineView.value=[{id:'party',kind:'milestone',type:'birthday_party',date:'2020-01-01',title:'Birthday party',photos:['party.jpg'],participants:[]}];
+ bindRuntime({familyDateYear:()=>2020,familyDateLabel:d=>d,milestoneMediaCount:p=>p.length+' photos',editMilestone:id=>edits.push(id),openPhotoLightbox:(...args)=>albums.push(args)});
+ const entries=mount(TimelineEvents);
+ await entries.find('.birth-album-edit').trigger('click');
+ assert.deepEqual(edits,['party'],'Edit Milestone opens editor for the selected event');
+ assert.equal(albums.length,0,'Editing does not open the album');
+ await entries.find('.milestone-event').trigger('click');
+ assert.equal(albums.length,1,'Card still opens the album');
+ entries.unmount();
+ console.log('Passed: explicit milestone editing stays separate from card album action.');
+}
+
+{
+ const {readFileSync}=await import('node:fs');
+ const {default:vm}=await import('node:vm');
+ const {default:MilestoneDialog}=await import('../src/dialogs/MilestoneDialog.vue');
+ bindRuntime({displayName:display,firstLastName:display,personMatchesQuery:matches});
+ const modal=mount(MilestoneDialog,{attachTo:document.body});
+ const source=readFileSync('js/milestones.js','utf8');
+ const functions=source.slice(source.indexOf('async function editMilestone('),source.indexOf("$('#addMilestone').onclick"));
+ const albumSource=readFileSync('js/albums.js','utf8');
+ const populate=albumSource.slice(albumSource.indexOf('function populateMilestoneAlbums('),albumSource.indexOf("$('#milestoneAlbum').onchange"));
+ const selected={id:'saved-event',title:'The correct wedding',type:'marriage',date:'2010-12-04',location:'New York',description:'Our story',participants:['chris'],photos:['wedding.jpg'],albumId:'album'};
+ const loaded=[];
+ const context=vm.createContext({document,$:s=>document.querySelector(s),data:{milestones:[selected],albums:[]},collectionRevisions:new Map([['albums',3]]),sharedRevision:3,
+   ensureCollection:async kind=>{assert.equal(kind,'albums','Milestones must never use the lazy collections endpoint');loaded.push(kind);context.data.albums=[{id:'album',title:'Wedding',milestoneId:selected.id}];},
+   ui:{sync:()=>{}},applyShared:result=>{context.data.milestones=result.milestones;},requestDatabase:async()=>({milestones:[selected]}),
+   milestonePhotoSession:0,processingMilestonePhotos:false,renderMilestonePeople:()=>{},renderMilestonePhotos:()=>{},setupMilestoneLocationFinder:()=>{},esc:s=>s});
+ document.body.classList.add('is-editor');
+ const familySource=readFileSync('js/family-groups.js','utf8');
+ const loader=familySource.slice(familySource.indexOf('async function loadFamilyTimeline()'));
+ vm.runInContext(loader+'\n'+populate+'\n'+functions,context);
+ await context.editMilestone('saved-event');
+ assert.deepEqual(loaded,['albums']);
+ assert.equal(document.querySelector('#milestoneId').value,'saved-event');
+ assert.equal(document.querySelector('#milestoneTitle').value,'The correct wedding');
+ assert.equal(document.querySelector('#milestoneDate').value,'2010-12-04');
+ assert.equal(document.querySelector('#milestoneAlbum').value,'album');
+ assert(document.querySelector('#milestoneDialog').open,'Actual milestone editor opens for requested saved record');
+ document.querySelector('#milestoneDialog').close();
+ context.data.milestones=undefined;
+ await context.editMilestone('saved-event');
+ assert.equal(document.querySelector('#milestoneId').value,'saved-event','Missing milestone state recovers from core snapshot');
+ document.querySelector('#milestoneDialog').close();
+ modal.unmount();
+ console.log('Passed: real milestone editor loads collections and opens the clicked milestone with its saved fields.');
+}
+
+{
+ let landing=0;
+ bindRuntime({openTreeLanding:()=>landing++,displayName:display,personMatchesQuery:matches});
+ const header=mount(AppHeader);
+ await header.find('#treeTab').trigger('click');
+ assert.equal(landing,1,'Tree menu explicitly opens the empty discovery landing');
+ header.unmount();
+ console.log('Passed: Tree menu opens discovery rather than restoring a selected person.');
 }

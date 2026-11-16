@@ -266,6 +266,7 @@ console.log(
  env.$('#graph').scrollTo=value=>{camera=value;};
  vm.runInContext(controls.slice(controls.indexOf('function showEntireTree()'),controls.indexOf("$('#showEntireTree').onclick")),env.ctx);
  vm.runInContext('showEntireTree()',env.ctx);
+ assert.equal(env.ctx.data.selected,null,'Full Tree never auto-selects a person for the sidebar');
  assert.equal(vm.runInContext('graphScale',env.ctx),1);
  assert.equal(vm.runInContext('zoomLocked',env.ctx),true,'Explicit zoom preserves lock');
  assert.equal(cleared,true,'Entire tree clears the previous view first');

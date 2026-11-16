@@ -20,7 +20,6 @@ const iconType = (event) => {
 };
 
 async function open(event) {
-  if (event.personId) { api.value.openPersonDetails(event.personId); return; }
   if (event.personId || event.milestoneId) {
     const search = document.getElementById('timelineSearch');
     if (search?.value) {

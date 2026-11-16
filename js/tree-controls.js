@@ -146,7 +146,7 @@ function showEntireTree() {
   }
   clearTreeView();
   data.root = person(data.root) ? data.root : data.people[0].id;
-  data.selected = person(data.selected) ? data.selected : data.root;
+  data.selected = null;
   data.visible = data.people.map((p) => p.id);
   data.expanded = [...data.visible];
   save();

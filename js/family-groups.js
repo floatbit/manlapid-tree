@@ -32,4 +32,8 @@ function openSavedFamilyTree(group, visibleMembers = [...group.parents, ...group
 }
 
 async function loadFamilyAlbums() { await ensureCollection('albums'); ui.sync(data); }
-async function loadFamilyTimeline() { await ensureCollection('milestones'); ui.sync(data); }
+async function loadFamilyTimeline() {
+  // Milestones belong to the core snapshot, not the lazy collections endpoint.
+  if (!Array.isArray(data.milestones)) applyShared(await requestDatabase());
+  ui.sync(data);
+}

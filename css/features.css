@@ -3851,3 +3851,47 @@ body:not(.is-editor) .lightbox-people:not(:has(.lightbox-person-tag)) { display:
 @media (max-width:760px) { .family-timeline-locations { grid-template-columns:minmax(0,1fr); } }
 
 .family-mini-heading { flex-direction:column; align-items:flex-start; }
+
+.report-photo-workspace { display:grid; grid-template-columns:minmax(0,2fr) minmax(260px,1fr); gap:24px; align-items:start; }
+.report-photo-workspace .report-random-image { margin:0; }
+.report-photo-workspace .lightbox-people,.report-photo-workspace .lightbox-tag-field { width:100%; min-width:0; }
+.report-photo-workspace .lightbox-tag-editor { display:block; }
+.recent-photo-tags { margin-block:24px; }
+.recent-photo-tags h3 { margin:0 0 6px; font-size:14px; }
+.recent-photo-tags .hint { font-size:12px; }
+.recent-photo-tag-list { display:flex; flex-wrap:wrap; gap:8px; }
+.recent-photo-tag-list button { display:inline-flex; align-items:center; gap:7px; padding:6px 10px 6px 6px; font-size:12px; border-radius:24px; background:#edf2e6; }
+.recent-photo-tag-list .avatar { width:26px; height:26px; font-size:10px; flex-shrink:0; }
+.recent-photo-tag-list button:disabled { opacity:.6; }
+@media (max-width:760px) { .report-photo-workspace { grid-template-columns:minmax(0,1fr); } }
+
+/* Contribution tagging: photo, search/selected tags, then recent names. */
+@media (min-width:761px) {
+  .report-photo-workspace { grid-template-columns:minmax(0,2fr) minmax(440px,2fr); }
+  .report-photo-workspace .lightbox-tag-field { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px 24px; align-items:start; }
+  .report-photo-workspace .recent-photo-tags { margin:0; }
+
+}
+.photo-tag-heading { margin:0 0 6px; font-size:14px; }
+.report-photo-workspace .recent-photo-tag-list { display:flex; flex-direction:column; align-items:stretch; }
+.report-photo-workspace .recent-photo-tag-list button { text-align:left; justify-content:flex-start; }
+.report-photo-workspace .recent-photo-tag-list button > span:last-child { margin-left:auto; }
+
+.photo-tag-primary { display:contents; }
+.report-photo-workspace .photo-tag-primary { display:flex; flex-direction:column; align-items:stretch; gap:12px; min-width:0; }
+#reportRandomPhoto .lightbox-person-tags { display:flex; flex-wrap:wrap; align-items:flex-start; gap:8px; margin:0; }
+.report-photo-workspace .photo-tag-primary > .person-autocomplete { flex:none; width:100%; min-width:0; }
+.report-photo-workspace .lightbox-person-tag { width:auto; }
+
+.album-cover { position:relative; }
+.album-milestone-badge { position:absolute; top:12px; right:12px; width:36px; height:36px; display:grid; place-items:center; border:1px solid #c6d5ba; border-radius:50%; background:#fffefa; box-shadow:0 2px 8px #263c3614; pointer-events:none; }
+.album-milestone-badge::before { content:''; position:absolute; inset:4px; border-radius:50%; background:#edf3e5; }
+.album-milestone-badge > span { position:relative; width:17px; height:17px; border:1.5px solid #587848; border-radius:50%; }
+
+.album-cover-wrap { position:relative; }
+button.album-milestone-badge { pointer-events:auto; padding:0; }
+button.album-milestone-badge:hover { background:#edf3e5; box-shadow:0 0 0 3px #91aa7b55; }
+button.album-milestone-badge:focus-visible { outline:2px solid var(--green); outline-offset:3px; }
+
+.person-sidebar-story p { white-space:pre-line; }
+:is(#details,#mapSelectedPerson,.family-person-sidebar,.insights-person-details) > .person-sidebar-story { margin-block:20px; }

@@ -43,7 +43,7 @@ onBeforeUnmount(() => { cancelMoreClose(); media?.removeEventListener('change', 
         :disabled="!ready"
         :key="id"
         :class="{ active: activePage === page }"
-        @click="closeMenu(); useRuntime()?.showSection(page)"
+        @click="closeMenu(); page === 'tree' ? useRuntime()?.openTreeLanding() : useRuntime()?.showSection(page)"
       >
         {{ label }}
       </button>

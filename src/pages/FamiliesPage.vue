@@ -7,7 +7,7 @@ import { PhArrowRight, PhArrowLeft, PhArrowUp, PhArrowDown, PhHeart, PhHouse, Ph
 import MediaPreview from '../components/MediaPreview.vue';
 import SearchField from '../components/SearchField.vue';
 import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue';
-import { family, activePage, useRuntime, canEdit } from '../ui/runtime.js';
+import { family, activePage, ui, useRuntime, canEdit } from '../ui/runtime.js';
 import { defaultFamilyView, familyGenerationBands, familyGenerationTitle } from '../domain/family-view.js';
 import PersonPhotos from '../components/PersonPhotos.vue';
 import PersonAvatar from '../components/PersonAvatar.vue';
@@ -373,13 +373,14 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
                 <span v-if="selectedPerson.deceased" class="deceased-badge">Deceased</span>
               </div>
             </div>
+            <section class="map-profile-story person-sidebar-story"><p>{{ui.personStory(selectedPerson)}}</p></section>
             <div class="map-profile-actions"><button type="button" @click="api.openSavedFamilyTree(selected, visibleIds)">Open Family Tree <PhArrowRight :size="16" class="arrow-link-icon ui-icon" aria-hidden="true" /></button><button type="button" @click="api.copyDirectLink({person:selectedPerson.id})">Copy Person Link <PhArrowRight :size="16" class="arrow-link-icon ui-icon" aria-hidden="true" /></button></div>
             <section class="map-profile-locations tree-location-history">
               <h3>Locations</h3>
               <p v-if="!(api.migrationStopsForPerson?.(selectedPerson) || []).length" class="hint">No places recorded yet.</p>
               <ol class="migration-stops"><li v-for="(stop,index) in api.migrationStopsForPerson?.(selectedPerson) || []" :key="stop.id || index"><button type="button" @click="api.openPersonPlaces(selectedPerson.id,index)"><strong>{{ api.locationStopLabel(stop) }}</strong><span>{{ stop.location }}</span></button></li></ol>
             </section>
-            <p v-if="selectedPerson.bio">{{ selectedPerson.bio }}</p>
+
             <PersonPhotos :person-id="selectedPerson.id" in-sidebar />
             <div class="family-person-actions">
 <button v-if="canEdit" type="button" @click="editPerson">Edit Person <PhArrowRight :size="16" class="arrow-link-icon ui-icon" aria-hidden="true" /></button>

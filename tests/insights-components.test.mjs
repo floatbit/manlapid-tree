@@ -43,9 +43,10 @@ await page.find('.insights-life').trigger('click');assert.equal(page.findAll('.i
 await page.find('.insights-flow path').trigger('click');assert(page.find('.insights-sidebar').text().includes('Ancestor'));
 assert.equal(page.findAll('.insights-main .insights-flow-people').length,0);
 await page.find('.insights-flow text[role="button"]').trigger('keydown',{key:'Enter'});assert(!page.find('.insights-sidebar').text().includes('Relatives born here'));
-assert.deepEqual(page.findAll('.migration-column-heading').map(h=>h.text()),['Birthplace','Current Location']);
+assert.deepEqual(page.findAll('.migration-column-heading').map(h=>h.text()),['Birthplace','Current / Last Location']);
 assert.equal(page.findAll('.migration-route-selected').length,2,'City highlights all connected routes');
 assert.equal(page.findAll('.insights-sidebar-route').length,2,'Sidebar groups people under each migration route');
+assert.equal(page.findAll('.migration-person-pill').length,page.findAll('.insights-sidebar-route .insights-sidebar-people > button').length,'Each active route animates exactly one pill per person');
 assert(page.find('.insights-sidebar-route').text().includes('Manila'));
 assert(page.findAll('.insights-sidebar-route')[1].text().includes('Paris'));
 await page.find('.pyramid-living').trigger('click');assert(page.find('.insights-sidebar').text().includes('Under 18'));

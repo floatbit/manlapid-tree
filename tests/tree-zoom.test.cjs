@@ -181,11 +181,11 @@ console.log(
   );
   Promise.resolve(vm.runInContext("centerAfterTreeSettles('person',1)", centerContext))
     .then(async () => {
-      assert.equal(centerContext.centered.length, 0, 'Locked node clicks must not center');
+      assert.equal(centerContext.centered.length, 1, 'Locked node clicks still center');
       centerContext.zoomLocked = false;
       await vm.runInContext("centerAfterTreeSettles('person',1)", centerContext);
-      assert.equal(centerContext.centered.length, 1, 'Unlocked node clicks still center');
-      console.log('Passed: zoom lock blocks delayed click centering.');
+      assert.equal(centerContext.centered.length, 2, 'Unlocked node clicks still center');
+      console.log('Passed: locked and unlocked clicks center after the tree settles.');
     })
     .catch((error) => {
       console.error(error);
@@ -197,7 +197,7 @@ console.log(
       tree.indexOf('  } else if (expanding && sameTree)', tree.indexOf('function render(')),
     ) + '\n}';
   vm.runInContext(
-    "var resetPersonZoom=false, fit=true, root='root',oldTransform='none'; function fitGraph() {centered.push('fit');}",
+    "var centerId=null,resetPersonZoom=false, fit=true, root='root',oldTransform='none'; function fitGraph() {centered.push('fit');}",
     centerContext,
   );
   centerContext.zoomLocked = true;
@@ -244,11 +244,11 @@ console.log(
     const context = vm.createContext({ resetPersonZoom: true, fit, centerId: fit ? null : 'person', root: 'person', data: { selected: 'person' }, oldTransform: 'none', graphScale: .4, zoomLocked: true, window: { matchMedia: () => ({matches:true}) } });
     vm.runInContext('var centeredScale, centeredId; function setGraphZoomLocked(value) { zoomLocked=value; } function centerGraphOnPerson(id,scale) {centeredId=id; centeredScale=scale;} function fitGraph() {throw Error("Mobile person navigation must not auto-fit");}', context);
     vm.runInContext(camera, context);
-    assert.equal(context.centeredScale, 1);
+    assert.equal(context.centeredScale, .4);
     assert.equal(context.centeredId, 'person');
-    assert.equal(context.zoomLocked, false);
+    assert.equal(context.zoomLocked, true);
   }
-  console.log('Passed: mobile person navigation and Center Person reset zoom to 100% instead of fitting or retaining the old scale.');
+  console.log('Passed: locked mobile person navigation centers while preserving its zoom.');
 }
 
 // Entire-tree action explicitly requests 100%, even while locked, and centers the full layout.
@@ -280,6 +280,6 @@ console.log(
  const context=vm.createContext({graphLayout:{positions:new Map([['person',{x:400,y:500}]])},graphScale:1,cameraPadded:false,$:id=>id==='#graph'?graph:{style:{}},setGraphScale(){},window:{matchMedia:()=>({matches:true})},document:{querySelectorAll:()=>[],querySelector:()=>null}});
  vm.runInContext(tree.slice(tree.indexOf('function centerGraphOnPerson('),tree.indexOf('function animateFamilyLines(')),context);
  vm.runInContext("centerGraphOnPerson('person',1,'none')",context);
- assert.equal(camera.left,400);assert.equal(camera.top,698,'Mobile person sits 5% lower below the toolbar');
- context.window.matchMedia=()=>({matches:false});vm.runInContext("centerGraphOnPerson('person',1,'none')",context);assert.equal(camera.top,500,'Desktop person centering unchanged');
+ assert.equal(camera.left,400);assert.equal(camera.top,778,'Mobile focus moves up 10% of the canvas');
+ context.window.matchMedia=()=>({matches:false});vm.runInContext("centerGraphOnPerson('person',1,'none')",context);assert.equal(camera.top,580,'Desktop focus moves up 10% of the canvas');
 }

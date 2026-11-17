@@ -379,6 +379,7 @@ async function connectDatabase() {
     const initialParams = new URLSearchParams(location.hash.slice(1));
     if (initialSection === 'tree' && !initialParams.has('person') && !initialParams.has('photosOf') && (!hadBrowserView || initialParams.get('page') !== 'tree')) clearTreeView();
     showSection(initialSection, { replace: true });
+    if (initialSection === 'tree' && hadBrowserView && !initialParams.has('person') && !initialParams.has('photosOf')) restoreTreeFocus();
     if (data.root) $('#search').value = person(data.root) ? displayName(person(data.root)) : '';
     openSharedLink();
   } catch (error) {

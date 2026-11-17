@@ -430,3 +430,20 @@ console.log('Passed: a spouse sibling stays with the family during unrelated exp
   assert.equal((hearts.match(/class="spouse-heart"/g)||[]).length,1,'Only the current spouse gets a heart');
 }
 console.log('Passed: shared spouse centered between two partners and heart shown only for current spouse.');
+
+{
+ const tree=layout(['a','b','c','d','e','f','g','h'],[
+  spouse('a','b'),spouse('c','d'),spouse('e','f'),spouse('g','h'),
+  {a:'a',b:'d',type:'child'},{a:'b',b:'d',type:'child'},
+  {a:'c',b:'e',type:'child'},{a:'d',b:'e',type:'child'},
+  {a:'e',b:'h',type:'child'},{a:'f',b:'h',type:'child'}
+ ],'a');
+ const x=id=>tree.positions.get(id).x;
+ assert.equal(x('d'),x('e'),'Alternating spouse sides share a direct ancestor spine');
+ assert.equal(x('e'),x('h'));
+ pair(tree,'a','b');pair(tree,'c','d');pair(tree,'e','f');pair(tree,'g','h');
+ context.spineLayout=tree;
+ const routes=vm.runInContext('familyRoutes(spineLayout)',context);
+ for(const route of routes.filter(r=>r.key.endsWith('-stem'))) assert.equal(new Set(route.points.map(p=>p[0])).size,1,'Simple lineage stems are vertical');
+ console.log('Passed: single-child ancestor chain aligns vertically without splitting couples.');
+}

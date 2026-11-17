@@ -4,7 +4,7 @@ import MobileSidebar from '../components/MobileSidebar.vue';
 import { computed, ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { PhArrowRight, PhX } from '@phosphor-icons/vue';
 import { family, useRuntime, viewerRelation } from '../ui/runtime.js';
-import { familyInsights, locationLabel, agePyramid, migrationDisplayLabel, compareMigrationBirthplaces } from '../domain/insights.js';
+import { familyInsights, locationLabel, agePyramid, migrationDisplayLabel, compareMigrationBirthplaces, migrationColumn } from '../domain/insights.js';
 import { insightSuperlatives } from '../domain/insight-superlatives.js';
 import {openMobileSidebar,isMobileSidebar} from '../ui/mobile-sidebar.js';
 import InsightStatGroup from '../components/InsightStatGroup.vue';
@@ -39,10 +39,10 @@ const busiest=computed(()=>data.value.months.filter(m=>busiestCount.value>0 && m
 const minimum=computed(()=>data.value.lives[0]?.birth.year || now);
 const lifespanTicks=computed(()=>[...new Set([minimum.value,...[1900,1950,2000].filter(y=>y>minimum.value && y<now),now])]);
 const yearPosition=year=>(year-minimum.value)/Math.max(1,now-minimum.value)*100;
-const shortPlace=place=>{const label=migrationDisplayLabel(place);return label.length>34?label.slice(0,32)+'…':label;};
+const shortPlace=place=>{const label=place;return label.length>34?label.slice(0,32)+'…':label;};
 const x=year=>40+(year-minimum.value)/Math.max(1,now-minimum.value)*920;
-const swarm=computed(()=>{const placed=[];for(const life of data.value.lives){let row=0;while(placed.some(p=>p.row===row && Math.abs(p.x-x(life.birth.year))<34))row++;placed.push({...life,x:x(life.birth.year),row});}return placed;});
-const swarmHeight=computed(()=>Math.max(120,...swarm.value.map(p=>80+p.row*36)));
+const swarm=computed(()=>{const placed=[];for(const life of data.value.lives){let row=0;while(placed.some(p=>p.row===row && Math.abs(p.x-x(life.birth.year))<26))row++;placed.push({...life,x:x(life.birth.year),row});}return placed;});
+const swarmHeight=computed(()=>Math.max(120,...swarm.value.map(p=>80+p.row*26)));
 const lives=computed(()=>data.value.lives.filter(p=>!p.person.deceased || p.death).map(p=>({...p,end:p.person.deceased?p.death.year:now})).filter(p=>p.end>=p.birth.year));
 const chosen=computed(()=>lives.value.find(p=>p.person.id===overlapId.value));
 watch(overlapId,id=>{if(!id){if(panel.value==='overlap')clearPanel();return;}highlightedRoutes.value=[];selected.value=null;panel.value='overlap';revealPanel();});
@@ -53,7 +53,9 @@ const drawnRoutes=computed(()=>[...routes.value.filter(r=>!routeSelected(r)),...
 const placeSelected=(place,side)=>routes.value.some(r=>routeSelected(r) && r[side]===place);
 const sources=computed(()=>[...new Set(routes.value.map(f=>f.from))].sort(compareMigrationBirthplaces));
 const destinations=computed(()=>[...new Set(routes.value.map(f=>f.to))]);
-const routeHeight=computed(()=>Math.max(180,Math.max(sources.value.length,destinations.value.length)*55));
+const sourceColumn=computed(()=>migrationColumn(sources.value));
+const destinationColumn=computed(()=>migrationColumn(destinations.value));
+const routeHeight=computed(()=>Math.max(180,sourceColumn.value.height,destinationColumn.value.height));
 const tooltip=p=>`${name(p.person)} · ${p.birth.approximate?'About ':''}${p.birth.year}${viewerRelation(p.person.id)?' · '+viewerRelation(p.person.id):''}`;
 const statGroups=computed(()=>{
   const cards=[...superlatives.value,
@@ -76,12 +78,24 @@ const statGroups=computed(()=>{
 <div class="insights-workspace"><div class="insights-main">
   <div class="intro"><div><p class="eyebrow">OUR FAMILY IN PATTERNS</p><h1>Family Insights</h1><p>Discover generational waves, global migrations, and the shared milestones that connect us across time.</p></div></div>
   <InsightStatGroup :cards="statGroups[0]" label="Time, Span &amp; Roots" />
-  <section class="insights-section"><p class="eyebrow">FROM THERE TO HERE</p><h2>Our Migration Connections</h2><p>Birthplaces on the left, current homes on the right. Wider lines represent more relatives; these connect recorded locations, not travel routes.</p>
-    <p v-if="!routes.length">Add birthplaces and current locations to reveal connections.</p>
-    <div v-else class="insights-chart-scroll"><svg :viewBox="`0 -35 1000 ${routeHeight+35}`" class="insights-flow" role="group" aria-label="Birthplace to current location connections">
-      <text x="0" y="-14" class="migration-column-heading">Birthplace</text><text x="745" y="-14" class="migration-column-heading">Current Location</text>
-      <path v-for="r in drawnRoutes" :key="routeKey(r)" :class="{'migration-route-selected':routeSelected(r)}" :aria-pressed="routeSelected(r)" :d="`M 270 ${sources.indexOf(r.from)*55+28} C 470 ${sources.indexOf(r.from)*55+28},530 ${destinations.indexOf(r.to)*55+28},730 ${destinations.indexOf(r.to)*55+28}`" fill="none" stroke="#8da77c" :stroke-width="Math.min(20,2+r.people.length*2)+(routeSelected(r)?4:0)" opacity=".65" tabindex="0" role="button" :aria-label="`${migrationDisplayLabel(r.from)} to ${migrationDisplayLabel(r.to)}: ${r.people.length} relatives`" @click="showFlow(r)" @keydown.enter.prevent="showFlow(r)" @keydown.space.prevent="showFlow(r)"><title>{{migrationDisplayLabel(r.from)}} → {{migrationDisplayLabel(r.to)}} · {{r.people.length}} relatives</title></path>
-      <text v-for="(place,i) in sources" :key="'s'+place" :class="{'migration-place-selected':placeSelected(place,'from')}" role="button" tabindex="0" :aria-label="'Relatives born in '+migrationDisplayLabel(place)" @click="showPlace(place,'from')" @keydown.enter.prevent="showPlace(place,'from')" @keydown.space.prevent="showPlace(place,'from')" x="0" :y="i*55+32">{{shortPlace(place)}}<title>{{migrationDisplayLabel(place)}}</title></text><text v-for="(place,i) in destinations" :key="'d'+place" :class="{'migration-place-selected':placeSelected(place,'to')}" role="button" tabindex="0" :aria-label="'Relatives living in '+migrationDisplayLabel(place)" @click="showPlace(place,'to')" @keydown.enter.prevent="showPlace(place,'to')" @keydown.space.prevent="showPlace(place,'to')" x="745" :y="i*55+32">{{shortPlace(place)}}<title>{{migrationDisplayLabel(place)}}</title></text>
+  <section class="insights-section"><p class="eyebrow">FROM THERE TO HERE</p><h2>Our Migration Connections</h2><p>Birthplaces on the left, current homes or last recorded places lived on the right. Wider lines represent more relatives; these connect recorded locations, not travel routes. On active paths, each moving pill represents one relative.</p>
+    <p v-if="!routes.length">Add birthplaces and current or past homes to reveal connections.</p>
+    <div v-else class="insights-chart-scroll"><svg :viewBox="`0 -35 1000 ${routeHeight+35}`" class="insights-flow" role="group" aria-label="Birthplace to current or last recorded location connections">
+      <text x="0" y="-14" class="migration-column-heading">Birthplace</text><text x="800" y="-14" class="migration-column-heading">Current / Last Location</text>
+      <path v-for="r in drawnRoutes" :key="routeKey(r)" :class="{'migration-route-selected':routeSelected(r)}" :aria-pressed="routeSelected(r)" :d="`M 205 ${sourceColumn.positions.get(r.from)} C 425 ${sourceColumn.positions.get(r.from)},585 ${destinationColumn.positions.get(r.to)},785 ${destinationColumn.positions.get(r.to)}`" fill="none" stroke="#8da77c" :stroke-width="Math.min(20,2+r.people.length*2)+(routeSelected(r)?4:0)" opacity=".65" tabindex="0" role="button" :aria-label="`${migrationDisplayLabel(r.from)} to ${migrationDisplayLabel(r.to)}: ${r.people.length} relatives`" @click="showFlow(r)" @keydown.enter.prevent="showFlow(r)" @keydown.space.prevent="showFlow(r)"><title>{{migrationDisplayLabel(r.from)}} → {{migrationDisplayLabel(r.to)}} · {{r.people.length}} relatives</title></path>
+      <g v-for="r in drawnRoutes.filter(routeSelected)" :key="'flow-'+routeKey(r)" class="migration-route-motion" aria-hidden="true">
+        <rect v-for="(person,index) in r.people" :key="person.id" class="migration-person-pill" x="-3.5" y="-3.5" width="7" height="7" rx="3.5">
+          <animateMotion dur="1.8s" repeatCount="indefinite" rotate="auto" :begin="(-index*Math.min(0.03,0.3/Math.max(1,r.people.length-1)))+'s'" :path="`M 205 ${sourceColumn.positions.get(r.from)} C 425 ${sourceColumn.positions.get(r.from)},585 ${destinationColumn.positions.get(r.to)},785 ${destinationColumn.positions.get(r.to)}`" />
+        </rect>
+      </g>
+      <template v-for="group in sourceColumn.groups" :key="'source-'+group.country">
+        <text x="0" :y="group.y" class="migration-country-heading">{{group.country}}</text>
+        <text v-for="place in group.places" :key="place.value" :class="{'migration-place-selected':placeSelected(place.value,'from')}" role="button" tabindex="0" :aria-label="'Relatives born in '+migrationDisplayLabel(place.value)" @click="showPlace(place.value,'from')" @keydown.enter.prevent="showPlace(place.value,'from')" @keydown.space.prevent="showPlace(place.value,'from')" x="0" :y="place.y">{{shortPlace(place.label)}}<title>{{migrationDisplayLabel(place.value)}}</title></text>
+      </template>
+      <template v-for="group in destinationColumn.groups" :key="'destination-'+group.country">
+        <text x="800" :y="group.y" class="migration-country-heading">{{group.country}}</text>
+        <text v-for="place in group.places" :key="place.value" :class="{'migration-place-selected':placeSelected(place.value,'to')}" role="button" tabindex="0" :aria-label="'Relatives connected to '+migrationDisplayLabel(place.value)" @click="showPlace(place.value,'to')" @keydown.enter.prevent="showPlace(place.value,'to')" @keydown.space.prevent="showPlace(place.value,'to')" x="800" :y="place.y">{{shortPlace(place.label)}}<title>{{migrationDisplayLabel(place.value)}}</title></text>
+      </template>
     </svg></div>
 
   </section>
@@ -106,7 +120,7 @@ const statGroups=computed(()=>{
         <rect :x="Math.min(918,Math.max(4,hoveredBirth.x-39))" y="-32" width="78" height="26" rx="5" fill="var(--green)" />
         <text :x="Math.min(957,Math.max(43,hoveredBirth.x))" y="-14" text-anchor="middle" style="fill:white;font-size:12px;font-weight:600">{{hoveredBirth.birth.approximate?'c. ':''}}{{hoveredBirth.birth.year}}</text>
       </g>
-      <g v-for="p in swarm" :key="p.person.id" role="button" tabindex="0" :aria-label="tooltip(p)" @click="showPerson(p.person)" @keydown.enter.prevent="showPerson(p.person)" @keydown.space.prevent="showPerson(p.person)" class="insights-dot" @mouseenter="hoveredBirth=p" @mouseleave="hoveredBirth=null" @focus="hoveredBirth=p" @blur="hoveredBirth=null"><title>{{tooltip(p)}}</title><circle :cx="p.x" :cy="swarmHeight-24-p.row*36" r="15" fill="#e4ecd9" stroke="#8ca677"/><svg :x="p.x-14" :y="swarmHeight-38-p.row*36" width="28" height="28" viewBox="0 0 28 28"><image v-if="p.person.photo" :href="p.person.photo" width="28" height="28" preserveAspectRatio="xMidYMid slice" style="clip-path:circle(50%)"/><text v-else x="14" y="18" text-anchor="middle" font-size="9">{{api?.initials(p.person)}}</text></svg></g>
+      <g v-for="p in swarm" :key="p.person.id" role="button" tabindex="0" :aria-label="tooltip(p)" @click="showPerson(p.person)" @keydown.enter.prevent="showPerson(p.person)" @keydown.space.prevent="showPerson(p.person)" class="insights-dot" @mouseenter="hoveredBirth=p" @mouseleave="hoveredBirth=null" @focus="hoveredBirth=p" @blur="hoveredBirth=null"><title>{{tooltip(p)}}</title><circle :cx="p.x" :cy="swarmHeight-24-p.row*26" r="11" fill="#e4ecd9" stroke="#8ca677"/><svg :x="p.x-10" :y="swarmHeight-34-p.row*26" width="20" height="20" viewBox="0 0 28 28"><image v-if="p.person.photo" :href="p.person.photo" width="28" height="28" preserveAspectRatio="xMidYMid slice" style="clip-path:circle(50%)"/><text v-else x="14" y="18" text-anchor="middle" font-size="9">{{api?.initials(p.person)}}</text></svg></g>
     </svg></div><small>{{data.lives.length}} recorded birth years · {{family.people.length-data.lives.length}} unavailable · Year-only and approximate dates are marked in tooltips.</small>
   </section>
   <InsightStatGroup :cards="statGroups[3]" label="Local Presence &amp; Gatherings" />

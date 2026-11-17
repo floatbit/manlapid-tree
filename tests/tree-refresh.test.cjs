@@ -3,7 +3,7 @@ const source=fs.readFileSync('js/core.js','utf8');
 const connect=source.slice(source.indexOf('async function connectDatabase()'),source.indexOf('function familyDateYear('));
 (async()=>{
  for(const [hash,hasView,expectedClear] of [['#page=tree',true,false],['#page=tree',false,true],['',true,true],['#person=p',false,false]]){
-  let cleared=0;
+  let cleared=0,focusRestores=0;
   const nodes=new Map();
   const context=vm.createContext({URLSearchParams,location:{hash},hadBrowserData:false,hadBrowserView:hasView,sharedReady:false,
    data:{visible:['p'],expanded:['p'],selected:'p',root:'p'},document:{querySelectorAll:()=>[]},
@@ -11,9 +11,10 @@ const connect=source.slice(source.indexOf('async function connectDatabase()'),so
    requestDatabase:async()=>({revision:1,csrf:'test'}),applyShared:()=>{},save:()=>{},syncStatus:()=>{},edit:()=>{},
    sectionFromUrl:()=>hash.includes('person=')||!hash?'tree':new URLSearchParams(hash.slice(1)).get('page'),
    clearTreeView:()=>{cleared++;context.data.visible=[];context.data.selected=null;context.data.root=null;},
-   showSection:()=>{},person:()=>({name:'Person'}),displayName:p=>p.name,openSharedLink:()=>{},showDatabaseError:message=>{throw Error(message);}});
+   restoreTreeFocus:()=>focusRestores++,showSection:()=>{},person:()=>({name:'Person'}),displayName:p=>p.name,openSharedLink:()=>{},showDatabaseError:message=>{throw Error(message);}});
   vm.runInContext(connect,context);await context.connectDatabase();
   assert.equal(cleared,expectedClear?1:0,hash+' saved='+hasView);
+  assert.equal(focusRestores,hasView&&!hash.includes('person=')?1:0,'Saved Tree focus is restored on startup');
   if(hasView&&!expectedClear){assert.equal(context.data.selected,'p');assert.deepEqual(context.data.visible,['p']);}
  }
  console.log('Passed: Tree refresh restores saved selection; fresh and bare homepage visits show welcome; person links remain explicit.');

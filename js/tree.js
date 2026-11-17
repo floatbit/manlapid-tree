@@ -121,7 +121,6 @@ async function centerAfterTreeSettles(id, request) {
     new Promise((resolve) => setTimeout(resolve, reducedMotion.matches ? 0 : 180)),
   ]);
   if (
-    zoomLocked ||
     request !== treeCenterRequest ||
     data.selected !== id ||
     !graphLayout?.positions.has(id)
@@ -465,6 +464,26 @@ function layoutFamily(ids, previous = null) {
       p.x += leftShift;
     }
   }
+  // A single-child lineage can share one vertical spine; keep each partner beside it.
+  const alignedAncestors = new Set();
+  const simpleFamilies = [...families.values()].sort((a,b) => positions.get(a.children[0])?.y - positions.get(b.children[0])?.y);
+  for (const family of simpleFamilies) {
+    if (family.children.length !== 1) continue;
+    const child = family.children[0], childPosition = positions.get(child);
+    if (!childPosition) continue;
+    const row = ids.filter(id => positions.get(id)?.y === childPosition.y);
+    const partners = connectionsDirect(child).filter(c => c.type === 'spouse').map(c => c.id);
+    if (row.some(id => id !== child && !partners.includes(id))) continue;
+    const parents = family.parents.map(id => positions.get(id)).filter(Boolean);
+    if (!parents.length) continue;
+    const ancestor = family.parents.find(id => alignedAncestors.has(id));
+    const target = ancestor ? positions.get(ancestor).x : parents.reduce((sum,p)=>sum+p.x,0)/parents.length;
+    const shift = target - childPosition.x;
+    for (const id of row) positions.get(id).x += shift;
+    alignedAncestors.add(child);
+  }
+  const spineShift = Math.max(0,110-Math.min(...[...positions.values()].map(p=>p.x)));
+  if (spineShift) for (const p of positions.values()) p.x += spineShift;
   return {
     positions,
     branches,
@@ -500,7 +519,7 @@ function familyRoutes(layout) {
       .filter((other) => other !== f)
       .flatMap((other) => other.children.map((id) => positions.get(id)))
       .filter((p) => p.y > rowY && p.y <= Math.min(...cs.map((c) => c.y)));
-    let trunk = center;
+    let trunk = cs.length === 1 && cs[0].x >= left && cs[0].x <= right ? cs[0].x : center;
     const blocked = (x) =>
       foreignDrops.some((p) => Math.abs(p.x - x) < 14) ||
       stems.some((stem) => stem.rowY === rowY && Math.abs(stem.x - x) < 14);
@@ -517,10 +536,10 @@ function familyRoutes(layout) {
           paired.add([f.parents[i], f.parents[j]].sort().join('|'));
     }
     const stem =
-      trunk === center
+      trunk >= left && trunk <= right
         ? [
-            [center, start],
-            [center, bus],
+            [trunk, start],
+            [trunk, bus],
           ]
         : [
             [center, start],
@@ -758,6 +777,15 @@ function centerPerson(id) {
   save();
   render({ centerId: id, resetPersonZoom: true });
 }
+function restoreTreeFocus() {
+  const id = data.selected;
+  if (!id || !data.visible.includes(id)) return;
+  const ready = document.fonts?.ready || Promise.resolve();
+  ready.then(() => requestAnimationFrame(() => {
+    if ($('#explore').hidden || data.selected !== id || !graphLayout?.positions.has(id)) return;
+    centerGraphOnPerson(id, graphScale, 'none');
+  }));
+}
 function centerGraphOnPerson(id, scale, oldTransform) {
   const position = graphLayout?.positions.get(id);
   if (!position) return;
@@ -774,6 +802,7 @@ function centerGraphOnPerson(id, scale, oldTransform) {
     const topInset = (document.querySelector('.tree-view-actions')?.offsetHeight || 40) + 32 + graph.clientHeight * 0.05;
     targetTop = Math.max(0, graph.clientHeight / 2 + position.y * graphScale - halfHeight - topInset);
   }
+  targetTop += graph.clientHeight * 0.1;
   graph.scrollTo({
     left: position.x * graphScale,
     top: targetTop,
@@ -1009,8 +1038,10 @@ function render({ expanding = false, centerId = null, fit = false, resetPersonZo
     width !== oldLayout.width ||
     height !== oldLayout.height ||
     ids.length !== oldNodes.size;
-  const mobilePersonZoom = resetPersonZoom && window.matchMedia('(max-width: 760px)').matches;
-  if (mobilePersonZoom) {
+  const mobilePersonZoom = resetPersonZoom && !zoomLocked && window.matchMedia('(max-width: 760px)').matches;
+  if (zoomLocked && centerId) {
+    centerGraphOnPerson(centerId, graphScale, oldTransform);
+  } else if (mobilePersonZoom) {
     graphScale = 1;
     setGraphZoomLocked(false);
     centerGraphOnPerson(centerId || data.selected || root, 1, oldTransform);
@@ -1057,6 +1088,6 @@ function render({ expanding = false, centerId = null, fit = false, resetPersonZo
   }
   renderedRoot = root;
   renderDetails();
-  if (expanding && sameTree && centerId && !zoomLocked && !mobilePersonZoom)
+  if (expanding && sameTree && centerId && !mobilePersonZoom)
     centerAfterTreeSettles(centerId, centerRequest);
 }

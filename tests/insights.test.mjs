@@ -18,3 +18,23 @@ assert.equal(migrationDisplayLabel('Paris 12, France'),'Paris 12, France');
 
 assert.deepEqual(['Waimea, HI 96743, USA','Manila, Philippines','Paris, France','Aritao, Philippines','Austin, TX, USA'].sort(compareMigrationBirthplaces),['Paris, France','Aritao, Philippines','Manila, Philippines','Austin, TX, USA','Waimea, HI 96743, USA']);
 console.log('Passed: migration birthplaces sort by country, then address.');
+
+{
+ const history=[{location:'Old home',date:'1990'},{location:'Latest home',date:'2020-04-01'},{location:'Earlier home',date:'2000'}];
+ const fallback=familyInsights([{id:'p',birthplace:'Birth city',location:'  ',locationHistory:history}]);
+ assert.equal(fallback.flows[0].to,'Latest home');
+ assert.equal(familyInsights([{id:'p',birthplace:'Birth city',location:'Current home',locationHistory:history}]).flows[0].to,'Current home');
+ assert.equal(familyInsights([{id:'p',birthplace:'Birth city',locationHistory:[{location:'First'},{location:'Last'}]}]).flows[0].to,'Last');
+ assert.equal(familyInsights([{id:'p',birthplace:'Birth city'}]).flows.length,0);
+ console.log('Passed: migration prefers current home, falls back by move date or recorded order, and omits unknown destinations.');
+}
+
+{
+ const {migrationColumn}=await import('../src/domain/insights.js');
+ const column=migrationColumn(['Boston, MA, USA','Paris, France','Albany, NY, US','France']);
+ assert.deepEqual(column.groups.map(g=>g.country),['France','United States']);
+ assert.deepEqual(column.groups[1].places.map(p=>p.label),['Albany, NY','Boston, MA']);
+ assert.equal(column.positions.size,4,'Country-only places retain their path endpoint');
+ for(const g of column.groups)for(const p of g.places)assert.equal(column.positions.get(p.value),p.y-4,'Paths align to city rows rather than country headings');
+ console.log('Passed: migration groups both columns by country with alphabetical city labels and aligned paths.');
+}

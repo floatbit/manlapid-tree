@@ -4,7 +4,8 @@ const assert = require('node:assert/strict'),
 const source = require('./frontend-source.cjs')();
 const parent = (a, b) => ({ a, b, type: 'parent' }),
   spouse = (a, b) => ({ a, b, type: 'spouse' });
-const ctx = vm.createContext({ save() {}, render() {}, notify() {} });
+const renders=[];
+const ctx = vm.createContext({ save() {}, render(options) {renders.push(options);}, notify() {} });
 vm.runInContext(
   `var data;const person=id=>data.people.find(p=>p.id===id);const inverse={parent:'child',child:'parent',sibling:'sibling',spouse:'spouse'};`,
   ctx,
@@ -74,6 +75,8 @@ ctx.data.expanded = ['me', 'brother', 'partner'];
 ctx.data.visible = vm.runInContext("visibleFromExpanded('me',data.expanded)", ctx);
 assert(ctx.data.visible.includes('niece'));
 vm.runInContext("collapseBranch('brother')", ctx);
+assert.equal(ctx.data.selected,'brother');
+assert.equal(renders.at(-1).centerId,'brother','Collapsing centers on the clicked person');
 assert(!ctx.data.visible.includes('niece'), 'Exclusive descendants disappear');
 assert(
   ctx.data.visible.includes('mom') && ctx.data.visible.includes('brother'),
@@ -87,6 +90,11 @@ assert(
 vm.runInContext("collapseBranch('me')", ctx);
 assert.deepEqual(Array.from(ctx.data.visible), ['me']);
 assert.equal(ctx.data.root, 'me', 'Collapsing does not change the starting person');
+ctx.data.root=null;ctx.data.selected='brother';ctx.data.expanded=['brother'];
+vm.runInContext("collapseBranch('brother')",ctx);
+assert.equal(ctx.data.root,'brother','Old views without a root recover the clicked person');
+assert.deepEqual(Array.from(ctx.data.visible),['brother'],'Collapse never falls back to welcome when a person is loaded');
+assert.equal(ctx.data.selected,'brother');
 // A directly recorded sibling link is sufficient for cousin labels without grandparents.
 ctx.data = {
   people: ['me', 'parent', 'aunt', 'cousin'].map((id) => ({ id, name: id })),

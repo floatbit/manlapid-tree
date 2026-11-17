@@ -1,5 +1,6 @@
 function expand(id, { fit = false } = {}) {
   if (!person(id)) return;
+  if (!person(data.root)) data.root = id;
   const relatives = connections(id);
   relationshipTrace = relatives.length
     ? {

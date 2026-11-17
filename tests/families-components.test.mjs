@@ -32,6 +32,7 @@ bindRuntime({
     ui.sync({ ...family.value, familyGroups: [group] });
   },
   openSavedFamilyTree: (group) => calls.push(group.id),
+  start:id=>calls.push('tree-person:'+id),
 });
 ui.sync({
   people,
@@ -74,6 +75,8 @@ assert.equal(page.findAll('.family-member').length, 2);
 assert.equal(page.findAll('.family-generation').length, 2);
 await page.find('.family-member').trigger('click');
 assert(page.find('.family-person-sidebar').text().includes('Parent One'));
+await page.find('.family-person-sidebar .map-profile-actions button').trigger('click');
+assert.equal(calls.at(-1),'tree-person:p','Sidebar Tree link opens the selected person rather than choosing a family parent');
 assert(window.location.hash.includes('group='));
 await page.find('[data-below=grandchildren]').trigger('click');
 await flushPromises();

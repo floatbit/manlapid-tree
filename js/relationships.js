@@ -319,13 +319,17 @@ function visibleFromExpanded(root, expanded) {
   return [...visible];
 }
 function collapseBranch(id) {
+  if (!person(id)) return;
+  if (!person(data.root)) data.root = id;
   relationshipTrace = null;
   if (!data.expanded.includes(id)) return;
   data.expanded = data.expanded.filter((personId) => personId !== id);
   data.visible = visibleFromExpanded(data.root, data.expanded);
   data.expanded = data.expanded.filter((personId) => data.visible.includes(personId));
-  if (!data.visible.includes(data.selected)) data.selected = data.root;
+  // Keep the collapsed person as the focus, including disconnected visible branches.
+  if (!data.visible.includes(id)) data.visible.push(id);
+  data.selected = id;
   save();
-  render();
+  render({ centerId:id });
   notify('Branch collapsed. Shared connections stay visible.');
 }

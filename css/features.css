@@ -3937,3 +3937,6 @@ button.album-milestone-badge:focus-visible { outline:2px solid var(--green); out
 .insights-flow .migration-route-motion { pointer-events:none; }
 .insights-flow .migration-person-pill { fill:#d6e8bb; stroke:var(--green); stroke-width:1; }
 @media (prefers-reduced-motion:reduce) { .insights-flow .migration-route-motion { display:none; } }
+
+.family-mini-portraits .avatar { display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; width:36px; height:36px; font-size:12px; line-height:1; font-weight:600; border-radius:50%; object-fit:cover; }
+.family-mini-portraits button { display:inline-flex; align-items:center; justify-content:center; line-height:1; }

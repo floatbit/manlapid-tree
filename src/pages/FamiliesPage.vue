@@ -374,7 +374,7 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
               </div>
             </div>
             <section class="map-profile-story person-sidebar-story"><p>{{ui.personStory(selectedPerson)}}</p></section>
-            <div class="map-profile-actions"><button type="button" @click="api.openSavedFamilyTree(selected, visibleIds)">Open Family Tree <PhArrowRight :size="16" class="arrow-link-icon ui-icon" aria-hidden="true" /></button><button type="button" @click="api.copyDirectLink({person:selectedPerson.id})">Copy Person Link <PhArrowRight :size="16" class="arrow-link-icon ui-icon" aria-hidden="true" /></button></div>
+            <div class="map-profile-actions"><button type="button" @click="api.start(selectedPerson.id)">Open Family Tree <PhArrowRight :size="16" class="arrow-link-icon ui-icon" aria-hidden="true" /></button><button type="button" @click="api.copyDirectLink({person:selectedPerson.id})">Copy Person Link <PhArrowRight :size="16" class="arrow-link-icon ui-icon" aria-hidden="true" /></button></div>
             <section class="map-profile-locations tree-location-history">
               <h3>Locations</h3>
               <p v-if="!(api.migrationStopsForPerson?.(selectedPerson) || []).length" class="hint">No places recorded yet.</p>

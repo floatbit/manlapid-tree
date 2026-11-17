@@ -376,7 +376,7 @@ $('#search').oninput = search;
 $('#searchGo').onclick = search;
 $('#search').onkeydown = handleSearchKey;
 function openTreeLanding() {
-  showSection('tree');
+  showSection('tree', {preserveTreeView:true});
   const url = new URL(location.href);
   url.hash = new URLSearchParams({page:'tree'}).toString();
   history.replaceState(null, '', url);

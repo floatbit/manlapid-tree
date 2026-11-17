@@ -386,7 +386,12 @@ function rememberSection(section) {
     localStorage.setItem('kinfolk-section-v1', section);
   } catch {}
 }
-function showSection(section, { replace = false } = {}) {
+let lastTreeViewport = null;
+function showSection(section, { replace = false, preserveTreeView = false } = {}) {
+  if (!$('#explore').hidden && graphLayout) {
+    const graph=$('#graph');
+    lastTreeViewport={layout:graphLayout,scale:graphScale,left:graph.scrollLeft,top:graph.scrollTop};
+  }
   if (section === 'people' && !document.body.classList.contains('is-editor')) section = 'tree';
   if (section === 'relationships') {
     showSection('tree', { replace });
@@ -448,8 +453,12 @@ function showSection(section, { replace = false } = {}) {
   else if (section === 'families') ui.sync(data);
   else if (section === 'stories' || section === 'insights') return;
   else {
-    render();
-    fitGraph();
+    if (preserveTreeView && graphLayout && lastTreeViewport?.layout === graphLayout && lastTreeViewport.scale === graphScale) {
+      $('#graph').scrollTo({left:lastTreeViewport.left,top:lastTreeViewport.top,behavior:'instant'});
+    } else {
+      render();
+      fitGraph();
+    }
   }
 }
 function openRelationshipFinder() {

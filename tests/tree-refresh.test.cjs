@@ -30,3 +30,18 @@ const connect=source.slice(source.indexOf('async function connectDatabase()'),so
  assert.equal(state.selected,'p');assert.deepEqual(state.visible,['p']);
  console.log('Passed: returning from another page preserves the loaded Tree selection.');
 }
+
+{
+ const navigation=fs.readFileSync('js/navigation.js','utf8');
+ const elements=new Map(),moves=[];
+ const element=id=>{if(!elements.has(id))elements.set(id,{hidden:true,open:false,classList:{toggle(){}},close(){}});return elements.get(id);};
+ const graph={scrollLeft:340,scrollTop:270,scrollTo(position){moves.push(position);this.scrollLeft=position.left;this.scrollTop=position.top;}};
+ elements.set('#graph',graph);element('#explore').hidden=false;
+ const ctx=vm.createContext({$:element,graphLayout:{},graphScale:.65,document:{body:{classList:{contains:()=>true}}},ui:{setSection(){}},rememberSection(){},restoringPageHistory:false,updatePageUrl(){},saveTimelinePosition(){},render(){throw Error('Menu return must not rebuild the tree');},fitGraph(){throw Error('Menu return must not fit the camera');}});
+ vm.runInContext(navigation.slice(navigation.indexOf('let lastTreeViewport'),navigation.indexOf('function openRelationshipFinder()')),ctx);
+ ctx.showSection('insights');graph.scrollLeft=0;graph.scrollTop=0;
+ ctx.showSection('tree',{preserveTreeView:true});
+ assert.equal(graph.scrollLeft,340);assert.equal(graph.scrollTop,270);assert.equal(ctx.graphScale,.65);
+ assert.equal(moves.length,1);
+ console.log('Passed: Tree menu restores exact pan and zoom without rendering or fitting again.');
+}

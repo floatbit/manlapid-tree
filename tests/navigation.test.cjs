@@ -73,3 +73,14 @@ vm.runInContext(tree.slice(tree.indexOf('function start('),tree.indexOf('functio
 vm.runInContext("start('person')",startContext);
 assert.equal(element('#insightsPage').hidden,true);assert.equal(element('#storiesPage').hidden,true);assert.equal(element('#explore').hidden,false);
 console.log('Passed: opening a person switches from Insights or Stories to the Tree canvas.');
+
+{
+ const calls=[];
+ const searchContext=vm.createContext({person:id=>id==='selected'?{id}:null,clearTreeView:()=>calls.push('clear'),start:id=>calls.push('start:'+id)});
+ vm.runInContext(code.slice(code.indexOf('function openHeaderSearchPerson('),code.indexOf('function handleSearchKey(')),searchContext);
+ searchContext.openHeaderSearchPerson('selected');
+ assert.deepEqual(calls,['clear','start:selected'],'Header search clears before loading the requested person in Tree');
+ searchContext.openHeaderSearchPerson('missing');
+ assert.equal(calls.length,2,'Invalid search selections leave the tree intact');
+ console.log('Passed: header search clears Tree before starting the selected person.');
+}

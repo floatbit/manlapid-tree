@@ -265,6 +265,11 @@ function highlightSearch(index) {
   $('#search').setAttribute('aria-activedescendant', active.id);
   active.scrollIntoView({ block: 'nearest' });
 }
+function openHeaderSearchPerson(id) {
+  if (!person(id)) return;
+  clearTreeView();
+  start(id);
+}
 function handleSearchKey(event) {
   if (event.isComposing) return;
   if (event.key === 'Escape') {
@@ -294,15 +299,15 @@ function handleSearchKey(event) {
     event.preventDefault();
     const options = [...document.querySelectorAll('[data-match]')];
     if (activeSearchIndex >= 0 && options[activeSearchIndex]) {
-      openPersonDetails(options[activeSearchIndex].dataset.match);
+      openHeaderSearchPerson(options[activeSearchIndex].dataset.match);
       return;
     }
     const q = $('#search').value.trim().toLowerCase(),
       exact = data.people.filter((p) =>
         [p.name, ...(p.nicknames || [])].some((name) => name.toLowerCase() === q),
       );
-    if (exact.length === 1) openPersonDetails(exact[0].id);
-    else if (options.length) openPersonDetails(options[0].dataset.match);
+    if (exact.length === 1) openHeaderSearchPerson(exact[0].id);
+    else if (options.length) openHeaderSearchPerson(options[0].dataset.match);
     else search();
   }
 }
@@ -335,7 +340,7 @@ function search() {
       matches.length ? 'Someone missing?' : 'No matching people yet.'
     }</p><button id="request">Request “${esc(query)}” by email ${uiIcon('arrowRight')}</button>`;
   document.querySelectorAll('[data-match]').forEach((b, i) => {
-    b.onclick = () => openPersonDetails(b.dataset.match);
+    b.onclick = () => openHeaderSearchPerson(b.dataset.match);
     b.onmouseenter = () => highlightSearch(i);
   });
   $('#request').onclick = () => {

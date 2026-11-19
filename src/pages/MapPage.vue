@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue';
+import {PhMapPin,PhPath,PhGlobeHemisphereWest,PhCornersOut} from '@phosphor-icons/vue';
 import MobileSidebar from '../components/MobileSidebar.vue';
 const page = ref(null);
 let headerObserver;
@@ -22,10 +23,10 @@ onBeforeUnmount(() => headerObserver?.disconnect());
         <div id="familyMapCanvas" aria-label="Map of family members’ current locations"></div>
         <div class="map-view-controls">
           <div class="map-view-toggle" role="group" aria-label="Map view">
-            <button id="mapCurrentView" type="button" aria-pressed="true">Current locations</button
-            ><button id="mapHistoryView" type="button" aria-pressed="false">Places lived</button>
+            <button id="mapCurrentView" type="button" aria-pressed="true" title="Current locations"><PhMapPin :size="16" aria-hidden="true"/><span>Current locations</span></button
+            ><button id="mapHistoryView" type="button" aria-pressed="false" title="Places lived"><PhPath :size="16" aria-hidden="true"/><span>Places lived</span></button><button id="mapMigrationsView" type="button" aria-pressed="false" title="Migrations"><PhGlobeHemisphereWest :size="16" aria-hidden="true"/><span>Migrations</span></button>
           </div>
-          <button id="fitFamilyMap" type="button">Fit everyone</button>
+          <button id="fitFamilyMap" type="button" title="Fit the current map view"><PhCornersOut :size="16" aria-hidden="true"/><span id="fitFamilyMapLabel">Fit everyone</span></button>
         </div>
       </div>
       <MobileSidebar sidebar-key="map" label="Map details"><aside id="familyMapPeople">

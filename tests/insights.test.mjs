@@ -38,3 +38,12 @@ console.log('Passed: migration birthplaces sort by country, then address.');
  for(const g of column.groups)for(const p of g.places)assert.equal(column.positions.get(p.value),p.y-4,'Paths align to city rows rather than country headings');
  console.log('Passed: migration groups both columns by country with alphabetical city labels and aligned paths.');
 }
+
+{
+ const {pyramidAgeDetails,agePyramid}=await import('../src/domain/insights.js');
+ const now=new Date(2026,10,18);
+ assert.equal(pyramidAgeDetails({birthday:'1980-12-25'},now).label,'45 years old');
+ assert.equal(pyramidAgeDetails({birthday:'About 1980'},now).label,'About 46 years old');
+ assert.equal(pyramidAgeDetails({birthday:'1940-12-25',deceased:true,dateDetails:{death:'2020-01-01'}},now).label,'79 years old');
+ assert.equal(agePyramid([{birthday:'1990-12-25'}],now).rows[1].living.length,1,'Exact age determines bracket before birthday');
+}

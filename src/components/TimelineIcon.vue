@@ -12,7 +12,7 @@ const icons = {
   mothers_day: PhFlower, memorial_day: PhFlag, fathers_day: PhUser,
   independence_day: PhFlag, labor_day: PhBriefcase, halloween: PhGhost,
   thanksgiving: PhAcorn, hanukkah: PhStarOfDavid, christmas: PhTreeEvergreen,
-  new_years_eve: PhChampagne, holiday: PhConfetti, birthday_party: PhCake,
+  new_years_eve: PhChampagne, holiday: PhConfetti, birthday_party: PhCake, sweet_16: PhConfetti,
   marriage: PhHeart, move: PhHouse, graduation: PhGraduationCap,
   reunion: PhUsersThree, other: PhCircle,
 };

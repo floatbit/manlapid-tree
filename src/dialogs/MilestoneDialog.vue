@@ -21,6 +21,7 @@ import MilestonePeople from '../components/MilestonePeople.vue';
             <optgroup label="Family milestones">
               <option value="marriage">Marriage</option>
               <option value="birthday_party">Birthday Party</option>
+              <option value="sweet_16">Sweet 16</option>
               <option value="move">Move</option>
               <option value="graduation">Graduation</option>
               <option value="reunion">Family reunion</option>

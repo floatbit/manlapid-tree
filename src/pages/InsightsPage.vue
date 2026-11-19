@@ -4,7 +4,7 @@ import MobileSidebar from '../components/MobileSidebar.vue';
 import { computed, ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { PhArrowRight, PhX } from '@phosphor-icons/vue';
 import { family, useRuntime, viewerRelation } from '../ui/runtime.js';
-import { familyInsights, locationLabel, agePyramid, migrationDisplayLabel, compareMigrationBirthplaces, migrationColumn } from '../domain/insights.js';
+import { familyInsights, locationLabel, agePyramid, pyramidAge, pyramidAgeDetails, migrationDisplayLabel, compareMigrationBirthplaces, migrationColumn } from '../domain/insights.js';
 import { insightSuperlatives } from '../domain/insight-superlatives.js';
 import {openMobileSidebar,isMobileSidebar} from '../ui/mobile-sidebar.js';
 import InsightStatGroup from '../components/InsightStatGroup.vue';
@@ -21,10 +21,12 @@ onBeforeUnmount(()=>headerObserver?.disconnect());
 async function revealPanel(){await nextTick();if(sidebar.value)sidebar.value.scrollTop=0;if(isMobileSidebar())openMobileSidebar('insights');else if(window.matchMedia('(max-width: 900px)').matches)sidebar.value?.scrollIntoView?.({behavior:'smooth',block:'start'});}
 function showPerson(person){selected.value=person;panel.value='person';revealPanel();}
 function showFlow(value){highlightedRoutes.value=[routeKey(value)];flow.value=value;context.value={title:migrationDisplayLabel(value.from)+' → '+migrationDisplayLabel(value.to),people:value.people,routes:[value]};selected.value=null;panel.value='people';revealPanel();}
-function showBracket(value){highlightedRoutes.value=[];flow.value=value;context.value={title:value.from+' · '+value.to,people:value.people};selected.value=null;panel.value='people';revealPanel();}
+function showBracket(value){highlightedRoutes.value=[];flow.value=value;context.value={title:value.from+' · '+value.to,people:value.people,ageGroup:true};selected.value=null;panel.value='people';revealPanel();}
 function showPlace(place,side){const matches=routes.value.filter(r=>r[side]===place);highlightedRoutes.value=matches.map(routeKey);context.value={title:migrationDisplayLabel(place),routes:matches,people:[...new Map(matches.flatMap(r=>r.people).map(p=>[p.id,p])).values()]};selected.value=null;panel.value='people';revealPanel();}
 function showMonth(value){highlightedRoutes.value=[];month.value=value;selected.value=null;panel.value='month';revealPanel();}
 function clearPanel(){highlightedRoutes.value=[];panel.value='';selected.value=null;context.value=null;}
+const contextPeople=computed(()=>context.value?.ageGroup ? [...context.value.people].sort((a,b)=>(pyramidAge(b) ?? -1)-(pyramidAge(a) ?? -1) || comparePeople(a,b)) : sortPeople(context.value?.people || []));
+const pyramidAgeLabel=p=>{const age=pyramidAgeDetails(p);if(!age)return 'Age unavailable';return p.deceased?age.label.replace(/old$/, 'at passing'):age.label;};
 const hoveredBirth=ref(null);
 const now=new Date().getFullYear();
 const pyramid=computed(()=>agePyramid(family.value.people));
@@ -100,9 +102,9 @@ const statGroups=computed(()=>{
 
   </section>
   <InsightStatGroup :cards="statGroups[1]" label="Generations &amp; Families" />
-  <section class="insights-section"><p class="eyebrow">OUR FAMILY, THEN AND NOW</p><h2>Living &amp; Historical Age Pyramid</h2><p>Living relatives by approximate age today; historical relatives by approximate age at passing.</p><div class="pyramid-legend"><span>Living</span><span>Historical</span></div>
+  <section class="insights-section"><p class="eyebrow">OUR FAMILY, THEN AND NOW</p><h2>Living &amp; Historical Age Pyramid</h2><p>Living relatives by age today; historical relatives by age at passing.</p><div class="pyramid-legend"><span>Living</span><span>Historical</span></div>
     <div class="pyramid-row" v-for="r in pyramid.rows" :key="r.label"><span>{{r.label}}</span><div><button class="pyramid-living" :style="{width:Math.max(4,r.living.length/pyramidMax*100)+'%'}" :aria-label="r.label+': '+r.living.length+' living relatives'" @click="showBracket({from:r.label,to:'Living',people:r.living})">{{r.living.length}}</button><button class="pyramid-historical" :style="{width:Math.max(4,r.historical.length/pyramidMax*100)+'%'}" :aria-label="r.label+': '+r.historical.length+' historical relatives'" @click="showBracket({from:r.label,to:'Historical',people:r.historical})">{{r.historical.length}}</button></div></div>
-    <small>{{pyramid.unknown}} relatives excluded because birth or death years are missing. Ages use year estimates. Select a bar to see relatives in the sidebar.</small>
+    <small>{{pyramid.unknown}} relatives excluded because birth or death years are missing. Partial dates use approximate ages. Select a bar to see relatives in the sidebar.</small>
 
   </section>
   <InsightStatGroup :cards="statGroups[2]" label="Milestones, Love &amp; Elders" />
@@ -142,7 +144,7 @@ const statGroups=computed(()=>{
   <template v-else-if="panel==='people' && context">
     <template v-if="!context.routes"><h2>{{context.title}}</h2><p v-if="context.description">{{context.description}}</p><p>{{context.people.length}} relatives</p></template>
     <div v-if="context.routes" class="insights-sidebar-routes"><section v-for="route in context.routes" :key="routeKey(route)" class="insights-sidebar-route"><h3>{{migrationDisplayLabel(route.from)}} <PhArrowRight class="arrow-link-icon" :size="14" aria-hidden="true"/> {{migrationDisplayLabel(route.to)}}</h3><p>{{route.people.length}} {{route.people.length===1?'relative':'relatives'}}</p><div class="insights-sidebar-people"><button v-for="p in sortPeople(route.people)" :key="p.id" @click="showPerson(p)"><PersonAvatar :person="p"/><span>{{name(p)}}<small v-if="viewerRelation(p.id)">{{viewerRelation(p.id)}}</small></span><PhArrowRight class="arrow-link-icon" :size="16"/></button></div></section></div>
-    <div v-else class="insights-sidebar-people"><button v-for="p in sortPeople(context.people)" :key="p.id" @click="showPerson(p)"><PersonAvatar :person="p"/><span>{{name(p)}}<small v-if="viewerRelation(p.id)">{{viewerRelation(p.id)}}</small></span><PhArrowRight class="arrow-link-icon" :size="16"/></button></div><p v-if="!context.people.length">No relatives in this group.</p>
+    <div v-else class="insights-sidebar-people"><button v-for="p in contextPeople" :key="p.id" @click="showPerson(p)"><PersonAvatar :person="p"/><span>{{name(p)}}<small v-if="context.ageGroup" class="insights-person-age">{{pyramidAgeLabel(p)}}</small><small v-if="viewerRelation(p.id)">{{viewerRelation(p.id)}}</small></span><PhArrowRight class="arrow-link-icon" :size="16"/></button></div><p v-if="!context.people.length">No relatives in this group.</p>
   </template>
   <template v-else-if="panel==='month' && month">
     <h2>{{monthName(month.month)}}</h2><p>Birthdays &amp; Wedding Anniversaries</p>

@@ -1,4 +1,5 @@
 <script setup lang="js">
+import EventAges from './EventAges.vue';
 import ViewerRelation from './ViewerRelation.vue';
 import { PhArrowRight } from '@phosphor-icons/vue';
 import { computed, ref } from 'vue';
@@ -116,7 +117,7 @@ function marriagePeople(event) {
               :class="{
                 'marriage-event': event.type === 'marriage',
                 'easter-event': event.type === 'easter',
-                'birthday-party-event': event.type === 'birthday_party',
+                'birthday-party-event': ['birthday_party','sweet_16'].includes(event.type),
                 'smaller-holiday-icon': [
                   'thanksgiving',
                   'christmas',
@@ -145,8 +146,9 @@ function marriagePeople(event) {
                   <button type="button" class="milestone-open" @click="openEvent(event)">
                     <strong>{{ event.title }}</strong>
                     <time :datetime="event.date">{{ api.familyDateLabel(event.date) }}{{ event.location ? ' · ' + event.location : '' }}</time>
-                    <span v-if="names(event)" class="milestone-people">{{ names(event) }}</span>
                   </button>
+                  <EventAges :event="event" />
+                  <span v-if="names(event)" class="milestone-people">{{ names(event) }}</span>
                   <span class="birth-album-actions">
                     <button v-if="event.photos?.length" type="button" @click="api.openPhotoLightbox(event.photos, 0, event.title)">View Album · {{ api.milestoneMediaCount(event.photos) }} <PhArrowRight :size="16" class="arrow-link-icon ui-icon" aria-hidden="true" /></button><button v-if="canEdit && event.kind === 'milestone' && !['birth','birthday','death','remembrance'].includes(event.type)" type="button" class="birth-album-edit" @click.stop.prevent="editEvent(event)">Edit Milestone <PhArrowRight :size="16" class="arrow-link-icon" /></button>
                   </span>

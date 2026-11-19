@@ -1,0 +1,21 @@
+import assert from 'node:assert/strict';
+import {ageAtEvent,eventAges} from '../src/domain/event-ages.js';
+assert.equal(ageAtEvent('1980-12-25','2012-12-24').years,31);
+assert.equal(ageAtEvent('1980-12-25','2012-12-25').years,32);
+assert.equal(ageAtEvent('1980','2012-01-01').label,'About 32 years old');
+assert.equal(ageAtEvent('About 1980','2012').approximate,true);
+assert.equal(ageAtEvent('2020-12-25','2020-12-24'),null);
+assert.equal(ageAtEvent('2020-12-25','2021-01-01').label,'Under 1 year old');
+assert.equal(ageAtEvent('2021-02-29','2022-03-01'),null);
+assert.equal(ageAtEvent('2000-02-29','2020-02-28').years,19);
+assert.equal(ageAtEvent('Date unknown','2020'),null);
+assert.equal(ageAtEvent('', '2020'),null);
+assert.equal(ageAtEvent('2020','2019'),null);
+const people=[{id:'p',name:'Christopher Manlapid',firstName:'Christopher',nicknames:['Chris'],birthday:'1980-12-25'},{id:'missing',name:'Unknown'}];
+assert.deepEqual(eventAges({type:'birthday_party',date:'2010-12-25',participants:['p','p','missing']},people),[{id:'p',label:'Chris turned 30'}]);
+assert.equal(eventAges({type:'birth',date:'1980',participants:['p']},people).length,0);
+assert.equal(eventAges({type:'marriage',date:'2012-01-01',participants:['p']},people)[0].label,'Chris · 31 years old');
+assert.equal(eventAges({type:'move',date:'2012',participants:['p']},people)[0].label,'Chris · About 32 years old');
+console.log('Passed: event ages account for birthdays, approximate dates, invalid dates, infants and participant deduplication.');
+
+assert.equal(eventAges({type:'sweet_16',date:'1996-12-25',participants:['p']},people)[0].label,'Chris turned 16');

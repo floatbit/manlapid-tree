@@ -25,9 +25,11 @@ let currentLocationsCamera = validMapCamera(savedMapView.current) ? savedMapView
 const historyMapCameras = new Map(
   Object.entries(savedMapView.history || {}).filter(([, camera]) => validMapCamera(camera)),
 );
-let familyMapMode = savedMapView.mode === 'history' ? 'history' : 'current',
+let familyMapMode = ['history','migrations'].includes(savedMapView.mode) ? savedMapView.mode : 'current',
   migrationLines = [],
   migrationPersonId = typeof savedMapView.personId === 'string' ? savedMapView.personId : null;
+let migrationConnectionsCamera = validMapCamera(savedMapView.migrations) ? savedMapView.migrations : null;
+let migrationConnectionRoutes = [], migrationConnectionLines = [], migrationConnectionsMissing = 0;
 let familyMap = null,
   familyMapMarkers = [],
   familyMapPopup = null,
@@ -44,6 +46,7 @@ function persistMapView() {
         mode: familyMapMode,
         personId: migrationPersonId,
         current: currentLocationsCamera,
+        migrations: migrationConnectionsCamera,
         history: Object.fromEntries(historyMapCameras),
         popupPersonId: currentLocationsPopupPersonId,
       }),
@@ -57,6 +60,7 @@ function rememberMapCamera() {
   if (!center || !Number.isFinite(zoom)) return;
   const camera = { center: { lat: center.lat(), lng: center.lng() }, zoom };
   if (familyMapMode === 'current') currentLocationsCamera = camera;
+  else if (familyMapMode === 'migrations') migrationConnectionsCamera = camera;
   else if (migrationPersonId) historyMapCameras.set(migrationPersonId, camera);
   persistMapView();
 }
@@ -115,6 +119,7 @@ function clusterFamilyLocations(groups, zoom) {
   return clusters;
 }
 function fitFamilyMap() {
+  if (familyMapMode === 'migrations') { fitMigrationConnections(); return; }
   if (familyMapMode === 'history') {
     fitMigrationPath();
     return;
@@ -128,7 +133,7 @@ function fitFamilyMap() {
   } else familyMap.fitBounds(bounds, 48);
 }
 function drawFamilyMapClusters() {
-  if (familyMapMode === 'history') return;
+  if (familyMapMode !== 'current') return;
   if (!familyMapMarkerLibrary) return;
   familyMapPopup.close();
   for (const marker of familyMapMarkers) marker.map = null;
@@ -314,7 +319,7 @@ function showMapPerson(id) {
     })
     .join('');
   const homes = p.locationHistory?.length || 0;
-  details.innerHTML = `<button type="button" id="mapBackToLocations">← All Locations</button>
+  details.innerHTML = `<button type="button" id="mapBackToLocations">← ${familyMapMode==='migrations'?'All migrations':'All Locations'}</button>
     <div class="map-profile-header">${avatar(p)}<div><h2>${esc(p.name)}</h2>${
     p.deceased
       ? '<span class="deceased-badge">Deceased</span>'
@@ -376,13 +381,15 @@ function closeMapPerson() {
   $('#mapSelectedPerson').hidden = true;
   $('#mapSelectedPerson').replaceChildren();
   $('#mapLocationDirectory').hidden = false;
+  if (familyMapMode === 'migrations' && familyMap) showMigrationConnections();
 }
 async function renderFamilyMap({ fit = true } = {}) {
   rememberMapCamera();
   mapCameraReady = false;
   $('#mapCurrentView').setAttribute('aria-pressed', String(familyMapMode === 'current'));
   $('#mapHistoryView').setAttribute('aria-pressed', String(familyMapMode === 'history'));
-  $('#fitFamilyMap').textContent = familyMapMode === 'history' ? 'Fit path' : 'Fit everyone';
+  $('#mapMigrationsView').setAttribute('aria-pressed',String(familyMapMode === 'migrations'));
+  $('#fitFamilyMapLabel').textContent = familyMapMode === 'history' ? 'Fit path' : 'Fit everyone';
   const version = ++familyMapRenderVersion,
     { groups, missing } = mapLocationGroups(data.people),
     mapped = groups.reduce((n, g) => n + g.people.length, 0);
@@ -459,6 +466,7 @@ async function renderFamilyMap({ fit = true } = {}) {
       await renderMigrationView();
       return;
     }
+    if (familyMapMode === 'migrations') { await renderMigrationConnections(version); return; }
     drawFamilyMapClusters();
     groups.forEach((group, i) => {
       const button = $('#mappedPeople').querySelector(`[data-map-group="${i}"]`);
@@ -502,6 +510,7 @@ function setFamilyMapMode(mode) {
   familyMapMode = mode;
   $('#mapCurrentView').setAttribute('aria-pressed', String(mode === 'current'));
   $('#mapHistoryView').setAttribute('aria-pressed', String(mode === 'history'));
+  $('#mapMigrationsView').setAttribute('aria-pressed',String(mode === 'migrations'));
   for (const line of migrationLines) line.setMap(null);
   migrationLines = [];
   familyMapPopup?.close();
@@ -661,7 +670,7 @@ async function renderMigrationView() {
   $('#familyMapStatus').textContent =
     'Numbered stops show moves in date order. Lines connect places; they do not show an actual travel route.';
   $('#fitFamilyMap').disabled = !stops.length;
-  $('#fitFamilyMap').textContent = 'Fit path';
+  $('#fitFamilyMapLabel').textContent = 'Fit path';
   if (!familyMap || !familyMapMarkerLibrary) return;
   for (const marker of familyMapMarkers) marker.map = null;
   familyMapMarkers = [];
@@ -730,10 +739,11 @@ async function renderMigrationView() {
   persistMapView();
 }
 $('#mapCurrentView').onclick = () => {
-  $('#fitFamilyMap').textContent = 'Fit everyone';
+  $('#fitFamilyMapLabel').textContent = 'Fit everyone';
   setFamilyMapMode('current');
 };
 $('#mapHistoryView').onclick = () => setFamilyMapMode('history');
+$('#mapMigrationsView').onclick = () => setFamilyMapMode('migrations');
 
 async function openFamilyMapLocation(personId) {
   const group = mapLocationGroups(data.people).groups.find((location) =>
@@ -778,4 +788,78 @@ async function openPersonPlaces(personId, index) {
   await renderFamilyMap();
   if (index !== undefined) $('#mapSelectedPerson [data-migration-stop="' + index + '"]')?.click();
   scrollToFamilyMap();
+}
+
+function migrationPlaceLabel(value) {
+  return String(value || '').replace(/\b([A-Z]{2})\s+\d{5}(?:-\d{4})?\b/g,'$1');
+}
+function fitMigrationConnections() {
+  if (!familyMap || !migrationConnectionRoutes.length) return;
+  const bounds = new google.maps.LatLngBounds();
+  for (const route of migrationConnectionRoutes) { bounds.extend(route.fromPosition); bounds.extend(route.toPosition); }
+  if (bounds.getNorthEast().equals(bounds.getSouthWest())) {
+    familyMap.setCenter(migrationConnectionRoutes[0].fromPosition);familyMap.setZoom(7);
+  } else familyMap.fitBounds(bounds,48);
+}
+function showMigrationConnections(selected = null) {
+  if (familyMapMode !== 'migrations') return;
+  ui.unmountPersonPhotos('map');
+  mapSelectedPersonId=null;
+  const routes=selected || migrationConnectionRoutes;
+  const active=new Set((selected || []).map(route=>route.id));
+  for(const {route,line} of migrationConnectionLines) line.setOptions({strokeColor:active.has(route.id)?'#285b44':'#789a6b',strokeOpacity:(!selected || active.has(route.id)) ? .9 : .2,strokeWeight:2+Math.min(7,route.people.length)+(active.has(route.id)?2:0),zIndex:active.has(route.id)?5:1});
+  $('#familyMapPeople').classList.add('showing-person');
+  $('#mapLocationDirectory').hidden=true;
+  const details=$('#mapSelectedPerson');details.hidden=false;
+  const peopleCount=new Set(routes.flatMap(route=>route.people.map(p=>p.id))).size;
+  details.innerHTML=`${selected?'<button type="button" id="allMigrationConnections">← All migrations</button>':''}<p class="eyebrow">FROM THERE TO HERE</p><h2>Migrations</h2><p>${peopleCount} ${peopleCount===1?'relative':'relatives'} · ${routes.length} ${routes.length===1?'connection':'connections'}</p><p class="hint">Birthplace → current home, or last recorded place lived. Lines connect recorded places, not actual travel routes.</p>${!selected && migrationConnectionsMissing?`<p class="hint">${migrationConnectionsMissing} relatives need a birthplace, destination, or map coordinates to appear here.</p>`:''}${routes.length?'':'<p>No mapped migration connections yet. Add a birthplace and a current or past home with map coordinates.</p>'}${routes.map(route=>`<section class="map-migration-route"><button type="button" class="map-migration-route-title" data-migration-route="${esc(route.id)}"><strong>${esc(migrationPlaceLabel(route.from))} ${uiIcon('arrowRight')} ${esc(migrationPlaceLabel(route.to))}</strong></button><p class="hint">${route.people.length} ${route.people.length===1?'relative':'relatives'}</p>${route.people.map(p=>`<button type="button" class="map-profile-relative" data-migration-person="${esc(p.id)}">${avatar(p)}<span><strong>${esc(displayName(p))}</strong>${viewerBadge(p.id)}</span>${uiIcon('arrowRight')}</button>`).join('')}</section>`).join('')}`;
+  details.querySelectorAll('[data-migration-route]').forEach(button=>button.onclick=()=>{
+    const route=migrationConnectionRoutes.find(route=>route.id===button.dataset.migrationRoute);
+    if(route) { showMigrationConnections([route]);ui.openSidebar?.('map'); }
+  });
+  details.querySelectorAll('[data-migration-person]').forEach(button=>button.onclick=()=>showMapPerson(button.dataset.migrationPerson));
+  if($('#allMigrationConnections'))$('#allMigrationConnections').onclick=()=>showMigrationConnections();
+  details.scrollTop=0;$('#familyMapPeople').scrollTop=0;
+}
+async function renderMigrationConnections(version) {
+  const {Polyline}=await google.maps.importLibrary('maps');
+  if(version!==familyMapRenderVersion || familyMapMode!=='migrations')return;
+  for(const marker of familyMapMarkers)marker.map=null;
+  familyMapMarkers=[];
+  for(const line of migrationLines)line.setMap(null);
+  migrationLines=[];migrationConnectionLines=[];
+  familyMapPopup?.close();
+  const result=ui.migrationMapData(data.people);
+  migrationConnectionRoutes=result.routes;
+  migrationConnectionsMissing=result.missing;
+  const locations=new Map();
+  for(const route of migrationConnectionRoutes) {
+    const line=new Polyline({map:familyMap,path:[route.fromPosition,route.toPosition],geodesic:true,strokeColor:'#789a6b',strokeOpacity:.9,strokeWeight:2+Math.min(7,route.people.length),icons:[{icon:{path:google.maps.SymbolPath.FORWARD_CLOSED_ARROW,scale:2},offset:'60%'}]});
+    line.addListener('click',()=>{showMigrationConnections([route]);ui.openSidebar?.('map');});
+    migrationLines.push(line);migrationConnectionLines.push({route,line});
+    for(const [label,position] of [[route.from,route.fromPosition],[route.to,route.toPosition]]) {
+      const key=position.lat.toFixed(5)+','+position.lng.toFixed(5);
+      if(!locations.has(key))locations.set(key,{position,labels:new Set(),routes:new Map()});
+      const place=locations.get(key);place.labels.add(label);place.routes.set(route.id,route);
+    }
+  }
+  const {AdvancedMarkerElement,PinElement}=familyMapMarkerLibrary;
+  for(const place of locations.values()) {
+    const routes=[...place.routes.values()],peopleCount=new Set(routes.flatMap(route=>route.people.map(p=>p.id))).size;
+    const label=[...place.labels].map(migrationPlaceLabel).join(' / ');
+    const marker=new AdvancedMarkerElement({map:familyMap,position:place.position,title:label,content:new PinElement({background:'#38634e',borderColor:'#263c36',glyphColor:'#fff',glyphText:String(peopleCount)})});
+    marker.addListener('click',()=>{
+      const content=document.createElement('div');content.className='map-person-popup';
+      content.innerHTML=`<h3>${esc(label)}</h3><p>${peopleCount} ${peopleCount===1?'relative':'relatives'} · ${routes.length} ${routes.length===1?'connection':'connections'}</p><button type="button">View migration connections ${uiIcon('arrowRight')}</button>`;
+      content.querySelector('button').onclick=()=>{showMigrationConnections(routes);familyMapPopup.close();ui.openSidebar?.('map');};
+      if(window.matchMedia('(max-width:760px)').matches)ui.closeSidebar?.('map');
+      familyMapPopup.setContent(content);familyMapPopup.open({map:familyMap,anchor:marker});
+    });
+    familyMapMarkers.push(marker);
+  }
+  $('#fitFamilyMapLabel').textContent='Fit migrations';$('#fitFamilyMap').disabled=!migrationConnectionRoutes.length;
+  $('#familyMapStatus').textContent=`${result.missing} relatives need a birthplace, destination, or map coordinates to appear here.`;
+  showMigrationConnections();
+  if(migrationConnectionsCamera)restoreMapCamera(migrationConnectionsCamera);else fitMigrationConnections();
+  mapCameraReady=!!migrationConnectionRoutes.length;persistMapView();
 }

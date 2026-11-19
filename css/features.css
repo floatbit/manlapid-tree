@@ -3951,3 +3951,29 @@ button.album-milestone-badge:focus-visible { outline:2px solid var(--green); out
 :is(#details,#mapSelectedPerson,.family-person-sidebar,.insights-sidebar) :is(.sidebar-edit-actions,.family-person-actions) { margin-top:var(--sidebar-section-gap); margin-bottom:0; }
 #timeline .timeline-sidebar-stack { gap:var(--sidebar-section-gap); }
 .insights-sidebar-route + .insights-sidebar-route { margin-top:var(--sidebar-section-gap); }
+
+.timeline-event-ages { color:var(--muted); font-size:12px; line-height:1.6; }
+.timeline-event-ages button { padding:0; margin-left:8px; border:0; background:transparent; color:var(--green); font:inherit; text-decoration:underline; text-underline-offset:3px; }
+
+.map-migration-route { margin-block:var(--sidebar-section-gap,43px); }
+.map-migration-route-title { padding:0; border:0; background:transparent; text-align:left; color:var(--green); }
+.map-migration-route-title strong { display:inline; font-size:13px; line-height:1.6; }
+.map-migration-route .map-profile-relative { display:flex; align-items:center; gap:10px; width:100%; text-align:left; margin-top:8px; padding:10px; border:0; background:#edf2e6; }
+.map-migration-route .map-profile-relative .avatar { width:36px; height:36px; font-size:12px; flex-shrink:0; }
+.map-migration-route .map-profile-relative > span { flex:1; }
+.map-migration-route .map-profile-relative strong { font-size:13px; }
+.map-migration-route .map-profile-relative [data-viewer-person] { display:block; }
+@media (max-width:760px) { .map-view-toggle { flex-wrap:wrap; } }
+
+/* Shared compact floating toolbar treatment for Tree and Map. */
+.map-view-controls { align-items:center; gap:3px; width:max-content; padding:4px; background:#fffefa; border:1px solid var(--line); border-radius:10px; box-shadow:0 4px 22px #263c3612; }
+.map-view-controls .map-view-toggle { gap:3px; border:0; background:transparent; border-radius:0; box-shadow:none; overflow:visible; }
+.map-view-controls button,.map-view-controls #fitFamilyMap { display:inline-flex; align-items:center; justify-content:center; gap:6px; min-height:36px; padding:8px 10px; border:0; border-radius:6px; background:transparent; color:var(--ink); box-shadow:none; font-size:12px; }
+.map-view-controls button:hover { background:#edf3e7; }
+.map-view-controls .map-view-toggle button[aria-pressed='true'] { background:#e0e9df; color:var(--green); }
+.map-view-controls button > svg { flex-shrink:0; }
+@media (max-width:760px) {
+  #familyMapPage .map-view-controls { left:10px; top:10px; right:auto; max-width:calc(100% - 20px); gap:2px; }
+  #familyMapPage .map-view-controls button { min-height:40px; padding:8px; }
+  #familyMapPage .map-view-controls .map-view-toggle { flex-wrap:wrap; }
+}

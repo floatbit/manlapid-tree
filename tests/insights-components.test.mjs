@@ -56,3 +56,14 @@ await page.findAll('.insights-wedding-portraits button')[1].trigger('click');ass
 ui.sync({people:[],links:[],milestones:[]});await page.trigger('noop');assert(page.text().includes('No birth years recorded yet.'));page.unmount();
 const header=mount(AppHeader);await header.find('.header-more-trigger').trigger('click');assert.equal(header.find('#headerMoreLinks').attributes('hidden'),undefined);assert.deepEqual(header.findAll('#headerMoreLinks button').map(b=>b.text()),['Albums','Stories','Recipes','Contribute','Select Me']);await header.find('.header-more').trigger('keydown',{key:'Escape'});assert.notEqual(header.find('#headerMoreLinks').attributes('hidden'),undefined);header.unmount();
 console.log('Passed: Insights portraits, drawer, tree action, lifespan highlighting, flow selection, calendar, empty state and More menu.');
+
+{
+ const year=new Date().getFullYear();
+ ui.sync({people:[{id:'young',name:'Amy Alpha',birthday:String(year-42)},{id:'old',name:'Zoe Zulu',birthday:String(year-58)},{id:'middle',name:'Ben Beta',birthday:String(year-46)}],milestones:[],links:[]});
+ const ages=mount(InsightsPage);
+ await ages.findAll('.pyramid-living')[2].trigger('click');
+ assert.deepEqual(ages.findAll('.insights-sidebar-people button').map(b=>b.find('span:not(.avatar)').text().split('About')[0]),['Zoe Zulu','Ben Beta','Amy Alpha']);
+ assert.deepEqual(ages.findAll('.insights-person-age').map(a=>a.text()),['About 58 years old','About 46 years old','About 42 years old']);
+ ages.unmount();
+ console.log('Passed: Age Pyramid sidebar shows ages ordered oldest to youngest.');
+}

@@ -513,3 +513,15 @@ console.log(
  tagger.unmount();
  console.log('Passed: lightbox tag search selects and saves a person alongside existing tags.');
 }
+
+{
+ const {default:EventAges}=await import('../src/components/EventAges.vue');
+ family.value={people:Array.from({length:4},(_,i)=>({id:'age'+i,name:'Person '+i,birthday:'2000-06-01'}))};
+ const ages=mount(EventAges,{props:{event:{id:'wedding',type:'marriage',date:'2020-06-01',participants:['age0','age1','age2','age3']}}});
+ assert(ages.text().includes('20 years old'));
+ assert(!ages.text().includes('Person 3'));
+ await ages.find('button').trigger('click');
+ assert(ages.text().includes('Person 3'),'Additional participant ages are available on demand');
+ ages.unmount();
+ console.log('Passed: Timeline event ages show three participants with expansion for larger groups.');
+}

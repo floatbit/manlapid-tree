@@ -1,3 +1,4 @@
+import {ageAtEvent} from './event-ages.js';
 export function locationLabel(value) { return (typeof value === 'string' ? value : value?.location || '').trim(); }
 // Read-only summaries. Partial dates remain partial; unknown lifespans are omitted.
 export function dateParts(value) {
@@ -9,13 +10,14 @@ export function dateParts(value) {
   const match=String(value).match(/\b(\d{4})(?:-(\d{2})-(\d{2}))?\b/);
   return match ? {year:+match[1],month:+match[2] || null,day:+match[3] || null,approximate:!match[2] || /about|circa/i.test(value)} : null;
 }
-export function migrationDestination(person) {
+export function migrationDestinationPlace(person) {
   const current=locationLabel(person.location);
-  if(current) return current;
-  const homes=(person.locationHistory || []).map((home,index)=>({label:locationLabel(home),date:dateParts(home.date),index})).filter(home=>home.label);
+  if(current) return {location:current,lat:person.locationLat,lng:person.locationLng,placeId:person.locationPlaceId};
+  const homes=(person.locationHistory || []).map((home,index)=>({home,label:locationLabel(home),date:dateParts(home.date),index})).filter(home=>home.label);
   homes.sort((a,b)=>(a.date?.year ?? -Infinity)-(b.date?.year ?? -Infinity)||(a.date?.month || 0)-(b.date?.month || 0)||(a.date?.day || 0)-(b.date?.day || 0)||a.index-b.index);
-  return homes.at(-1)?.label || '';
+  return homes.at(-1)?.home || null;
 }
+export function migrationDestination(person) { return locationLabel(migrationDestinationPlace(person)); }
 export function familyInsights(people, milestones=[], now=new Date()) {
   const year=now.getFullYear();
   const lives=people.map(person=>({person,birth:dateParts(person.dateDetails?.birth || person.birthday),death:dateParts(person.dateDetails?.death || person.deathDate)})).filter(p=>p.birth && p.birth.year<=year).sort((a,b)=>a.birth.year-b.birth.year);
@@ -28,15 +30,18 @@ export function familyInsights(people, milestones=[], now=new Date()) {
   return {lives,months,current:counts('location'),birthplaces:counts('birthplace'),flows:[...flows.values()].sort((a,b)=>b.people.length-a.people.length),average:living.length ? Math.round(living.reduce((sum,p)=>sum+year-p.birth.year,0)/living.length):null};
 }
 
+export function pyramidAgeDetails(person, now=new Date()) {
+  const birth=person.dateDetails?.birth || person.birthday;
+  const date=person.deceased ? person.dateDetails?.death || person.deathDate : `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  return ageAtEvent(birth,date);
+}
+export function pyramidAge(person, now=new Date()) { return pyramidAgeDetails(person,now)?.years ?? null; }
 export function agePyramid(people, now=new Date()) {
   const rows=['Under 18','18–35','36–60','61+'].map(label=>({label,living:[],historical:[]}));
   let unknown=0;
   for(const p of people){
-    const birth=dateParts(p.dateDetails?.birth || p.birthday);
-    const death=dateParts(p.dateDetails?.death || p.deathDate);
-    if(!birth || (p.deceased && !death)){unknown++;continue;}
-    const age=(p.deceased?death.year:now.getFullYear())-birth.year;
-    if(age<0){unknown++;continue;}
+    const age=pyramidAge(p,now);
+    if(age===null){unknown++;continue;}
     rows[age<18?0:age<=35?1:age<=60?2:3][p.deceased?'historical':'living'].push(p);
   }
   return {rows,unknown};

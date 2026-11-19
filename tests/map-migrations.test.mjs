@@ -19,3 +19,14 @@ assert.deepEqual(result.routes.map(r=>[r.from,r.to]),familyInsights(people.slice
 assert.equal(migrationMapData([]).routes.length,0);
 assert.equal(migrationMapData([{birthplace:{location:'A',lat:99,lng:0},location:'B',locationLat:0,locationLng:0}]).routes.length,0,'Invalid coordinates do not create markers');
 console.log('Passed: migration routes match Insights, use last homes, share known coordinates, include historical relatives and omit unmappable records.');
+
+{
+ const locals=[{id:'same',birthplace:{location:'Flushing, Queens, NY, USA',lat:40.7,lng:-73.8},location:'Flushing, Queens, NY, USA',locationLat:40.7,locationLng:-73.8},
+ {id:'last',birthplace:{location:'Paris, France'},locationHistory:[{location:'Paris, France',date:'2000'}]},
+ {id:'alias',birthplace:{location:'Old label',placeId:'shared'},location:'New label',locationPlaceId:'shared'}];
+ assert.equal(familyInsights(locals).flows.length,0,'Insights omits same-place paths including last-home fallback');
+ const map=migrationMapData(locals);
+ assert.equal(map.routes.length,0);assert.equal(map.missing,0,'Same-place relatives are not reported as missing map data');
+ const {insightSuperlatives}=await import('../src/domain/insight-superlatives.js');
+ assert(insightSuperlatives(locals,[],[]).find(card=>card.eyebrow==='STAYED CLOSE').headline.includes('3'));
+}

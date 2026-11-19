@@ -1,3 +1,4 @@
+import {migrationDisplayLabel} from '../domain/insights.js';
 import {migrationMapData} from '../domain/map-migrations.js';
 import {comparePeople} from '../domain/people-order.js';
 import {personStory} from '../domain/person-story.js';
@@ -68,6 +69,7 @@ if (typeof window !== 'undefined') window.addEventListener('storage', event => {
 
 export const ui = {
   migrationMapData,
+  migrationDisplayLabel,
   comparePeople,
   personStory(person) { return personStory(person,{formatDate:runtime.value?.familyDateLabel,people:family.value.people,milestones:family.value.milestones || [],relatives:runtime.value?.connections?.(person.id) || []}); },
   clearPersonDetails() { sidebarPersonId.value=null; closeMobileSidebar('person-details'); },
@@ -256,3 +258,8 @@ ui.mountPersonPhotos = (host,personId,key) => {
   if(!host)return;
   const app=createApp(PersonPhotos,{personId,inSidebar:true});app.mount(host);personPhotoApps.set(key,app);
 };
+
+export const timelinePeriod = shallowRef(null);
+ui.timelinePeriod = timelinePeriod;
+
+ui.afterNextTick = nextTick;

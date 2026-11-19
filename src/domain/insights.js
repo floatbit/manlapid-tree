@@ -18,6 +18,14 @@ export function migrationDestinationPlace(person) {
   return homes.at(-1)?.home || null;
 }
 export function migrationDestination(person) { return locationLabel(migrationDestinationPlace(person)); }
+export function sameMigrationPlace(from,to) {
+  if (!locationLabel(from) || !locationLabel(to)) return false;
+  if (from?.placeId && to?.placeId && from.placeId === to.placeId) return true;
+  const normalized=value=>migrationDisplayLabel(locationLabel(value)).toLowerCase().replace(/,\s*(?:usa|us|united states of america)$/i,', united states').replace(/\s*,\s*/g,',').replace(/\s+/g,' ').trim();
+  if (normalized(from)===normalized(to)) return true;
+  const coords=place=>[place?.lat,place?.lng].every(v=>v!=null && String(v).trim()!=='' && Number.isFinite(Number(v)));
+  return coords(from) && coords(to) && Math.abs(Number(from.lat))<=90 && Math.abs(Number(from.lng))<=180 && Math.abs(Number(from.lat)-Number(to.lat))<0.00001 && Math.abs(Number(from.lng)-Number(to.lng))<0.00001;
+}
 export function familyInsights(people, milestones=[], now=new Date()) {
   const year=now.getFullYear();
   const lives=people.map(person=>({person,birth:dateParts(person.dateDetails?.birth || person.birthday),death:dateParts(person.dateDetails?.death || person.deathDate)})).filter(p=>p.birth && p.birth.year<=year).sort((a,b)=>a.birth.year-b.birth.year);
@@ -25,7 +33,7 @@ export function familyInsights(people, milestones=[], now=new Date()) {
   for(const p of lives) if(p.birth.month) months[p.birth.month-1]?.birthdays.push(p.person);
   for(const m of milestones) {const date=dateParts(m.date);if(m.type==='marriage' && date?.month)months[date.month-1]?.weddings.push(m);}
   const counts=key=>{const map=new Map();for(const p of people){const name=locationLabel(p[key]);if(name)map.set(name,(map.get(name)||0)+1);}return [...map].sort((a,b)=>b[1]-a[1]);};
-  const flows=new Map();for(const p of people){const from=locationLabel(p.birthplace),to=migrationDestination(p);if(from && to){const key=JSON.stringify([from,to]);if(!flows.has(key))flows.set(key,{from,to,people:[]});flows.get(key).people.push(p);}}
+  const flows=new Map();for(const p of people){const from=locationLabel(p.birthplace),to=migrationDestination(p);if(from && to && !sameMigrationPlace(p.birthplace,migrationDestinationPlace(p))){const key=JSON.stringify([from,to]);if(!flows.has(key))flows.set(key,{from,to,people:[]});flows.get(key).people.push(p);}}
   const living=lives.filter(p=>!p.person.deceased);
   return {lives,months,current:counts('location'),birthplaces:counts('birthplace'),flows:[...flows.values()].sort((a,b)=>b.people.length-a.people.length),average:living.length ? Math.round(living.reduce((sum,p)=>sum+year-p.birth.year,0)/living.length):null};
 }
@@ -49,7 +57,9 @@ export function agePyramid(people, now=new Date()) {
 
 // Presentation only: retain original Google place labels and identifiers in storage.
 export function migrationDisplayLabel(value) {
-  return String(value || '').replace(/\b([A-Z]{2})\s+\d{5}(?:-\d{4})?\b/g,'$1').replace(/\s+,/g,',');
+  let label=String(value || '').replace(/\b([A-Z]{2})\s+\d{5}(?:-\d{4})?\b/g,'$1').replace(/\s+,/g,',');
+  if (/,\s*France\s*$/i.test(label)) label=label.replace(/^\s*\d{5}\s+(?=[^,]+,)/,'');
+  return label;
 }
 
 /** Google formatted addresses end with their country; sort within country by display address. */

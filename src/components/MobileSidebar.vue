@@ -2,7 +2,7 @@
 import {computed,ref,watch,nextTick,onMounted,onBeforeUnmount} from 'vue';
 import {PhX} from '@phosphor-icons/vue';
 import {mobileSidebar,closeMobileSidebar,isMobileSidebar,mobileSidebarHeight,saveMobileSidebarHeight} from '../ui/mobile-sidebar.js';
-const props=defineProps({sidebarKey:{type:String,required:true},label:{type:String,default:'Details'}});
+const props=defineProps({sidebarKey:{type:String,required:true},label:{type:String,default:'Details'},closeAction:Function});
 const height=mobileSidebarHeight,scrolled=ref(false);
 const body=ref(null),dragging=ref(false),offset=ref(0),mobile=ref(false);
 const open=computed(()=>mobileSidebar.value.key===props.sidebarKey);
@@ -13,7 +13,7 @@ function resetScroll(){
   for(const sidebar of body.value.children)sidebar.scrollTop=0;
   scrolled.value=false;
 }
-const close=()=>closeMobileSidebar(props.sidebarKey);
+const close=()=>{if(props.closeAction?.()===true)return;closeMobileSidebar(props.sidebarKey);};
 watch(()=>mobileSidebar.value,async value=>{if(value.key===props.sidebarKey){await nextTick();resetScroll();}});
 function start(event){if(event.button!==undefined&&event.button!==0)return;drag={y:event.clientY,height:height.value,start:event.timeStamp,lastY:event.clientY};dragging.value=true;event.currentTarget.setPointerCapture?.(event.pointerId);}
 function move(event){if(!drag)return;drag.lastY=event.clientY;const target=drag.height-(event.clientY-drag.y)/window.innerHeight*100;height.value=Math.min(90,Math.max(22,target));offset.value=target<22?(22-target)*window.innerHeight/100:0;}

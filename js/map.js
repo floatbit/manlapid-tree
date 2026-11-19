@@ -790,9 +790,7 @@ async function openPersonPlaces(personId, index) {
   scrollToFamilyMap();
 }
 
-function migrationPlaceLabel(value) {
-  return String(value || '').replace(/\b([A-Z]{2})\s+\d{5}(?:-\d{4})?\b/g,'$1');
-}
+function migrationPlaceLabel(value) { return ui.migrationDisplayLabel(value); }
 function fitMigrationConnections() {
   if (!familyMap || !migrationConnectionRoutes.length) return;
   const bounds = new google.maps.LatLngBounds();
@@ -862,4 +860,50 @@ async function renderMigrationConnections(version) {
   showMigrationConnections();
   if(migrationConnectionsCamera)restoreMapCamera(migrationConnectionsCamera);else fitMigrationConnections();
   mapCameraReady=!!migrationConnectionRoutes.length;persistMapView();
+}
+
+// Targeted navigation from the Insights summary cards.
+async function openInsightMap({kind='migrations',personId=null,people=[],title='Recorded Locations'}={}) {
+ if(kind==='current' && personId){
+  const group=mapLocationGroups(data.people).groups.find(g=>g.people.some(p=>p.id===personId));
+  if(group)return openFamilyMapLocation(personId);
+  const selected=person(personId);people=data.people.filter(p=>p.location===selected?.location);title=selected?.location || title;kind='directory';
+ }
+ rememberMapCamera();familyMapMode='migrations';mapCameraReady=false;
+ showSection('map');await renderFamilyMap();
+ if(!familyMap || familyMapMode!=='migrations' || $('#familyMapPage').hidden)return;
+ if(kind==='migrations'){
+  const selected=personId?migrationConnectionRoutes.filter(r=>r.people.some(p=>p.id===personId)):null;
+  if(personId && !selected?.length)return openPersonPlaces(personId);
+  showMigrationConnections(selected?.length?selected:null);
+  const bounds=new google.maps.LatLngBounds();
+  for(const r of selected?.length?selected:migrationConnectionRoutes){bounds.extend(r.fromPosition);bounds.extend(r.toPosition);}
+  if(!bounds.isEmpty())familyMap.fitBounds(bounds,60);
+  ui.openSidebar?.('map');return;
+ }
+ for(const {line} of migrationConnectionLines)line.setOptions({strokeOpacity:.1});
+ const entries=new Map();
+ for(const p of people.length?people:data.people)for(const place of kind==='region'?[p.birthplace]:[p.birthplace,{location:p.location,lat:p.locationLat,lng:p.locationLng}]){
+  const label=typeof place==='string'?place:place?.location || place?.address || '';
+  if(!label)continue;
+  const key=migrationPlaceLabel(label).toLocaleLowerCase().replace(/\s+/g,' ').trim();
+  if(!entries.has(key))entries.set(key,{label,place,people:[]});
+  const entry=entries.get(key);if(!entry.people.some(other=>other.id===p.id))entry.people.push(p);
+  if(entry.place?.lat==null && place?.lat!=null)entry.place=place;
+ }
+ const details=$('#mapSelectedPerson');$('#mapLocationDirectory').hidden=true;$('#familyMapPeople').classList.add('showing-person');details.hidden=false;
+ details.innerHTML=`<button type="button" id="insightMapOverview">All migrations</button><p class="eyebrow">DOTS ON THE MAP</p><h2>${esc(title)}</h2><p>${entries.size} recorded locations</p>`;
+ $('#insightMapOverview').onclick=()=>renderFamilyMap();
+ const bounds=new google.maps.LatLngBounds();
+ for(const entry of [...entries.values()].sort((a,b)=>a.label.localeCompare(b.label))){
+  const section=document.createElement('section');section.className='map-migration-route';
+  const button=document.createElement('button');button.type='button';button.textContent=migrationPlaceLabel(entry.label);section.append(button);
+  const point=entry.place;const mapped=[point?.lat,point?.lng].every(v=>v!=null && String(v).trim()!=='' && Number.isFinite(+v));
+  if(mapped){const position={lat:+point.lat,lng:+point.lng};bounds.extend(position);const marker=new familyMapMarkerLibrary.AdvancedMarkerElement({map:familyMap,position,title:entry.label});familyMapMarkers.push(marker);button.onclick=()=>{familyMap.setCenter(position);familyMap.setZoom(11);};}
+  else {button.disabled=true;button.title='Map coordinates have not been recorded';}
+  for(const p of [...entry.people].sort(comparePeople)){const item=document.createElement('button');item.type='button';item.className='map-profile-relative';item.innerHTML=avatar(p)+'<span><strong>'+esc(displayName(p))+'</strong></span>'+uiIcon('arrowRight');item.onclick=()=>showMapPerson(p.id);section.append(item);}
+  details.append(section);
+ }
+ if(!bounds.isEmpty())familyMap.fitBounds(bounds,60);
+ ui.openSidebar?.('map');
 }

@@ -49,10 +49,31 @@ assert.equal(page.findAll('.insights-sidebar-route').length,2,'Sidebar groups pe
 assert.equal(page.findAll('.migration-person-pill').length,page.findAll('.insights-sidebar-route .insights-sidebar-people > button').length,'Each active route animates exactly one pill per person');
 assert(page.find('.insights-sidebar-route').text().includes('Manila'));
 assert(page.findAll('.insights-sidebar-route')[1].text().includes('Paris'));
+await page.find('.insights-sidebar-route .insights-sidebar-people button').trigger('click');
+await page.find('.map-profile-relative').trigger('click');
+await page.find('.insights-sidebar-heading button').trigger('click');
+assert.equal(page.findAll('.insights-sidebar-route').length,2,'Closing person details returns to the selected paths even after following relatives');
+assert.equal(page.findAll('.migration-route-selected').length,2,'Selected routes stay highlighted');
+await page.findAll('.pyramid-living')[1].trigger('click');
+await page.find('.insights-sidebar-people button').trigger('click');
+await page.find('.mobile-sidebar-close').trigger('click');
+assert(page.find('.insights-sidebar').text().includes('18–35 · Living'),'Mobile X returns from a profile to its age group');
+await page.find('.insights-life').trigger('click');
+await page.find('.insights-sidebar-people button').trigger('click');
+await page.find('.insights-sidebar-heading button').trigger('click');
+assert(page.find('.insights-sidebar').text().includes('Who Overlapped') || page.findAll('.insights-sidebar-people button').length>0,'Closing returns to overlap details');
+assert.equal(page.findAll('.insights-life-selected').length,1,'Overlap focus remains active');
+
 await page.find('.pyramid-living').trigger('click');assert(page.find('.insights-sidebar').text().includes('Under 18'));
 await page.findAll('.insights-calendar button')[4].trigger('click');assert(page.find('.insights-sidebar').text().includes('Younger'));assert(page.find('.insights-sidebar').text().includes('Birthday'));
 assert.equal(page.findAll('.insights-wedding-portraits .avatar').length,2);
 await page.findAll('.insights-wedding-portraits button')[1].trigger('click');assert(page.find('.insights-person-details').text().includes('Younger'));
+await page.find('.insights-sidebar-heading button').trigger('click');
+assert.equal(page.findAll('.insights-wedding-portraits .avatar').length,2,'Closing person details restores the calendar month');
+assert(page.find('.insights-sidebar').text().includes('May'));
+await page.find('.insights-sidebar-heading button').trigger('click');
+assert.equal(page.findAll('.insights-sidebar-people button').length,0,'Closing the context itself clears selection');
+
 ui.sync({people:[],links:[],milestones:[]});await page.trigger('noop');assert(page.text().includes('No birth years recorded yet.'));page.unmount();
 const header=mount(AppHeader);await header.find('.header-more-trigger').trigger('click');assert.equal(header.find('#headerMoreLinks').attributes('hidden'),undefined);assert.deepEqual(header.findAll('#headerMoreLinks button').map(b=>b.text()),['Albums','Stories','Recipes','Contribute','Select Me']);await header.find('.header-more').trigger('keydown',{key:'Escape'});assert.notEqual(header.find('#headerMoreLinks').attributes('hidden'),undefined);header.unmount();
 console.log('Passed: Insights portraits, drawer, tree action, lifespan highlighting, flow selection, calendar, empty state and More menu.');

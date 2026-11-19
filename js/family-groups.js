@@ -37,3 +37,16 @@ async function loadFamilyTimeline() {
   if (!Array.isArray(data.milestones)) applyShared(await requestDatabase());
   ui.sync(data);
 }
+
+function openInsightFamily(group = null) {
+ const match=group && (data.familyGroups || []).find(f=>group.parents.every(id=>f.parents.includes(id)) && group.children.every(id=>f.children.includes(id)));
+ if(group && !match){openSavedFamilyTree(group,[...group.parents,...group.children]);return;}
+ showSection('families');
+ const url=new URL(location.href);url.hash=new URLSearchParams(match?{page:'families',group:match.id}:{page:'families'}).toString();
+ history.pushState(null,'',url);window.dispatchEvent(new Event('hashchange'));
+}
+function openInsightDescendants(id) {
+ const ids=new Set([id]);let changed=true;
+ while(changed){changed=false;for(const link of data.links){const parent=link.type==='parent'?link.b:link.type==='child'?link.a:null,child=link.type==='parent'?link.a:link.b;if(parent && ids.has(parent) && !ids.has(child)){ids.add(child);changed=true;}}}
+ openSavedFamilyTree({parents:[id],children:[]},[...ids]);
+}

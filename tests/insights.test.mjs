@@ -47,3 +47,6 @@ console.log('Passed: migration birthplaces sort by country, then address.');
  assert.equal(pyramidAgeDetails({birthday:'1940-12-25',deceased:true,dateDetails:{death:'2020-01-01'}},now).label,'79 years old');
  assert.equal(agePyramid([{birthday:'1990-12-25'}],now).rows[1].living.length,1,'Exact age determines bracket before birthday');
 }
+
+assert.equal(migrationDisplayLabel('95200 Sarcelles, France'),'Sarcelles, France');
+assert.equal(migrationDisplayLabel('14 Rue Carnot, Sarcelles, France'),'14 Rue Carnot, Sarcelles, France','Preserve street numbers');

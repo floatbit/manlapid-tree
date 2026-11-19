@@ -29,7 +29,7 @@ export default defineConfig({
 export const runtime = {
  get data() { return data; },
  get csrfToken() { return csrfToken; },
- saveContributionUpdates, openContributionLocation, connections, openFamilyDialog, start, openTreeLanding, openPersonDetails, relationshipLabels, personStory, familyDateYear, milestoneIcons, milestoneTypes, displayName, firstLastName, personMatchesQuery, initials, familyDateLabel,
+ openInsightTimeline, clearInsightTimelinePeriod, openInsightMap, openInsightFamily, openInsightDescendants, saveContributionUpdates, openContributionLocation, connections, openFamilyDialog, start, openTreeLanding, openPersonDetails, relationshipLabels, personStory, familyDateYear, milestoneIcons, milestoneTypes, displayName, firstLastName, personMatchesQuery, initials, familyDateLabel,
  upcomingAnniversaries, onThisDayEvents, sortedAlbums, milestoneMediaCount,
  isMilestoneVideo, showSection, edit, selectPersonFromDirectory, openMilestone, editMilestone,
  pinPersonPhoto, savePersonPhotos, deletePhotoFromLightbox, savePhotoPeople, openTaggedPerson, openAlbum, openRecipe, closeRecipe, editRecipe, recipeCategories, openPhotoLightbox, copyDirectLink, notify,

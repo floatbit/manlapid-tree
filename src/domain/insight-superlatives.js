@@ -1,4 +1,4 @@
-import {dateParts,locationLabel,migrationDisplayLabel} from './insights.js';
+import {dateParts,locationLabel,migrationDisplayLabel,migrationDestinationPlace,sameMigrationPlace} from './insights.js';
 
 const compare=(a,b)=>a.localeCompare(b,'en',{sensitivity:'base'});
 const parts=value=>migrationDisplayLabel(locationLabel(value)).split(',').map(s=>s.trim()).filter(Boolean);
@@ -61,10 +61,19 @@ export function insightSuperlatives(people=[],links=[],milestones=[],now=new Dat
  card('PEAK BIRTH DECADE',decades.length?`${decades[0][0]}s`:'Still to Discover',decades.length?`${decades[0][1]} family births recorded`:'Add birth years to reveal a generation surge','Most births in a calendar decade');
  const journeys=people.map(p=>{const destination=journeyDestination(p);return {person:p,destination,miles:distance(p.birthplace,destination)};}).filter(p=>p.miles!==null).sort((a,b)=>b.miles-a.miles),journey=journeys[0];
  card('FARTHEST REACH',journey?`${Math.round(journey.miles).toLocaleString('en-US')} miles`:'Still to Discover',journey?`${migrationDisplayLabel(locationLabel(journey.person.birthplace))} → ${migrationDisplayLabel(journey.destination.location)}`:'Add mapped birthplaces and current or past homes',journey?`Birthplace to ${journey.destination.kind} · Straight-line distance`:'Greatest straight-line distance from birthplace');
- const local=people.filter(p=>{if(!locationLabel(p.birthplace)||!p.location)return false;if(p.birthplace?.placeId&&p.locationPlaceId===p.birthplace.placeId)return true;const a=parts(p.birthplace),b=parts(p.location);return a.length>1&&b.length>1&&a[0].toLowerCase()===b[0].toLowerCase()&&country(p.birthplace)===country(p.location);});
- card('STAYED CLOSE',`${local.length} ${local.length===1?'relative':'relatives'}`,'Still live in their birth city','Same recorded birthplace and current home');
+ const local=people.filter(p=>{if(sameMigrationPlace(p.birthplace,migrationDestinationPlace(p)))return true;if(!locationLabel(p.birthplace)||!p.location)return false;if(p.birthplace?.placeId&&p.locationPlaceId===p.birthplace.placeId)return true;const a=parts(p.birthplace),b=parts(p.location);return a.length>1&&b.length>1&&a[0].toLowerCase()===b[0].toLowerCase()&&country(p.birthplace)===country(p.location);});
+ card('STAYED CLOSE',`${local.length} ${local.length===1?'relative':'relatives'}`,'Birthplace matches current or last home','Based on recorded locations');
  const regions=ranked(people.map(p=>{const a=parts(p.birthplace);return a.length>=3?a.at(-2):'';})),region=regions[0]?.[0];
  const cities=[...new Set(people.filter(p=>parts(p.birthplace).at(-2)===region).map(p=>parts(p.birthplace)[0]))].sort(compare);
  card('WHERE WE BEGAN',region || 'Still to Discover','Most common recorded birth state / province',region?'Across '+cities.join(', '):'Add birthplaces with a state or province');
- return cards;
+ const targets={
+  'GROWING BRANCHES':{people:people.filter(p=>(p.lastName?.trim() || p.name?.trim().split(/\s+/).at(-1))===surnames[0]?.[0])},
+  'FULL HOUSE':{group:largest}, 'FAMILY HUB':{person:hub?.person},
+  'LASTING LOVE':{event:wedding?.event}, 'LIVING WISDOM':{person:elder?.person},
+  'PEAK BIRTH DECADE':{year:decades.length?Number(decades[0][0]):null},
+  'FARTHEST REACH':{person:journey?.person,destination:journey?.destination},
+  'STAYED CLOSE':{people:local},
+  'WHERE WE BEGAN':{region,people:people.filter(p=>region && parts(p.birthplace).at(-2)===region)}
+ };
+ return cards.map(card=>({...card,target:targets[card.eyebrow] || {}}));
 }

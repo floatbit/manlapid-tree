@@ -12,19 +12,20 @@ import InsightPersonDetails from '../components/InsightPersonDetails.vue';
 import PersonAvatar from '../components/PersonAvatar.vue';
 import PersonAutocomplete from '../components/PersonAutocomplete.vue';
 const api=computed(useRuntime), selected=ref(null), overlapId=ref(''), flow=ref(null), month=ref(null);
-const page=ref(null), sidebar=ref(null), panel=ref(''), context=ref(null), highlightedRoutes=ref([]);
+const page=ref(null), sidebar=ref(null), panel=ref(''), context=ref(null), highlightedRoutes=ref([]), returnPanel=ref('');
 const routeKey=r=>JSON.stringify([r.from,r.to]);
 const routeSelected=r=>highlightedRoutes.value.includes(routeKey(r));
 let headerObserver;
 onMounted(()=>{const header=document.querySelector('#app > header');if(!header)return;const measure=()=>page.value?.style.setProperty('--insights-header-height',header.getBoundingClientRect().height+'px');measure();if(window.ResizeObserver){headerObserver=new window.ResizeObserver(measure);headerObserver.observe(header);}});
 onBeforeUnmount(()=>headerObserver?.disconnect());
 async function revealPanel(){await nextTick();if(sidebar.value)sidebar.value.scrollTop=0;if(isMobileSidebar())openMobileSidebar('insights');else if(window.matchMedia('(max-width: 900px)').matches)sidebar.value?.scrollIntoView?.({behavior:'smooth',block:'start'});}
-function showPerson(person){selected.value=person;panel.value='person';revealPanel();}
-function showFlow(value){highlightedRoutes.value=[routeKey(value)];flow.value=value;context.value={title:migrationDisplayLabel(value.from)+' → '+migrationDisplayLabel(value.to),people:value.people,routes:[value]};selected.value=null;panel.value='people';revealPanel();}
-function showBracket(value){highlightedRoutes.value=[];flow.value=value;context.value={title:value.from+' · '+value.to,people:value.people,ageGroup:true};selected.value=null;panel.value='people';revealPanel();}
-function showPlace(place,side){const matches=routes.value.filter(r=>r[side]===place);highlightedRoutes.value=matches.map(routeKey);context.value={title:migrationDisplayLabel(place),routes:matches,people:[...new Map(matches.flatMap(r=>r.people).map(p=>[p.id,p])).values()]};selected.value=null;panel.value='people';revealPanel();}
-function showMonth(value){highlightedRoutes.value=[];month.value=value;selected.value=null;panel.value='month';revealPanel();}
-function clearPanel(){highlightedRoutes.value=[];panel.value='';selected.value=null;context.value=null;}
+function showPerson(person,standalone=false){if(standalone)returnPanel.value='';else if(panel.value!=='person')returnPanel.value=['people','month','overlap'].includes(panel.value)?panel.value:'';selected.value=person;panel.value='person';revealPanel();}
+function showFlow(value){returnPanel.value='';highlightedRoutes.value=[routeKey(value)];flow.value=value;context.value={title:migrationDisplayLabel(value.from)+' → '+migrationDisplayLabel(value.to),people:value.people,routes:[value]};selected.value=null;panel.value='people';revealPanel();}
+function showBracket(value){returnPanel.value='';highlightedRoutes.value=[];flow.value=value;context.value={title:value.from+' · '+value.to,people:value.people,ageGroup:true};selected.value=null;panel.value='people';revealPanel();}
+function showPlace(place,side){returnPanel.value='';const matches=routes.value.filter(r=>r[side]===place);highlightedRoutes.value=matches.map(routeKey);context.value={title:migrationDisplayLabel(place),routes:matches,people:[...new Map(matches.flatMap(r=>r.people).map(p=>[p.id,p])).values()]};selected.value=null;panel.value='people';revealPanel();}
+function showMonth(value){returnPanel.value='';highlightedRoutes.value=[];month.value=value;selected.value=null;panel.value='month';revealPanel();}
+function clearPanel(){returnPanel.value='';highlightedRoutes.value=[];panel.value='';selected.value=null;context.value=null;month.value=null;flow.value=null;overlapId.value='';}
+function closePanel(){if(panel.value==='person' && returnPanel.value){panel.value=returnPanel.value;selected.value=null;returnPanel.value='';revealPanel();return true;}clearPanel();return false;}
 const contextPeople=computed(()=>context.value?.ageGroup ? [...context.value.people].sort((a,b)=>(pyramidAge(b) ?? -1)-(pyramidAge(a) ?? -1) || comparePeople(a,b)) : sortPeople(context.value?.people || []));
 const pyramidAgeLabel=p=>{const age=pyramidAgeDetails(p);if(!age)return 'Age unavailable';return p.deceased?age.label.replace(/old$/, 'at passing'):age.label;};
 const hoveredBirth=ref(null);
@@ -47,8 +48,8 @@ const swarm=computed(()=>{const placed=[];for(const life of data.value.lives){le
 const swarmHeight=computed(()=>Math.max(120,...swarm.value.map(p=>80+p.row*26)));
 const lives=computed(()=>data.value.lives.filter(p=>!p.person.deceased || p.death).map(p=>({...p,end:p.person.deceased?p.death.year:now})).filter(p=>p.end>=p.birth.year));
 const chosen=computed(()=>lives.value.find(p=>p.person.id===overlapId.value));
-watch(overlapId,id=>{if(!id){if(panel.value==='overlap')clearPanel();return;}highlightedRoutes.value=[];selected.value=null;panel.value='overlap';revealPanel();});
-function showOverlap(id){const unchanged=overlapId.value===id;overlapId.value=id;if(unchanged){panel.value='overlap';revealPanel();}}
+watch(overlapId,id=>{returnPanel.value='';if(!id){if(panel.value==='overlap')clearPanel();return;}highlightedRoutes.value=[];selected.value=null;panel.value='overlap';revealPanel();});
+function showOverlap(id){const unchanged=overlapId.value===id;overlapId.value=id;if(unchanged){returnPanel.value='';panel.value='overlap';revealPanel();}}
 const overlaps=p=>!chosen.value || (p.birth.year<=chosen.value.end && p.end>=chosen.value.birth.year);
 const routes=computed(()=>data.value.flows);
 const drawnRoutes=computed(()=>[...routes.value.filter(r=>!routeSelected(r)),...routes.value.filter(routeSelected)]);
@@ -74,12 +75,51 @@ const statGroups=computed(()=>{
     ['WHERE WE GATHER','BIRTHDAY SEASON','STAYED CLOSE','DOTS ON THE MAP']
   ].map(group=>group.map(key=>byEyebrow.get(key)));
 });
+
+function showStatPeople(title,people,{ageGroup=false,groups=null}={}) {
+ clearPanel();context.value={title,people,ageGroup,groups};panel.value='people';revealPanel();
+}
+async function activateStat(card) {
+ const target=card.target || {}, people=family.value.people;
+ try {
+  if(card.headline==='Still to Discover' || card.headline==='Dates Awaiting' || card.headline==='Locations Awaiting' || card.headline==='—'){api.value.showSection('contribute');return;}
+  switch(card.eyebrow){
+   case 'A FAMILY ACROSS TIME': return await api.value.openInsightTimeline({id:data.value.lives[0]?.person.id});
+   case 'ACROSS THE MAP': return await api.value.openInsightMap();
+   case 'WHERE WE BEGAN': return await api.value.openInsightMap({kind:'region',people:target.people,title:'Birthplaces in '+target.region});
+   case 'PEAK BIRTH DECADE': return await api.value.openInsightTimeline({year:target.year});
+   case 'GENERATIONS TODAY': return showStatPeople('Living Relatives',people.filter(p=>!p.deceased && pyramidAge(p)!==null),{ageGroup:true});
+   case 'GROWING ROOTS': return api.value.openInsightFamily();
+   case 'GROWING BRANCHES': return showStatPeople(card.headline+' Family',target.people);
+   case 'FULL HOUSE': return api.value.openInsightFamily(target.group);
+   case 'LIVING WISDOM': return showPerson(target.person,true);
+   case 'LASTING LOVE': return await api.value.openInsightTimeline({kind:'milestone',id:target.event.id});
+   case 'FAMILY HUB': return api.value.openInsightDescendants(target.person.id);
+   case 'FARTHEST REACH': return await api.value.openInsightMap({personId:target.person.id});
+   case 'WHERE WE GATHER': {
+    const person=people.find(p=>!p.deceased && locationLabel(p.location)===data.value.current[0]?.[0]);
+    if(person)return await api.value.openInsightMap({kind:'current',personId:person.id});
+    return await api.value.openInsightMap({kind:'directory',people:people.filter(p=>locationLabel(p.location)===data.value.current[0]?.[0]),title:card.headline});
+   }
+   case 'BIRTHDAY SEASON': {
+    const groups=busiest.value.map(m=>({title:monthName(m.month),people:m.birthdays}));
+    showStatPeople('Birthday Season',groups.flatMap(g=>g.people),{groups});
+    await nextTick();document.querySelector('.insights-calendar')?.closest('section')?.scrollIntoView({behavior:'smooth',block:'start'});return;
+   }
+   case 'STAYED CLOSE': {
+    const groups=new Map();for(const p of target.people){const title=migrationDisplayLabel(locationLabel(p.birthplace));if(!groups.has(title))groups.set(title,[]);groups.get(title).push(p);}
+    return showStatPeople('Stayed Close',target.people,{groups:[...groups].sort((a,b)=>a[0].localeCompare(b[0])).map(([title,people])=>({title,people}))});
+   }
+   case 'DOTS ON THE MAP': return await api.value.openInsightMap({kind:'directory',title:'Cities & Towns'});
+  }
+ } catch(error){api.value.notify('Could not open this insight. '+error.message);}
+}
 </script>
 <template>
 <main id="insightsPage" ref="page" hidden>
 <div class="insights-workspace"><div class="insights-main">
   <div class="intro"><div><p class="eyebrow">OUR FAMILY IN PATTERNS</p><h1>Family Insights</h1><p>Discover generational waves, global migrations, and the shared milestones that connect us across time.</p></div></div>
-  <InsightStatGroup :cards="statGroups[0]" label="Time, Span &amp; Roots" />
+  <InsightStatGroup @select="activateStat" :cards="statGroups[0]" label="Time, Span &amp; Roots" />
   <section class="insights-section"><p class="eyebrow">FROM THERE TO HERE</p><h2>Our Migration Connections</h2><p>Birthplaces on the left, current homes or last recorded places lived on the right. Wider lines represent more relatives; these connect recorded locations, not travel routes. On active paths, each moving pill represents one relative.</p>
     <p v-if="!routes.length">Add birthplaces and current or past homes to reveal connections.</p>
     <div v-else class="insights-chart-scroll"><svg :viewBox="`0 -35 1000 ${routeHeight+35}`" class="insights-flow" role="group" aria-label="Birthplace to current or last recorded location connections">
@@ -101,13 +141,13 @@ const statGroups=computed(()=>{
     </svg></div>
 
   </section>
-  <InsightStatGroup :cards="statGroups[1]" label="Generations &amp; Families" />
+  <InsightStatGroup @select="activateStat" :cards="statGroups[1]" label="Generations &amp; Families" />
   <section class="insights-section"><p class="eyebrow">OUR FAMILY, THEN AND NOW</p><h2>Living &amp; Historical Age Pyramid</h2><p>Living relatives by age today; historical relatives by age at passing.</p><div class="pyramid-legend"><span>Living</span><span>Historical</span></div>
     <div class="pyramid-row" v-for="r in pyramid.rows" :key="r.label"><span>{{r.label}}</span><div><button class="pyramid-living" :style="{width:Math.max(4,r.living.length/pyramidMax*100)+'%'}" :aria-label="r.label+': '+r.living.length+' living relatives'" @click="showBracket({from:r.label,to:'Living',people:r.living})">{{r.living.length}}</button><button class="pyramid-historical" :style="{width:Math.max(4,r.historical.length/pyramidMax*100)+'%'}" :aria-label="r.label+': '+r.historical.length+' historical relatives'" @click="showBracket({from:r.label,to:'Historical',people:r.historical})">{{r.historical.length}}</button></div></div>
     <small>{{pyramid.unknown}} relatives excluded because birth or death years are missing. Partial dates use approximate ages. Select a bar to see relatives in the sidebar.</small>
 
   </section>
-  <InsightStatGroup :cards="statGroups[2]" label="Milestones, Love &amp; Elders" />
+  <InsightStatGroup @select="activateStat" :cards="statGroups[2]" label="Milestones, Love &amp; Elders" />
   <section class="insights-section"><p class="eyebrow">THE WAVES THAT MADE US</p><h2>Every Birth, One Shared Story</h2><p>Each portrait marks a recorded birth. Hover or focus for details; select a portrait to meet them.</p>
     <p v-if="!swarm.length">No birth years recorded yet.</p>
     <div v-else class="insights-chart-scroll"><svg class="insights-swarm" :viewBox="`0 -34 1000 ${swarmHeight+79}`" role="group" aria-label="Family birth years">
@@ -122,10 +162,10 @@ const statGroups=computed(()=>{
         <rect :x="Math.min(918,Math.max(4,hoveredBirth.x-39))" y="-32" width="78" height="26" rx="5" fill="var(--green)" />
         <text :x="Math.min(957,Math.max(43,hoveredBirth.x))" y="-14" text-anchor="middle" style="fill:white;font-size:12px;font-weight:600">{{hoveredBirth.birth.approximate?'c. ':''}}{{hoveredBirth.birth.year}}</text>
       </g>
-      <g v-for="p in swarm" :key="p.person.id" role="button" tabindex="0" :aria-label="tooltip(p)" @click="showPerson(p.person)" @keydown.enter.prevent="showPerson(p.person)" @keydown.space.prevent="showPerson(p.person)" class="insights-dot" @mouseenter="hoveredBirth=p" @mouseleave="hoveredBirth=null" @focus="hoveredBirth=p" @blur="hoveredBirth=null"><title>{{tooltip(p)}}</title><circle :cx="p.x" :cy="swarmHeight-24-p.row*26" r="11" fill="#e4ecd9" stroke="#8ca677"/><svg :x="p.x-10" :y="swarmHeight-34-p.row*26" width="20" height="20" viewBox="0 0 28 28"><image v-if="p.person.photo" :href="p.person.photo" width="28" height="28" preserveAspectRatio="xMidYMid slice" style="clip-path:circle(50%)"/><text v-else x="14" y="18" text-anchor="middle" font-size="9">{{api?.initials(p.person)}}</text></svg></g>
+      <g v-for="p in swarm" :key="p.person.id" role="button" tabindex="0" :aria-label="tooltip(p)" @click="showPerson(p.person,true)" @keydown.enter.prevent="showPerson(p.person,true)" @keydown.space.prevent="showPerson(p.person,true)" class="insights-dot" @mouseenter="hoveredBirth=p" @mouseleave="hoveredBirth=null" @focus="hoveredBirth=p" @blur="hoveredBirth=null"><title>{{tooltip(p)}}</title><circle :cx="p.x" :cy="swarmHeight-24-p.row*26" r="11" fill="#e4ecd9" stroke="#8ca677"/><svg :x="p.x-10" :y="swarmHeight-34-p.row*26" width="20" height="20" viewBox="0 0 28 28"><image v-if="p.person.photo" :href="p.person.photo" width="28" height="28" preserveAspectRatio="xMidYMid slice" style="clip-path:circle(50%)"/><text v-else x="14" y="18" text-anchor="middle" font-size="9">{{api?.initials(p.person)}}</text></svg></g>
     </svg></div><small>{{data.lives.length}} recorded birth years · {{family.people.length-data.lives.length}} unavailable · Year-only and approximate dates are marked in tooltips.</small>
   </section>
-  <InsightStatGroup :cards="statGroups[3]" label="Local Presence &amp; Gatherings" />
+  <InsightStatGroup @select="activateStat" :cards="statGroups[3]" label="Local Presence &amp; Gatherings" />
   <section class="insights-section"><p class="eyebrow">LIVES THAT TOUCHED</p><h2>Who Overlapped?</h2><p>Choose a relative to highlight recorded lifetimes that overlap theirs. Years show possible overlap, rather than exact dates.</p>
     <PersonAutocomplete v-if="api" input-id="insightsOverlapSearch" list-id="insightsOverlapMatches" :options="()=>lives.map(p=>p.person)" :matches="api.personMatchesQuery" :display="name" placeholder="Choose a relative…" :validate-selection="false" @select="showOverlap($event.id)" @query="!$event && (overlapId='')" />
     <div class="insights-lifespans"><div class="insights-life-axis" aria-hidden="true"><span></span><div><span v-for="year in lifespanTicks" :key="year" :style="{left:yearPosition(year)+'%'}" :class="{'life-tick-first':year===minimum,'life-tick-last':year===now}">{{year===now?'Today · '+year:year}}</span></div></div><div class="insights-life-guides" aria-hidden="true"><span v-for="year in lifespanTicks" :key="year" :class="{'life-guide-today':year===now}" :style="{left:yearPosition(year)+'%'}"></span></div><button v-for="p in lives" :key="p.person.id" class="insights-life" :class="{'insights-life-muted':!overlaps(p), 'insights-life-selected':p.person.id===overlapId}" @click="showOverlap(p.person.id)" :aria-label="tooltip(p)+' to '+p.end"><span>{{name(p.person)}}</span><span class="insights-life-track"><span :style="{left:((p.birth.year-minimum)/(now-minimum||1)*100)+'%',width:Math.max(1,(p.end-p.birth.year)/(now-minimum||1)*100)+'%'}"></span></span><small>{{p.birth.approximate?'c. ':''}}{{p.birth.year}}–{{p.person.deceased?p.end:'Present'}}</small></button><div class="insights-life-axis" aria-hidden="true"><span></span><div><span v-for="year in lifespanTicks" :key="year" :style="{left:yearPosition(year)+'%'}" :class="{'life-tick-first':year===minimum,'life-tick-last':year===now}">{{year===now?'Today · '+year:year}}</span></div></div></div>
@@ -136,14 +176,15 @@ const statGroups=computed(()=>{
 
   </section>
 </div>
-<MobileSidebar sidebar-key="insights" label="Insights details"><aside ref="sidebar" class="insights-sidebar" aria-label="Insight details" tabindex="0">
-  <div class="insights-sidebar-heading"><p class="eyebrow">A CLOSER LOOK</p><button v-if="panel" type="button" aria-label="Clear insight selection" @click="clearPanel"><PhX :size="20"/></button></div>
+<MobileSidebar sidebar-key="insights" label="Insights details" :close-action="closePanel"><aside ref="sidebar" class="insights-sidebar" aria-label="Insight details" tabindex="0">
+  <div class="insights-sidebar-heading"><p class="eyebrow">A CLOSER LOOK</p><button v-if="panel" type="button" :aria-label="panel==='person' && returnPanel ? 'Back to insight details' : 'Clear insight selection'" @click="closePanel"><PhX :size="20"/></button></div>
   <template v-if="panel==='person' && selected">
     <InsightPersonDetails :person="selected" @select="showPerson" @tree="api.start($event.id)" />
   </template>
   <template v-else-if="panel==='people' && context">
     <template v-if="!context.routes"><h2>{{context.title}}</h2><p v-if="context.description">{{context.description}}</p><p>{{context.people.length}} relatives</p></template>
     <div v-if="context.routes" class="insights-sidebar-routes"><section v-for="route in context.routes" :key="routeKey(route)" class="insights-sidebar-route"><h3>{{migrationDisplayLabel(route.from)}} <PhArrowRight class="arrow-link-icon" :size="14" aria-hidden="true"/> {{migrationDisplayLabel(route.to)}}</h3><p>{{route.people.length}} {{route.people.length===1?'relative':'relatives'}}</p><div class="insights-sidebar-people"><button v-for="p in sortPeople(route.people)" :key="p.id" @click="showPerson(p)"><PersonAvatar :person="p"/><span>{{name(p)}}<small v-if="viewerRelation(p.id)">{{viewerRelation(p.id)}}</small></span><PhArrowRight class="arrow-link-icon" :size="16"/></button></div></section></div>
+    <div v-else-if="context.groups" class="insights-sidebar-routes"><section v-for="group in context.groups" :key="group.title" class="insights-sidebar-route"><h3>{{group.title}}</h3><div class="insights-sidebar-people"><button v-for="p in sortPeople(group.people)" :key="p.id" @click="showPerson(p)"><PersonAvatar :person="p"/><span>{{name(p)}}<small v-if="viewerRelation(p.id)">{{viewerRelation(p.id)}}</small></span><PhArrowRight :size="16"/></button></div></section></div>
     <div v-else class="insights-sidebar-people"><button v-for="p in contextPeople" :key="p.id" @click="showPerson(p)"><PersonAvatar :person="p"/><span>{{name(p)}}<small v-if="context.ageGroup" class="insights-person-age">{{pyramidAgeLabel(p)}}</small><small v-if="viewerRelation(p.id)">{{viewerRelation(p.id)}}</small></span><PhArrowRight class="arrow-link-icon" :size="16"/></button></div><p v-if="!context.people.length">No relatives in this group.</p>
   </template>
   <template v-else-if="panel==='month' && month">

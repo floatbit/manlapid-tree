@@ -3977,3 +3977,12 @@ button.album-milestone-badge:focus-visible { outline:2px solid var(--green); out
   #familyMapPage .map-view-controls button { min-height:40px; padding:8px; }
   #familyMapPage .map-view-controls .map-view-toggle { flex-wrap:wrap; }
 }
+
+.insights-sidebar-back { display:inline-flex; align-items:center; gap:6px; padding:0; margin:0 0 24px; border:0; background:transparent; color:var(--green); font-size:12px; text-decoration:underline; text-underline-offset:3px; }
+.insights-sidebar-back:hover { color:var(--ink); background:transparent; }
+
+/* Summary cards are navigation controls with stable borders. */
+.insights-stats article[role="button"] { cursor:pointer; transition:background-color .18s,box-shadow .18s; }
+.insights-stats article[role="button"]:hover { background:#e5ecd9; box-shadow:inset 0 -2px var(--green); }
+.insights-stats article[role="button"]:focus-visible { outline:2px solid var(--green); outline-offset:4px; }
+.timeline-period { display:flex; align-items:center; gap:16px; }

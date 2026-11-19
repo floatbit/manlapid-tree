@@ -1,4 +1,4 @@
-import {locationLabel,migrationDestinationPlace,migrationDisplayLabel} from './insights.js';
+import {locationLabel,migrationDestinationPlace,migrationDisplayLabel,sameMigrationPlace} from './insights.js';
 import {comparePeople} from './people-order.js';
 export function migrationMapData(people) {
   const coordinates=place=>{
@@ -14,8 +14,10 @@ export function migrationMapData(people) {
   const routes=new Map();let missing=0;
   for(const person of people) {
     const destination=migrationDestinationPlace(person),from=locationLabel(person.birthplace),to=locationLabel(destination);
+    if(sameMigrationPlace(person.birthplace,destination))continue;
     const fromPosition=coordinates(person.birthplace)||known.get(from),toPosition=coordinates(destination)||known.get(to);
     if(!from || !to || !fromPosition || !toPosition){missing++;continue;}
+    if(sameMigrationPlace({location:from,...fromPosition},{location:to,...toPosition}))continue;
     const key=JSON.stringify([from,to]);
     if(!routes.has(key))routes.set(key,{id:key,from,to,fromPosition,toPosition,people:[]});
     routes.get(key).people.push(person);

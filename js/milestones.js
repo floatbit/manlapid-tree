@@ -117,6 +117,7 @@ function timelineEventMatches(event, query) {
 const timelineSearch = $('#timelineSearch');
 try { timelineSearch.value = localStorage.getItem('kinfolk-timeline-search-v1') || ''; } catch {}
 timelineSearch.addEventListener('input', () => {
+  ui.timelinePeriod.value=null;
   try { localStorage.setItem('kinfolk-timeline-search-v1', timelineSearch.value); } catch {}
   renderTimeline();
 });
@@ -124,7 +125,7 @@ function renderTimeline() {
   renderUpcomingAnniversaries();
   const births = birthEvents(data.people),
     query = $('#timelineSearch').value.trim(),
-    events = timelineItems().filter(event => timelineEventMatches(event, query)),
+    events = timelineItems().filter(event => timelineEventMatches(event, query) && (!ui.timelinePeriod.value || (familyDateYear(event.date)>=ui.timelinePeriod.value.from && familyDateYear(event.date)<=ui.timelinePeriod.value.to))),
     missing = data.people.length - births.length;
   $('#timelineSummary').textContent = query ? `${events.length} matching ${events.length === 1 ? 'event' : 'events'}` : `${births.length} ${
     births.length === 1 ? 'birth' : 'births'
@@ -506,3 +507,17 @@ function onThisDayEvents(people, milestones, today = new Date()) {
 function renderUpcomingAnniversaries() {
   ui.sync(data);
 }
+
+async function openInsightTimeline({year=null,kind='birth',id=null}={}) {
+ await loadFamilyTimeline();
+ ui.timelinePeriod.value=year===null?null:{from:year,to:year+9};
+ showSection('timeline');
+ $('#timelineSearch').value='';renderTimeline();
+ await ui.afterNextTick();
+ requestAnimationFrame(()=>{
+  const entry=id?document.getElementById('timeline-'+kind+'-'+id):document.querySelector('#timeline .birth-event');
+  if(entry){window.scrollTo({top:window.scrollY+entry.getBoundingClientRect().top-(document.querySelector('#app > header')?.getBoundingClientRect().height || 0)-24,behavior:'smooth'});entry.classList.add('anniversary-highlight');setTimeout(()=>entry.classList.remove('anniversary-highlight'),5000);}
+  else window.scrollTo({top:0,behavior:'smooth'});
+ });
+}
+function clearInsightTimelinePeriod(){ui.timelinePeriod.value=null;renderTimeline();}

@@ -390,7 +390,7 @@ let lastTreeViewport = null;
 function showSection(section, { replace = false, preserveTreeView = false } = {}) {
   if (!$('#explore').hidden && graphLayout) {
     const graph=$('#graph');
-    lastTreeViewport={layout:graphLayout,scale:graphScale,left:graph.scrollLeft,top:graph.scrollTop};
+    lastTreeViewport={layout:graphLayout,scale:graphScale,padded:cameraPadded,left:graph.scrollLeft,top:graph.scrollTop};
   }
   if (section === 'people' && !document.body.classList.contains('is-editor')) section = 'tree';
   if (section === 'relationships') {
@@ -453,7 +453,12 @@ function showSection(section, { replace = false, preserveTreeView = false } = {}
   else if (section === 'families') ui.sync(data);
   else if (section === 'stories' || section === 'insights') return;
   else {
-    if (preserveTreeView && graphLayout && lastTreeViewport?.layout === graphLayout && lastTreeViewport.scale === graphScale) {
+    if (preserveTreeView && graphLayout && lastTreeViewport?.layout === graphLayout) {
+      if (treeNeedsRender) {
+        render();
+        cameraPadded=lastTreeViewport.padded;
+        setGraphScale(lastTreeViewport.scale,{animate:false});
+      }
       $('#graph').scrollTo({left:lastTreeViewport.left,top:lastTreeViewport.top,behavior:'instant'});
     } else {
       render();

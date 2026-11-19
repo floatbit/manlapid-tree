@@ -3940,3 +3940,14 @@ button.album-milestone-badge:focus-visible { outline:2px solid var(--green); out
 
 .family-mini-portraits .avatar { display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; width:36px; height:36px; font-size:12px; line-height:1; font-weight:600; border-radius:50%; object-fit:cover; }
 .family-mini-portraits button { display:inline-flex; align-items:center; justify-content:center; line-height:1; }
+
+/* Shared spacing between major content sections in every sidebar. */
+:root { --sidebar-section-gap:43px; }
+:is(#details,#mapSelectedPerson,.family-person-sidebar,.insights-person-details) > :is(section,.person-tagged-photos,.tree-profile-add,.sidebar-edit-actions,.family-person-actions):not(.person-sidebar-story),
+:is(#details,#mapSelectedPerson,.family-person-sidebar,.insights-person-details) > div:has(> .person-tagged-photos) {
+  margin-block:var(--sidebar-section-gap);
+}
+:is(#details,#mapSelectedPerson,.family-person-sidebar,.insights-sidebar) .tree-location-history { margin-top:var(--sidebar-section-gap); }
+:is(#details,#mapSelectedPerson,.family-person-sidebar,.insights-sidebar) :is(.sidebar-edit-actions,.family-person-actions) { margin-top:var(--sidebar-section-gap); margin-bottom:0; }
+#timeline .timeline-sidebar-stack { gap:var(--sidebar-section-gap); }
+.insights-sidebar-route + .insights-sidebar-route { margin-top:var(--sidebar-section-gap); }

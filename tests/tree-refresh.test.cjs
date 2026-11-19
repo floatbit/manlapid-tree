@@ -37,11 +37,27 @@ const connect=source.slice(source.indexOf('async function connectDatabase()'),so
  const element=id=>{if(!elements.has(id))elements.set(id,{hidden:true,open:false,classList:{toggle(){}},close(){}});return elements.get(id);};
  const graph={scrollLeft:340,scrollTop:270,scrollTo(position){moves.push(position);this.scrollLeft=position.left;this.scrollTop=position.top;}};
  elements.set('#graph',graph);element('#explore').hidden=false;
- const ctx=vm.createContext({$:element,graphLayout:{},graphScale:.65,document:{body:{classList:{contains:()=>true}}},ui:{setSection(){}},rememberSection(){},restoringPageHistory:false,updatePageUrl(){},saveTimelinePosition(){},render(){throw Error('Menu return must not rebuild the tree');},fitGraph(){throw Error('Menu return must not fit the camera');}});
+ const ctx=vm.createContext({$:element,graphLayout:{},graphScale:.65,cameraPadded:true,treeNeedsRender:false,document:{body:{classList:{contains:()=>true}}},ui:{setSection(){}},rememberSection(){},restoringPageHistory:false,updatePageUrl(){},saveTimelinePosition(){},render(){throw Error('Menu return must not rebuild the tree');},fitGraph(){throw Error('Menu return must not fit the camera');}});
  vm.runInContext(navigation.slice(navigation.indexOf('let lastTreeViewport'),navigation.indexOf('function openRelationshipFinder()')),ctx);
  ctx.showSection('insights');graph.scrollLeft=0;graph.scrollTop=0;
  ctx.showSection('tree',{preserveTreeView:true});
  assert.equal(graph.scrollLeft,340);assert.equal(graph.scrollTop,270);assert.equal(ctx.graphScale,.65);
  assert.equal(moves.length,1);
+ ctx.showSection('insights');ctx.treeNeedsRender=true;
+ ctx.render=()=>{ctx.graphLayout={};ctx.graphScale=.3;ctx.cameraPadded=false;ctx.treeNeedsRender=false;};
+ ctx.setGraphScale=(scale)=>{ctx.graphScale=scale;};
+ graph.scrollLeft=0;graph.scrollTop=0;
+ ctx.showSection('tree',{preserveTreeView:true});
+ assert.equal(graph.scrollLeft,340);assert.equal(graph.scrollTop,270);assert.equal(ctx.graphScale,.65);
+ assert.equal(ctx.cameraPadded,true,'Person edits preserve canvas padding as well as pan and zoom');
  console.log('Passed: Tree menu restores exact pan and zoom without rendering or fitting again.');
+}
+
+{
+ const tree=fs.readFileSync('js/tree.js','utf8');
+ const prefix=tree.slice(tree.indexOf('function render({'),tree.indexOf('  const centerRequest =',tree.indexOf('function render({')))+'}';
+ const ctx=vm.createContext({treeNeedsRender:false,$:()=>({hidden:true})});
+ vm.runInContext(prefix,ctx);ctx.render();
+ assert.equal(ctx.treeNeedsRender,true,'Hidden Tree defers layout until the canvas has measurable dimensions');
+ console.log('Passed: editing on another page defers Tree layout until return.');
 }

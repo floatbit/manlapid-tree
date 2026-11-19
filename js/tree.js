@@ -96,6 +96,7 @@ let graphScale = zoomLocked ? savedTreeZoom.scale : 1,
   graphLayout = null,
   renderedRoot = null,
   cameraPadded = false;
+let treeNeedsRender = false;
 function syncZoomLockControl() {
   const button = $('#lockZoom');
   $('#lockZoomLabel').textContent = zoomLocked ? 'Unlock' : 'Lock';
@@ -874,6 +875,8 @@ function animateFamilyLines(previousLines) {
 }
 animateFamilyLines.serial = 0;
 function render({ expanding = false, centerId = null, fit = false, resetPersonZoom = false } = {}) {
+  if ($('#explore').hidden) { treeNeedsRender = true; return; }
+  treeNeedsRender = false;
   const centerRequest = ++treeCenterRequest;
   if (relationshipTrace?.ids.some((id) => !person(id))) relationshipTrace = null;
   $('#canvas').classList.toggle(

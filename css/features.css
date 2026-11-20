@@ -3594,7 +3594,7 @@ body:not(.is-editor) .lightbox-people:not(:has(.lightbox-person-tag)) { display:
 .insights-chart-scroll > svg { width: 100%; min-width: 780px; display: block; }
 .insights-chart-scroll text { fill: var(--ink); font: 12px 'DM Sans',sans-serif; }
 .insights-dot, .insights-flow path { cursor: pointer; }
-.insights-dot:hover circle, .insights-dot:focus circle { stroke: var(--green); stroke-width: 3px; }
+.insights-dot:hover circle, .insights-dot:focus circle, .insights-dot.insights-dot-year-match circle { stroke: var(--green); stroke-width: 3px; }
 .insights-flow path:hover, .insights-flow path:focus { stroke: var(--green); opacity: 1; }
 .insights-section > .person-autocomplete { max-width: 450px; margin: 20px 0; }
 .insights-lifespans { max-height: 540px; overflow: auto; margin: 24px 0 12px; }
@@ -3959,8 +3959,8 @@ button.album-milestone-badge:focus-visible { outline:2px solid var(--green); out
 .map-migration-route-title { padding:0; border:0; background:transparent; text-align:left; color:var(--green); }
 .map-migration-route-title strong { display:inline; font-size:13px; line-height:1.6; }
 .map-migration-route .map-profile-relative { display:flex; align-items:center; gap:10px; width:100%; text-align:left; margin-top:8px; padding:10px; border:0; background:#edf2e6; }
-.map-migration-route .map-profile-relative .avatar { width:36px; height:36px; font-size:12px; flex-shrink:0; }
-.map-migration-route .map-profile-relative > span { flex:1; }
+.map-migration-route .map-profile-relative .avatar { width:36px; height:36px; font-size:12px; flex:0 0 36px; }
+.map-migration-route .map-profile-relative > span:not(.avatar) { flex:1; min-width:0; overflow-wrap:anywhere; }
 .map-migration-route .map-profile-relative strong { font-size:13px; }
 .map-migration-route .map-profile-relative [data-viewer-person] { display:block; }
 @media (max-width:760px) { .map-view-toggle { flex-wrap:wrap; } }
@@ -3986,3 +3986,6 @@ button.album-milestone-badge:focus-visible { outline:2px solid var(--green); out
 .insights-stats article[role="button"]:hover { background:#e5ecd9; box-shadow:inset 0 -2px var(--green); }
 .insights-stats article[role="button"]:focus-visible { outline:2px solid var(--green); outline-offset:4px; }
 .timeline-period { display:flex; align-items:center; gap:16px; }
+
+#mappedPeople .map-country-group + .map-country-group { margin-top:28px; }
+#mappedPeople .map-country-heading { color:var(--ink); font-size:13px; font-weight:700; line-height:1.6; letter-spacing:-.2px; text-transform:uppercase; margin:22px 0 8px; }

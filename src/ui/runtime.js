@@ -1,4 +1,4 @@
-import {migrationDisplayLabel} from '../domain/insights.js';
+import {migrationDisplayLabel,migrationColumn} from '../domain/insights.js';
 import {migrationMapData} from '../domain/map-migrations.js';
 import {comparePeople} from '../domain/people-order.js';
 import {personStory} from '../domain/person-story.js';
@@ -69,6 +69,7 @@ if (typeof window !== 'undefined') window.addEventListener('storage', event => {
 
 export const ui = {
   migrationMapData,
+  migrationColumn,
   migrationDisplayLabel,
   comparePeople,
   personStory(person) { return personStory(person,{formatDate:runtime.value?.familyDateLabel,people:family.value.people,milestones:family.value.milestones || [],relatives:runtime.value?.connections?.(person.id) || []}); },

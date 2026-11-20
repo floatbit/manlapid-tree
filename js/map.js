@@ -399,15 +399,7 @@ async function renderFamilyMap({ fit = true } = {}) {
     missing.length
   } without a mapped location`;
   $('#fitFamilyMap').disabled = !groups.length;
-  $('#mappedPeople').innerHTML =
-    groups
-      .map(
-        (g, i) =>
-          `<div class="map-location-card"><button type="button" data-map-group="${i}"><strong>${esc(
-            g.people[0].location,
-          )}</strong><span>${esc(g.people.map((p) => displayName(p)).join(', '))}</span></button></div>`,
-      )
-      .join('') || '<p>No locations added yet.</p>';
+  $('#mappedPeople').innerHTML = mapLocationDirectoryMarkup(groups);
   const missingReport = document.createElement('a');
   missingReport.href = '#page=reports';
   missingReport.className = 'map-missing-report';
@@ -906,4 +898,15 @@ async function openInsightMap({kind='migrations',personId=null,people=[],title='
  }
  if(!bounds.isEmpty())familyMap.fitBounds(bounds,60);
  ui.openSidebar?.('map');
+}
+
+
+function mapLocationDirectoryMarkup(groups) {
+ const byLocation=new Map(groups.map((group,index)=>[group.people[0].location,{group,index}]));
+ return ui.migrationColumn([...byLocation.keys()]).groups.map(country=>
+  `<section class="map-country-group"><h3 class="map-country-heading">${esc(country.country)}</h3>${country.places.map(place=>{
+   const {group,index}=byLocation.get(place.value);
+   return `<div class="map-location-card"><button type="button" data-map-group="${index}"><strong>${esc(place.label)}</strong><span>${esc(group.people.map(p=>displayName(p)).join(', '))}</span></button></div>`;
+  }).join('')}</section>`
+ ).join('') || '<p>No locations added yet.</p>';
 }

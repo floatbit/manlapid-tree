@@ -36,7 +36,6 @@ onBeforeUnmount(() => headerObserver?.disconnect());
         <p id="familyMapStatus" role="status"></p>
         <div id="mapSelectedPerson" hidden></div>
         <div id="mapLocationDirectory">
-          <h2>People on the Map</h2>
           <div id="mappedPeople"></div>
           <h3>Location Needed</h3>
           <div id="unmappedPeople"></div>

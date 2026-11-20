@@ -15,18 +15,31 @@ ui.sync({people,links:[{a:'c',b:'a',type:'parent'},{a:'d',b:'a',type:'parent'},{
 const page=mount(InsightsPage);
 const card=eyebrow=>page.findAll('.insights-stats article').find(el=>el.text().includes(eyebrow));
 for(const [eyebrow,method,payload] of [
- ['A FAMILY ACROSS TIME','openInsightTimeline',{id:'a'}],
  ['ACROSS THE MAP','openInsightMap',undefined],
  ['WHERE WE BEGAN','openInsightMap',null],
  ['PEAK BIRTH DECADE','openInsightTimeline',{year:1930}],
  ['GROWING ROOTS','openInsightFamily',undefined],
- ['FULL HOUSE','openInsightFamily',null],
  ['LASTING LOVE','openInsightTimeline',{kind:'milestone',id:'w'}],
  ['FAMILY HUB','openInsightDescendants','a'],
  ['FARTHEST REACH','openInsightMap',{personId:'a'}],
  ['WHERE WE GATHER','openInsightMap',{kind:'current',personId:'a'}],
  ['DOTS ON THE MAP','openInsightMap',{kind:'directory',title:'Cities & Towns'}]
 ]){await card(eyebrow).trigger('click');assert.equal(calls.at(-1)[0],method,eyebrow);if(payload!==null)assert.deepEqual(calls.at(-1)[1],payload,eyebrow);}
+const callCount=calls.length;
+await card('A FAMILY ACROSS TIME').trigger('click');
+assert.equal(calls.length,callCount,'Time span opens locally without page navigation');
+assert.deepEqual(page.findAll('.insights-sidebar-route h3').map(el=>el.text()),['Oldest','Youngest']);
+assert(page.findAll('.insights-sidebar-route')[0].text().includes('Ada Example'));
+assert(page.findAll('.insights-sidebar-route')[1].text().includes('Dora Example'));
+assert(page.find('.insights-sidebar-route').text().includes('1930-04-01'));
+await page.find('.insights-sidebar-people button').trigger('click');
+await page.find('.insights-sidebar-heading button').trigger('click');
+assert.equal(page.findAll('.insights-sidebar-route').length,2,'X restores oldest and youngest');
+await card('FULL HOUSE').trigger('click');
+assert.equal(calls.length,callCount,'Full House opens locally without page navigation');
+assert.deepEqual(page.findAll('.insights-sidebar-route h3').map(el=>el.text()),['Parents','Children']);
+assert.equal(page.findAll('.insights-sidebar-route')[0].findAll('button').length,2);
+assert.equal(page.findAll('.insights-sidebar-route')[1].findAll('button').length,2);
 await card('GENERATIONS TODAY').trigger('keydown',{key:'Enter'});assert(page.find('.insights-sidebar').text().includes('Living Relatives'));assert.equal(page.findAll('.insights-person-age').length,4);
 await card('GROWING BRANCHES').trigger('click');assert.equal(page.findAll('.insights-sidebar-people button').length,3);
 await card('LIVING WISDOM').trigger('click');assert(page.find('.insights-person-details').text().includes('Ada Example'));

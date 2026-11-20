@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
+import {migrationColumn} from '../src/domain/insights.js';
+const source=fs.readFileSync('js/map.js','utf8');
+const context=vm.createContext({ui:{migrationColumn},Map,esc:s=>s.replaceAll('&','&amp;').replaceAll('<','&lt;'),displayName:p=>p.name});
+vm.runInContext(source.slice(source.indexOf('function mapLocationDirectoryMarkup(')),context);
+const groups=['Normal, IL, USA','Solano, Nueva Vizcaya, Philippines','Paris, France','Aritao, Nueva Vizcaya, Philippines','Flushing, Queens, NY, US'].map((location,i)=>({people:[{name:'Person '+i,location}]}));
+document.body.innerHTML=context.mapLocationDirectoryMarkup(groups);
+assert.deepEqual([...document.querySelectorAll('h3')].map(el=>el.textContent),['France','Philippines','United States']);
+assert.deepEqual([...document.querySelectorAll('[data-map-group]')].map(el=>el.dataset.mapGroup),['2','3','1','4','0'],'Sorting preserves map-marker group identities');
+assert.deepEqual([...document.querySelectorAll('strong')].map(el=>el.textContent),['Paris','Aritao, Nueva Vizcaya','Solano, Nueva Vizcaya','Flushing, Queens, NY','Normal, IL']);
+assert.match(context.mapLocationDirectoryMarkup([]),/No locations added yet/);
+console.log('Passed: Map directory groups countries and locations A–Z, removes repeated countries, and preserves marker links.');

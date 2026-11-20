@@ -29,6 +29,21 @@ function closePanel(){if(panel.value==='person' && returnPanel.value){panel.valu
 const contextPeople=computed(()=>context.value?.ageGroup ? [...context.value.people].sort((a,b)=>(pyramidAge(b) ?? -1)-(pyramidAge(a) ?? -1) || comparePeople(a,b)) : sortPeople(context.value?.people || []));
 const pyramidAgeLabel=p=>{const age=pyramidAgeDetails(p);if(!age)return 'Age unavailable';return p.deceased?age.label.replace(/old$/, 'at passing'):age.label;};
 const hoveredBirth=ref(null);
+function hoverBirthYear(event) {
+ if(event.target.closest?.('.insights-dot'))return;
+ const svg=event.currentTarget;
+ let chartX;
+ if(svg.createSVGPoint && svg.getScreenCTM?.()){
+  const point=svg.createSVGPoint();point.x=event.clientX;point.y=event.clientY;
+  chartX=point.matrixTransform(svg.getScreenCTM().inverse()).x;
+ }else{
+  const rect=svg.getBoundingClientRect();if(!rect.width)return;
+  chartX=(event.clientX-rect.left)/rect.width*1000;
+ }
+ const position=Math.min(960,Math.max(40,chartX));
+ const year=Math.round(minimum.value+(position-40)/920*(now-minimum.value));
+ hoveredBirth.value={x:x(year),birth:{year,approximate:false}};
+}
 const now=new Date().getFullYear();
 const pyramid=computed(()=>agePyramid(family.value.people));
 const pyramidMax=computed(()=>Math.max(1,...pyramid.value.rows.flatMap(r=>[r.living.length,r.historical.length])));
@@ -69,29 +84,38 @@ const statGroups=computed(()=>{
   ];
   const byEyebrow=new Map(cards.map(card=>[card.eyebrow,card]));
   return [
-    ['A FAMILY ACROSS TIME','ACROSS THE MAP','WHERE WE BEGAN','PEAK BIRTH DECADE'],
-    ['GENERATIONS TODAY','GROWING ROOTS','GROWING BRANCHES','FULL HOUSE'],
-    ['LIVING WISDOM','LASTING LOVE','FAMILY HUB','FARTHEST REACH'],
+    ['A FAMILY ACROSS TIME','LIVING WISDOM','ACROSS THE MAP','WHERE WE BEGAN'],
+    ['PEAK BIRTH DECADE','GENERATIONS TODAY','GROWING ROOTS','GROWING BRANCHES'],
+    ['FULL HOUSE','LASTING LOVE','FAMILY HUB','FARTHEST REACH'],
     ['WHERE WE GATHER','BIRTHDAY SEASON','STAYED CLOSE','DOTS ON THE MAP']
   ].map(group=>group.map(key=>byEyebrow.get(key)));
 });
 
-function showStatPeople(title,people,{ageGroup=false,groups=null}={}) {
- clearPanel();context.value={title,people,ageGroup,groups};panel.value='people';revealPanel();
+function showStatPeople(title,people,{ageGroup=false,groups=null,showBirthDates=false}={}) {
+ clearPanel();context.value={title,people,ageGroup,groups,showBirthDates};panel.value='people';revealPanel();
 }
 async function activateStat(card) {
  const target=card.target || {}, people=family.value.people;
  try {
   if(card.headline==='Still to Discover' || card.headline==='Dates Awaiting' || card.headline==='Locations Awaiting' || card.headline==='—'){api.value.showSection('contribute');return;}
   switch(card.eyebrow){
-   case 'A FAMILY ACROSS TIME': return await api.value.openInsightTimeline({id:data.value.lives[0]?.person.id});
+   case 'A FAMILY ACROSS TIME': {
+    const recorded=[...data.value.lives].sort((a,b)=>a.birth.year-b.birth.year || (a.birth.month || 1)-(b.birth.month || 1) || (a.birth.day || 1)-(b.birth.day || 1));
+    const key=life=>[life.birth.year,life.birth.month || 1,life.birth.day || 1].join('-');
+    const groups=[{title:'Oldest',people:recorded.filter(life=>key(life)===key(recorded[0])).map(life=>life.person)},{title:'Youngest',people:recorded.filter(life=>key(life)===key(recorded.at(-1))).map(life=>life.person)}];
+    return showStatPeople('A Family Across Time',[...new Map(groups.flatMap(g=>g.people).map(p=>[p.id,p])).values()],{groups,showBirthDates:true});
+   }
    case 'ACROSS THE MAP': return await api.value.openInsightMap();
    case 'WHERE WE BEGAN': return await api.value.openInsightMap({kind:'region',people:target.people,title:'Birthplaces in '+target.region});
    case 'PEAK BIRTH DECADE': return await api.value.openInsightTimeline({year:target.year});
    case 'GENERATIONS TODAY': return showStatPeople('Living Relatives',people.filter(p=>!p.deceased && pyramidAge(p)!==null),{ageGroup:true});
    case 'GROWING ROOTS': return api.value.openInsightFamily();
    case 'GROWING BRANCHES': return showStatPeople(card.headline+' Family',target.people);
-   case 'FULL HOUSE': return api.value.openInsightFamily(target.group);
+   case 'FULL HOUSE': {
+    const resolve=ids=>(ids || []).map(id=>people.find(p=>p.id===id)).filter(Boolean);
+    const groups=[{title:'Parents',people:resolve(target.group?.parents)},{title:'Children',people:resolve(target.group?.children)}];
+    return showStatPeople('Full House',groups.flatMap(group=>group.people),{groups,showBirthDates:true});
+   }
    case 'LIVING WISDOM': return showPerson(target.person,true);
    case 'LASTING LOVE': return await api.value.openInsightTimeline({kind:'milestone',id:target.event.id});
    case 'FAMILY HUB': return api.value.openInsightDescendants(target.person.id);
@@ -148,27 +172,30 @@ async function activateStat(card) {
 
   </section>
   <InsightStatGroup @select="activateStat" :cards="statGroups[2]" label="Milestones, Love &amp; Elders" />
-  <section class="insights-section"><p class="eyebrow">THE WAVES THAT MADE US</p><h2>Every Birth, One Shared Story</h2><p>Each portrait marks a recorded birth. Hover or focus for details; select a portrait to meet them.</p>
+  <section class="insights-section"><p class="eyebrow">THE WAVES THAT MADE US</p><h2>Every Birth, One Shared Story</h2><p>Each portrait marks a recorded birth. Hover anywhere to explore the years; hover or focus a portrait for details, and select one to meet them.</p>
     <p v-if="!swarm.length">No birth years recorded yet.</p>
-    <div v-else class="insights-chart-scroll"><svg class="insights-swarm" :viewBox="`0 -34 1000 ${swarmHeight+79}`" role="group" aria-label="Family birth years">
+    <div v-else class="insights-chart-scroll"><svg class="insights-swarm" :viewBox="`0 -34 1000 ${swarmHeight+119}`" role="group" aria-label="Family birth years" @pointermove="hoverBirthYear" @pointerleave="hoveredBirth=null">
+      <rect x="0" y="-34" width="1000" :height="swarmHeight+119" fill="transparent" aria-hidden="true" />
       <line x1="40" x2="960" :y1="swarmHeight" :y2="swarmHeight" stroke="var(--line)" />
       <g v-for="year in lifespanTicks" :key="year" class="insights-swarm-year" aria-hidden="true">
         <line :x1="x(year)" :x2="x(year)" y1="30" :y2="swarmHeight" :stroke="year===now?'#38634e66':'#80917624'" />
-        <text :x="x(year)" y="18" :text-anchor="year===minimum?'start':year===now?'end':'middle'">{{year===now?'Today · '+year:year}}</text>
-        <text :x="x(year)" :y="swarmHeight+28" :text-anchor="year===minimum?'start':year===now?'end':'middle'">{{year===now?'Today · '+year:year}}</text>
+        <text :x="x(year)" y="18" text-anchor="middle">{{year}}</text>
+        <text :x="x(year)" :y="swarmHeight+28" text-anchor="middle">{{year}}</text>
       </g>
       <g v-if="hoveredBirth" class="insights-birth-hover" aria-hidden="true" pointer-events="none">
-        <line :x1="hoveredBirth.x" :x2="hoveredBirth.x" y1="-6" :y2="swarmHeight" stroke="var(--green)" stroke-width="1" vector-effect="non-scaling-stroke" />
+        <line :x1="hoveredBirth.x" :x2="hoveredBirth.x" y1="-6" :y2="swarmHeight+48" stroke="var(--green)" stroke-width="1" vector-effect="non-scaling-stroke" />
         <rect :x="Math.min(918,Math.max(4,hoveredBirth.x-39))" y="-32" width="78" height="26" rx="5" fill="var(--green)" />
         <text :x="Math.min(957,Math.max(43,hoveredBirth.x))" y="-14" text-anchor="middle" style="fill:white;font-size:12px;font-weight:600">{{hoveredBirth.birth.approximate?'c. ':''}}{{hoveredBirth.birth.year}}</text>
+        <rect :x="Math.min(918,Math.max(4,hoveredBirth.x-39))" :y="swarmHeight+48" width="78" height="26" rx="5" fill="var(--green)" />
+        <text :x="Math.min(957,Math.max(43,hoveredBirth.x))" :y="swarmHeight+66" text-anchor="middle" style="fill:white;font-size:12px;font-weight:600">{{hoveredBirth.birth.approximate?'c. ':''}}{{hoveredBirth.birth.year}}</text>
       </g>
-      <g v-for="p in swarm" :key="p.person.id" role="button" tabindex="0" :aria-label="tooltip(p)" @click="showPerson(p.person,true)" @keydown.enter.prevent="showPerson(p.person,true)" @keydown.space.prevent="showPerson(p.person,true)" class="insights-dot" @mouseenter="hoveredBirth=p" @mouseleave="hoveredBirth=null" @focus="hoveredBirth=p" @blur="hoveredBirth=null"><title>{{tooltip(p)}}</title><circle :cx="p.x" :cy="swarmHeight-24-p.row*26" r="11" fill="#e4ecd9" stroke="#8ca677"/><svg :x="p.x-10" :y="swarmHeight-34-p.row*26" width="20" height="20" viewBox="0 0 28 28"><image v-if="p.person.photo" :href="p.person.photo" width="28" height="28" preserveAspectRatio="xMidYMid slice" style="clip-path:circle(50%)"/><text v-else x="14" y="18" text-anchor="middle" font-size="9">{{api?.initials(p.person)}}</text></svg></g>
+      <g v-for="p in swarm" :key="p.person.id" role="button" tabindex="0" :aria-label="tooltip(p)" @click="showPerson(p.person,true)" @keydown.enter.prevent="showPerson(p.person,true)" @keydown.space.prevent="showPerson(p.person,true)" class="insights-dot" :class="{'insights-dot-year-match':hoveredBirth && p.birth.year===hoveredBirth.birth.year}" @mouseenter="hoveredBirth=p" @mouseleave="hoveredBirth=null" @focus="hoveredBirth=p" @blur="hoveredBirth=null"><title>{{tooltip(p)}}</title><circle :cx="p.x" :cy="swarmHeight-24-p.row*26" r="11" fill="#e4ecd9" stroke="#8ca677"/><svg :x="p.x-10" :y="swarmHeight-34-p.row*26" width="20" height="20" viewBox="0 0 28 28"><image v-if="p.person.photo" :href="p.person.photo" width="28" height="28" preserveAspectRatio="xMidYMid slice" style="clip-path:circle(50%)"/><text v-else x="14" y="18" text-anchor="middle" font-size="9">{{api?.initials(p.person)}}</text></svg></g>
     </svg></div><small>{{data.lives.length}} recorded birth years · {{family.people.length-data.lives.length}} unavailable · Year-only and approximate dates are marked in tooltips.</small>
   </section>
   <InsightStatGroup @select="activateStat" :cards="statGroups[3]" label="Local Presence &amp; Gatherings" />
   <section class="insights-section"><p class="eyebrow">LIVES THAT TOUCHED</p><h2>Who Overlapped?</h2><p>Choose a relative to highlight recorded lifetimes that overlap theirs. Years show possible overlap, rather than exact dates.</p>
     <PersonAutocomplete v-if="api" input-id="insightsOverlapSearch" list-id="insightsOverlapMatches" :options="()=>lives.map(p=>p.person)" :matches="api.personMatchesQuery" :display="name" placeholder="Choose a relative…" :validate-selection="false" @select="showOverlap($event.id)" @query="!$event && (overlapId='')" />
-    <div class="insights-lifespans"><div class="insights-life-axis" aria-hidden="true"><span></span><div><span v-for="year in lifespanTicks" :key="year" :style="{left:yearPosition(year)+'%'}" :class="{'life-tick-first':year===minimum,'life-tick-last':year===now}">{{year===now?'Today · '+year:year}}</span></div></div><div class="insights-life-guides" aria-hidden="true"><span v-for="year in lifespanTicks" :key="year" :class="{'life-guide-today':year===now}" :style="{left:yearPosition(year)+'%'}"></span></div><button v-for="p in lives" :key="p.person.id" class="insights-life" :class="{'insights-life-muted':!overlaps(p), 'insights-life-selected':p.person.id===overlapId}" @click="showOverlap(p.person.id)" :aria-label="tooltip(p)+' to '+p.end"><span>{{name(p.person)}}</span><span class="insights-life-track"><span :style="{left:((p.birth.year-minimum)/(now-minimum||1)*100)+'%',width:Math.max(1,(p.end-p.birth.year)/(now-minimum||1)*100)+'%'}"></span></span><small>{{p.birth.approximate?'c. ':''}}{{p.birth.year}}–{{p.person.deceased?p.end:'Present'}}</small></button><div class="insights-life-axis" aria-hidden="true"><span></span><div><span v-for="year in lifespanTicks" :key="year" :style="{left:yearPosition(year)+'%'}" :class="{'life-tick-first':year===minimum,'life-tick-last':year===now}">{{year===now?'Today · '+year:year}}</span></div></div></div>
+    <div class="insights-lifespans"><div class="insights-life-axis" aria-hidden="true"><span></span><div><span v-for="year in lifespanTicks" :key="year" :style="{left:yearPosition(year)+'%'}" :class="{'life-tick-first':year===minimum,'life-tick-last':year===now}">{{year}}</span></div></div><div class="insights-life-guides" aria-hidden="true"><span v-for="year in lifespanTicks" :key="year" :class="{'life-guide-today':year===now}" :style="{left:yearPosition(year)+'%'}"></span></div><button v-for="p in lives" :key="p.person.id" class="insights-life" :class="{'insights-life-muted':!overlaps(p), 'insights-life-selected':p.person.id===overlapId}" @click="showOverlap(p.person.id)" :aria-label="tooltip(p)+' to '+p.end"><span>{{name(p.person)}}</span><span class="insights-life-track"><span :style="{left:((p.birth.year-minimum)/(now-minimum||1)*100)+'%',width:Math.max(1,(p.end-p.birth.year)/(now-minimum||1)*100)+'%'}"></span></span><small>{{p.birth.approximate?'c. ':''}}{{p.birth.year}}–{{p.person.deceased?p.end:'Present'}}</small></button><div class="insights-life-axis" aria-hidden="true"><span></span><div><span v-for="year in lifespanTicks" :key="year" :style="{left:yearPosition(year)+'%'}" :class="{'life-tick-first':year===minimum,'life-tick-last':year===now}">{{year}}</span></div></div></div>
     <small>Deceased relatives without a recorded death year are omitted. Select a name or a bar to see overlapping lifetimes in the sidebar.</small>
   </section>
 
@@ -184,7 +211,7 @@ async function activateStat(card) {
   <template v-else-if="panel==='people' && context">
     <template v-if="!context.routes"><h2>{{context.title}}</h2><p v-if="context.description">{{context.description}}</p><p>{{context.people.length}} relatives</p></template>
     <div v-if="context.routes" class="insights-sidebar-routes"><section v-for="route in context.routes" :key="routeKey(route)" class="insights-sidebar-route"><h3>{{migrationDisplayLabel(route.from)}} <PhArrowRight class="arrow-link-icon" :size="14" aria-hidden="true"/> {{migrationDisplayLabel(route.to)}}</h3><p>{{route.people.length}} {{route.people.length===1?'relative':'relatives'}}</p><div class="insights-sidebar-people"><button v-for="p in sortPeople(route.people)" :key="p.id" @click="showPerson(p)"><PersonAvatar :person="p"/><span>{{name(p)}}<small v-if="viewerRelation(p.id)">{{viewerRelation(p.id)}}</small></span><PhArrowRight class="arrow-link-icon" :size="16"/></button></div></section></div>
-    <div v-else-if="context.groups" class="insights-sidebar-routes"><section v-for="group in context.groups" :key="group.title" class="insights-sidebar-route"><h3>{{group.title}}</h3><div class="insights-sidebar-people"><button v-for="p in sortPeople(group.people)" :key="p.id" @click="showPerson(p)"><PersonAvatar :person="p"/><span>{{name(p)}}<small v-if="viewerRelation(p.id)">{{viewerRelation(p.id)}}</small></span><PhArrowRight :size="16"/></button></div></section></div>
+    <div v-else-if="context.groups" class="insights-sidebar-routes"><section v-for="group in context.groups" :key="group.title" class="insights-sidebar-route"><h3>{{group.title}}</h3><div class="insights-sidebar-people"><button v-for="p in sortPeople(group.people)" :key="p.id" @click="showPerson(p)"><PersonAvatar :person="p"/><span>{{name(p)}}<small v-if="context.showBirthDates && (p.dateDetails?.birth || p.birthday)">Born · {{api.familyDateLabel(p.dateDetails?.birth || p.birthday)}}</small><small v-if="viewerRelation(p.id)">{{viewerRelation(p.id)}}</small></span><PhArrowRight :size="16"/></button></div></section></div>
     <div v-else class="insights-sidebar-people"><button v-for="p in contextPeople" :key="p.id" @click="showPerson(p)"><PersonAvatar :person="p"/><span>{{name(p)}}<small v-if="context.ageGroup" class="insights-person-age">{{pyramidAgeLabel(p)}}</small><small v-if="viewerRelation(p.id)">{{viewerRelation(p.id)}}</small></span><PhArrowRight class="arrow-link-icon" :size="16"/></button></div><p v-if="!context.people.length">No relatives in this group.</p>
   </template>
   <template v-else-if="panel==='month' && month">

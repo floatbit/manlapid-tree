@@ -6,6 +6,8 @@ vm.runInContext(fs.readFileSync('js/contributions.js','utf8'),ctx);
 await vm.runInContext("saveContributionUpdates([{id:'p',kind:'birth',value:'1980-12-25'},{id:'m',kind:'anniversary',value:'2010'}])",ctx);
 assert.equal(ctx.data.people[0].birthday,'1980-12-25');assert.equal(ctx.data.people[0].dateDetails.death,'2020');assert.equal(ctx.data.people[0].bio,'Keep this');assert.equal(ctx.data.milestones[0].date,'2010');
 await assert.rejects(vm.runInContext("saveContributionUpdates([{id:'p',kind:'birth',value:'bad'}])",ctx));assert.equal(saves,1);
+await vm.runInContext("saveContributionUpdates([{id:'p',kind:'sex',value:'female'}])",ctx);assert.equal(ctx.data.people[0].sex,'female');assert.equal(ctx.data.people[0].bio,'Keep this');
+await assert.rejects(vm.runInContext("saveContributionUpdates([{id:'p',kind:'sex',value:'invalid'}])",ctx));
 success=false;await assert.rejects(vm.runInContext("saveContributionUpdates([{id:'p',kind:'portrait',value:'data:image/jpeg;base64,a'}])",ctx));assert.equal(ctx.data.people[0].photo,undefined);
 editing=false;await assert.rejects(vm.runInContext("saveContributionUpdates([{id:'p',kind:'birth',value:'2000'}])",ctx),/Log in/);
 console.log('Passed: quick contribution dates, preservation of unrelated fields, validation, rollback and login guard.');

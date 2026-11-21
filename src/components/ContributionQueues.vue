@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue';
 import { PhUploadSimple } from '@phosphor-icons/vue';
+import BulkSexEditor from './BulkSexEditor.vue';
 import PersonAvatar from './PersonAvatar.vue';
 import { family, canEdit, useRuntime } from '../ui/runtime.js';
 const api=computed(useRuntime), drafts=ref({}), dragging=ref(''), locationIds=ref([]), locationKind=ref('current'), saving=ref(false), message=ref(''), error=ref('');
@@ -37,6 +38,7 @@ async function dropPortrait(p,event){event.preventDefault();dragging.value='';if
   <p v-if="!canEdit">Log in to add dates, assign Google locations, and upload portraits.</p>
   <p v-if="error" role="alert" class="contribution-error">{{error}}</p><p v-if="message" role="status">{{message}}</p>
   <div class="contribution-queue-grid">
+    <BulkSexEditor />
     <section><h3>Missing Birthdays</h3><p>Enter several dates, then save together. Years and “About 1940” are welcome; exact dates use YYYY-MM-DD.</p>
       <form @submit.prevent="saveDates"><div class="contribution-date-group"><label v-for="r in dateRows" :key="key(r)" class="contribution-date-row"><span>{{r.name}}<small>Birth Date</small></span><input :aria-label="r.name+' birth date'" v-model="drafts[key(r)]" :disabled="!canEdit || saving" placeholder="YYYY-MM-DD or year" /></label></div><p v-if="!dateRows.length">Everyone has a birth date recorded.</p><button v-if="canEdit && dateRows.length" type="submit" class="primary" :disabled="saving">{{saving?'Saving…':'Save Dates'}}</button></form>
     </section>

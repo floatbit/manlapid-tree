@@ -105,6 +105,7 @@ function edit(id, { updateUrl = true } = {}) {
   $('#personId').value = p?.id || '';
   ui.setEditorPerson(p?.id || '');
   $('#deceased').checked = !!p?.deceased;
+  $('#personSex').value = p?.sex || '';
   $('#nicknames').value = JSON.stringify(p?.nicknames || []);
   renderNicknameTags();
   $('#formTitle').textContent = p ? 'Edit ' + displayName(p) : 'Add a Person';
@@ -182,6 +183,7 @@ $('#personForm').onsubmit = async (event) => {
     headshotOriginal: draftHeadshotOriginal,
     headshotCrop: draftHeadshotCrop,
     deceased: $('#deceased').checked,
+    sex: $('#personSex').value,
     bio: $('#bio').value.trim(),
     birthday: /^\d{4}-\d{2}-\d{2}$/.test(dateDetails.birth) ? dateDetails.birth : '',
     dateDetails,

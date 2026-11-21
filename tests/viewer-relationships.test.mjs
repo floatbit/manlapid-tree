@@ -26,3 +26,7 @@ assert.equal(neutralLabels.get('pgm'),'Grandparent','Never infer paternal side w
 const cyclic = {...data,links:[...data.links,parent('pgm','me'),parent('me','father')]};
 assert.equal(viewerRelationshipLabels(cyclic,'me',base).get('me'),'Me');
 console.log('Passed: viewer kinship, parental sides, in-laws, cousins, neutral data, disconnected people and cycle safety.');
+
+const sexData={...data,people:people.map(({gender,...p})=>({...p,sex:gender || ''}))};
+assert.equal(viewerRelationshipLabels(sexData,'me',base).get('aunt'),'Maternal Aunt');
+assert.equal(viewerRelationshipLabels(sexData,'me',base).get('uncle'),'Paternal Uncle');

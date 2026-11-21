@@ -3989,3 +3989,6 @@ button.album-milestone-badge:focus-visible { outline:2px solid var(--green); out
 
 #mappedPeople .map-country-group + .map-country-group { margin-top:28px; }
 #mappedPeople .map-country-heading { color:var(--ink); font-size:13px; font-weight:700; line-height:1.6; letter-spacing:-.2px; text-transform:uppercase; margin:22px 0 8px; }
+
+.bulk-sex-actions { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }
+.bulk-sex-editor .contribution-location-list small { display:block; color:var(--muted); font-size:11px; }

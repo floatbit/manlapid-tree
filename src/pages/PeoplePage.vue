@@ -71,6 +71,7 @@ import NicknameTags from '../components/NicknameTags.vue';
                 /></label>
               </div>
               <NicknameTags />
+              <label>Sex<select id="personSex"><option value="">Not recorded</option><option value="male">Male</option><option value="female">Female</option></select></label>
               <label
                 >Birth Date<input
                   id="birthday"

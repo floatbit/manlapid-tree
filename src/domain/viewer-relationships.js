@@ -20,7 +20,7 @@ export function viewerRelationshipLabels(data, viewerId, baseLabels) {
     return found;
   };
   const isSibling = (a, b) => a !== b && (siblings.get(a).has(b) || [...parents.get(a)].some(id => parents.get(b).has(id)));
-  const gender = p => ['male', 'm'].includes(String(p?.gender || p?.sex || '').toLowerCase()) ? 'male' : ['female', 'f'].includes(String(p?.gender || p?.sex || '').toLowerCase()) ? 'female' : '';
+  const gender = p => ['male', 'm'].includes(String(p?.sex || p?.gender || '').toLowerCase()) ? 'male' : ['female', 'f'].includes(String(p?.sex || p?.gender || '').toLowerCase()) ? 'female' : '';
   const branches = [...parents.get(viewerId)].map(id => ({ side: gender(people.get(id)) === 'male' ? 'Paternal' : gender(people.get(id)) === 'female' ? 'Maternal' : '', ancestors: ancestors(id) }));
   const labels = new Map();
   for (const [id, p] of people) {

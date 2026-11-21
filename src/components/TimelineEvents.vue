@@ -1,4 +1,7 @@
 <script setup lang="js">
+import {showWorldEvents} from '../ui/timeline-history.js';
+import {worldEventsByFamilyYear} from '../data/world-events.js';
+import TimelineWorldEvents from './TimelineWorldEvents.vue';
 import EventAges from './EventAges.vue';
 import ViewerRelation from './ViewerRelation.vue';
 import { PhArrowRight } from '@phosphor-icons/vue';
@@ -64,6 +67,7 @@ const years=computed(()=>{
  for(const event of timelineView.value){const year=api.value.familyDateYear(event.date) || 'Date Unknown';if(!groups.has(year))groups.set(year,[]);groups.get(year).push(event);}
  return [...groups];
 });
+const historyByYear=computed(()=>showWorldEvents.value?worldEventsByFamilyYear(years.value.map(([year])=>year)):new Map());
 function yearGap(index) {
   const current = years.value[index]?.[0], previous = years.value[index - 1]?.[0];
   return typeof current === 'number' && typeof previous === 'number' ? current - previous : 0;
@@ -81,7 +85,7 @@ function marriagePeople(event) {
       <div v-if="yearGap(index) > 1" class="timeline-year-gap">
         <span>{{ yearGap(index) }} years later</span>
       </div>
-      <section class="birth-year" :aria-label="'Family events in ' + year">
+      <section class="birth-year" :class="{'birth-year-with-history':showWorldEvents}" :aria-label="'Family events in ' + year">
         <h2>{{ year }}</h2>
         <div class="birth-cards">
           <template v-for="event in items" :key="event.id">
@@ -159,6 +163,7 @@ function marriagePeople(event) {
             </article>
           </template>
         </div>
+        <TimelineWorldEvents v-if="showWorldEvents && historyByYear.has(year)" :events="historyByYear.get(year)" />
       </section>
     </template>
     <div v-if="!years.length" class="timeline-empty">

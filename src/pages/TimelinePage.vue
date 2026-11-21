@@ -1,4 +1,5 @@
 <script setup lang="js">
+import {showWorldEvents} from '../ui/timeline-history.js';
 import {openMobileSidebar} from '../ui/mobile-sidebar.js';
 import {timelinePeriod,useRuntime} from '../ui/runtime.js';
 import MobileSidebar from '../components/MobileSidebar.vue';
@@ -43,6 +44,8 @@ onBeforeUnmount(() => headerObserver?.disconnect());
       <button type="button" @click="openDates('anniversaries')">Dates to Remember</button>
     </div>
     <SearchField class="timeline-search"><input id="timelineSearch" type="search" aria-label="Search timeline" placeholder="Search people, events, places, or years…" /></SearchField>
+    <label class="timeline-history-toggle"><input type="checkbox" v-model="showWorldEvents" aria-controls="timelineEvents" /><span>Show world events</span></label>
+    <p v-if="showWorldEvents" class="timeline-history-hint">World and Philippine history, shown once near a family year. Nearby events are within five years; dates are historical context, not exact matches to family milestones.</p>
     <p v-if="timelinePeriod" class="timeline-period"><strong>{{timelinePeriod.from}}–{{timelinePeriod.to}}</strong> <button type="button" @click="useRuntime().clearInsightTimelinePeriod()">Show all years</button></p>
     <p id="timelineSummary" class="hint" role="status"></p>
         <TimelineEvents />

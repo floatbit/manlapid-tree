@@ -3992,3 +3992,45 @@ button.album-milestone-badge:focus-visible { outline:2px solid var(--green); out
 
 .bulk-sex-actions { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }
 .bulk-sex-editor .contribution-location-list small { display:block; color:var(--muted); font-size:11px; }
+
+/* Optional historical context remains separate from the family event cards. */
+.timeline-history-toggle { display:flex; align-items:center; gap:9px; width:fit-content; margin:16px 0; font-size:13px; cursor:pointer; }
+.timeline-history-toggle input { width:17px; height:17px; margin:0; accent-color:var(--green); }
+.timeline-history-hint { max-width:720px; color:var(--muted); font-size:12px; line-height:1.7; }
+.timeline-world-events { min-width:0; align-self:start; border-left:2px solid #b7a58c; padding:24px 18px; }
+.timeline-world-events > h3 { display:flex; align-items:center; gap:7px; margin:0 0 18px; font-size:12px; font-weight:600; color:var(--muted); line-height:1.6; }
+.timeline-world-events > h3 svg { flex-shrink:0; }
+.timeline-world-event + .timeline-world-event { margin-top:12px; padding-top:12px; border-top:1px solid var(--line); }
+.timeline-world-event { font-size:12px; line-height:1.8; }
+.timeline-world-event time, .world-event-place { color:var(--muted); }
+.timeline-world-event a, .timeline-world-event a:visited { display:inline; color:var(--green); font-size:inherit; text-decoration:underline; text-underline-offset:3px; }
+.timeline-world-event a:hover { color:var(--green); text-decoration-color:var(--green); }
+.timeline-world-event a svg { vertical-align:middle; }
+.birth-year-with-history .timeline-world-events { grid-column:2; margin:10px 0 10px 30px; }
+@media(min-width:1200px) {
+ #timeline .birth-year-with-history { grid-template-columns:90px minmax(0,1fr) minmax(220px,.48fr); gap:30px; }
+ .birth-year-with-history .timeline-world-events { grid-column:3; margin:14px 0 0; }
+ .birth-year-with-history .birth-cards { min-width:0; }
+}
+@media(max-width:650px) {
+ .birth-year-with-history .timeline-world-events { grid-column:1; margin-left:24px; }
+}
+
+.birth-year-with-history .birth-cards { align-self:start; }
+
+/* Keep the rail continuous through year rows taller than their family cards. */
+@media(min-width:651px) {
+ #timelineEvents { --timeline-rail-x:120px; }
+ #timeline .birth-year-with-history { column-gap:30px; }
+ #timeline .birth-year-with-history::before { content:''; position:absolute; left:var(--timeline-rail-x); top:0; bottom:0; width:2px; background:#d9e2d1; pointer-events:none; }
+ #timeline .birth-year-with-history .birth-cards::before { display:none; }
+ #timelineEvents .timeline-year-gap::before { left:var(--timeline-rail-x); }
+}
+
+@media(max-width:760px) {
+ #timeline .timeline-world-events,
+ #timeline .timeline-history-toggle,
+ #timeline .timeline-history-hint { display:none; }
+ #timeline .birth-year-with-history .birth-cards::before { display:block; }
+ #timeline .birth-year-with-history::before { display:none; }
+}

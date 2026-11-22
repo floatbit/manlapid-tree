@@ -6,9 +6,9 @@ const dateLabel=date=>date.length===4?date:new Intl.DateTimeFormat('en-US',{year
 </script>
 <template>
  <aside class="timeline-world-events" aria-label="Historical context">
-  <h3><PhGlobeHemisphereWest :size="17" aria-hidden="true"/> Meanwhile, in the World</h3>
   <article v-for="event in events" :key="event.id" class="timeline-world-event">
-   <time :datetime="event.date">{{dateLabel(event.date)}}</time><span aria-hidden="true"> — </span><a :href="event.url" target="_blank" rel="noopener noreferrer" :title="event.source">{{event.title}} <PhArrowUpRight :size="13" aria-hidden="true"/></a>
+   <PhGlobeHemisphereWest class="world-event-globe" :size="15" aria-hidden="true"/> <time :datetime="event.date">{{dateLabel(event.date)}}</time><span aria-hidden="true"> — </span><a :href="event.url" target="_blank" rel="noopener noreferrer" :title="event.source">{{event.title}} <PhArrowUpRight :size="13" aria-hidden="true"/></a>
+   <p v-if="event.description" class="world-event-context">{{event.description}}</p>
   </article>
  </aside>
 </template>

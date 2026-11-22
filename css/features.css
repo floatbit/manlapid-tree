@@ -3998,8 +3998,7 @@ button.album-milestone-badge:focus-visible { outline:2px solid var(--green); out
 .timeline-history-toggle input { width:17px; height:17px; margin:0; accent-color:var(--green); }
 .timeline-history-hint { max-width:720px; color:var(--muted); font-size:12px; line-height:1.7; }
 .timeline-world-events { min-width:0; align-self:start; border-left:2px solid #b7a58c; padding:24px 18px; }
-.timeline-world-events > h3 { display:flex; align-items:center; gap:7px; margin:0 0 18px; font-size:12px; font-weight:600; color:var(--muted); line-height:1.6; }
-.timeline-world-events > h3 svg { flex-shrink:0; }
+.world-event-globe { display:inline-block; vertical-align:middle; color:var(--muted); margin-right:4px; }
 .timeline-world-event + .timeline-world-event { margin-top:12px; padding-top:12px; border-top:1px solid var(--line); }
 .timeline-world-event { font-size:12px; line-height:1.8; }
 .timeline-world-event time, .world-event-place { color:var(--muted); }
@@ -4033,4 +4032,11 @@ button.album-milestone-badge:focus-visible { outline:2px solid var(--green); out
  #timeline .timeline-history-hint { display:none; }
  #timeline .birth-year-with-history .birth-cards::before { display:block; }
  #timeline .birth-year-with-history::before { display:none; }
+}
+
+/* Editorial margin notes are quieter than family milestone cards. */
+#timeline .timeline-world-events { position:relative; background:#f1f3eb; border:1px solid #dfe5d566; border-radius:8px; box-shadow:none; padding:20px 18px; }
+.timeline-world-event .world-event-context { margin:6px 0 0; color:var(--muted); font-size:12px; line-height:1.7; }
+@media(min-width:1200px) {
+ #timeline .timeline-world-events::before { content:''; position:absolute; right:100%; top:26px; width:30px; border-top:1px dotted #a7b49c88; pointer-events:none; }
 }

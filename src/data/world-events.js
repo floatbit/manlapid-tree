@@ -1,6 +1,29 @@
 // Curated historical context, shipped with the app. No database or runtime requests.
 // Keep descriptions factual and concise, with a primary source for every entry.
 export const worldEvents = [
+ {"id": "mens-world-cup-1998", "date": "1998-07-12", "place": "France", "title": "France wins its first men’s World Cup", "description": "France defeated Brazil 3–0 at the Stade de France to win its first FIFA World Cup on home soil.", "source": "FIFA", "url": "https://inside.fifa.com/tournaments/mens/worldcup/2018russia/news/the-day-frances-world-cup-dream-came-true-2985189"},
+ {"id": "mens-world-cup-1954", "date": "1954-07-04", "place": "Switzerland", "title": "West Germany wins the men’s World Cup", "description": "West Germany defeated Hungary 3–2 in the final in Bern to win its first FIFA World Cup.", "source": "FIFA", "url": "https://www.fifa.com/en/tournaments/mens/worldcup/articles/west-germany-hungary-1954-final"},
+ {"id": "halley-1835", "date": "1835", "place": "World", "title": "Halley’s Comet returns", "description": "Halley’s Comet returned to the inner solar system during its roughly 76-year orbit.", "source": "NASA", "url": "https://www.nasa.gov/history/955-years-ago-halleys-comet-and-the-battle-of-hastings/"},
+ {"id": "atlantic-cable-1866", "date": "1866", "place": "World", "title": "A lasting transatlantic telegraph link", "description": "A successful cable across the Atlantic made rapid telegraph communication between Europe and North America a lasting reality.", "source": "The Metropolitan Museum of Art", "url": "https://www.metmuseum.org/art/collection/search/383838"},
+ {"id": "eiffel-construction-1887", "date": "1887-01-26", "place": "France", "title": "Eiffel Tower construction begins", "description": "Work began on the Paris landmark built for the 1889 World’s Fair.", "source": "Eiffel Tower official website", "url": "https://www.toureiffel.paris/en/the-monument/history"},
+ {"id": "victoria-jubilee-1897", "date": "1897", "place": "United Kingdom", "title": "Queen Victoria’s Diamond Jubilee", "description": "Celebrations marked 60 years of Queen Victoria’s reign.", "source": "Royal Collection Trust", "url": "https://www.rct.uk/collection/stories/royal-jubilees/queen-victoria-0"},
+ {"id": "women-olympics-1900", "date": "1900", "place": "France", "title": "Women compete at the Olympics", "description": "The Paris Games became the first modern Olympics to include women competitors.", "source": "International Olympic Committee", "url": "https://www.olympics.com/ioc/news/the-first-women-olympians"},
+ {"id": "wall-street-1929", "date": "1929-10", "place": "United States", "title": "The Wall Street crash", "description": "A severe stock-market crash shook confidence in the economy at the start of the Great Depression.", "source": "Federal Reserve History", "url": "https://www.federalreservehistory.org/essays/stock-market-crash-of-1929"},
+ {"id": "owens-1936", "date": "1936", "place": "Germany", "title": "Jesse Owens wins four Olympic golds", "description": "Jesse Owens won the 100 metres, 200 metres, long jump, and 4×100-metre relay at the Berlin Olympics.", "source": "Team USA", "url": "https://www.teamusa.com/hall-of-fame/hall-of-fame-members/jesse-owens"},
+ {"id": "human-rights-1948", "date": "1948-12-10", "place": "World", "title": "Universal Declaration of Human Rights", "description": "The United Nations adopted a shared declaration of fundamental human rights for all people.", "source": "United Nations", "url": "https://www.un.org/about-us/universal-declaration-of-human-rights"},
+ {"id": "barbie-1959", "date": "1959-03-09", "place": "United States", "title": "Barbie makes her debut", "description": "Mattel introduced Barbie at the New York Toy Fair, beginning the history of a globally recognized doll.", "source": "Mattel", "url": "https://community.creations.mattel.com/news/barbie/public-news-stories/60th-anniversary-for-barbie%C2%AE-doll-collectors-by-christopher-varaste-r36/"},
+ {"id": "smallpox-1980", "date": "1980-05-08", "place": "World", "title": "Smallpox declared eradicated", "description": "The World Health Assembly declared smallpox eradicated after a global vaccination effort.", "source": "World Health Organization", "url": "https://www.who.int/publications/i/item/WHA33-3"},
+ {"id": "japan-tsunami-2011", "date": "2011-03-11", "place": "Japan", "title": "Japan’s earthquake and tsunami", "description": "A powerful earthquake off northeastern Japan triggered a devastating tsunami across the region.", "source": "NOAA", "url": "https://response.restoration.noaa.gov/oil-and-chemical-spills/significant-incidents/japan-earthquake-and-tsunami"},
+ {"id": "paris-agreement-2015", "date": "2015-12-12", "place": "World", "title": "The Paris climate agreement", "description": "Nations adopted an international agreement to limit global warming and strengthen climate action.", "source": "UN Climate Change", "url": "https://unfccc.int/process-and-meetings/the-paris-agreement"},
+ {"id": "tokyo-olympics-2021", "date": "2021-07-23", "place": "Japan", "title": "The delayed Tokyo Olympics open", "description": "The Tokyo 2020 Games opened in 2021 after a one-year postponement during the COVID-19 pandemic.", "source": "International Olympic Committee", "url": "https://www.youtube.com/watch?v=6u6uCbe6zh8"},
+
+ {"id": "ipod-2001", "date": "2001-10-23", "place": "United States", "title": "Apple introduces the first iPod", "description": "Apple introduced a pocket-sized digital music player that could hold up to 1,000 songs.", "source": "Apple", "url": "https://www.apple.com/newsroom/2001/10/23Apple-Presents-iPod/"},
+ {"id": "euro-cash-2002", "date": "2002-01-01", "place": "Europe", "title": "Euro banknotes and coins enter circulation", "description": "Euro cash entered circulation in 12 European Union countries, giving millions of people a shared everyday currency.", "source": "European Central Bank", "url": "https://www.ecb.europa.eu/euro/changeover/2002/html/index.en.html"},
+ {"id": "sydney-olympics-2000", "date": "2000-09-15", "place": "Australia", "title": "The Sydney Olympic Games open", "description": "The Sydney Olympics opened with a ceremony at the Olympic Stadium, welcoming athletes and viewers from around the world.", "source": "Australian Olympic Committee", "url": "https://www.olympics.com.au/games/sydney-2000/opening-ceremony/"},
+ {"id": "iphone-2007", "date": "2007-01-09", "place": "United States", "title": "The first iPhone is introduced", "description": "Apple introduced the iPhone, bringing a phone, music player, and internet device together behind a touchscreen.", "source": "Apple", "url": "https://www.apple.com/newsroom/2007/01/09Apple-Reinvents-the-Phone-with-iPhone/"},
+
+ {"id": "thrilla-manila-1975", "date": "1975-10-01", "place": "Philippines", "title": "The “Thrilla in Manila”: Ali vs. Frazier", "description": "Muhammad Ali and Joe Frazier fought their third and final bout at the Araneta Coliseum in Quezon City.", "source": "Muhammad Ali Center", "url": "https://alicenter.org/thrilla-in-manila-50th-anniversary/"},
+ {"id": "us-immigration-act-1965", "date": "1965-10-03", "place": "United States", "title": "The U.S. Immigration and Nationality Act of 1965 is signed", "description": "The Hart–Celler Act ended the national-origins quota system and established preferences emphasizing family reunification and skilled immigration.", "source": "U.S. House of Representatives", "url": "https://history.house.gov/Historical-Highlights/1951-2000/Immigration-and-Nationality-Act-of-1965/"},
  {"id": "titanic-1912", "date": "1912-04-15", "place": "North Atlantic", "title": "The Titanic sinks", "description": "RMS Titanic sank in the North Atlantic after striking an iceberg during its maiden voyage.", "source": "National Oceanic and Atmospheric Administration", "url": "https://www.noaa.gov/rms-titanic"},
  {"id": "september-11-2001", "date": "2001-09-11", "place": "United States", "title": "The September 11 attacks", "description": "Hijacked aircraft struck the World Trade Center and the Pentagon; Flight 93 crashed in Pennsylvania.", "source": "National Park Service", "url": "https://www.nps.gov/flni/learn/historyculture/september-11-2001-timeline.htm"},
 
@@ -34,19 +57,32 @@ export const worldEvents = [
  {id:'edsa-1986',date:'1986-02-25',place:'Philippines',title:'The EDSA People Power Revolution',description:'The February 22–25 uprising brought an end to Ferdinand Marcos’s rule and restored democratic institutions.',source:'Supreme Court E-Library',url:'https://elibrary.judiciary.gov.ph/thebookshelf/showdocs/8/36171'},
  {id:'web-1989',date:'1989-03',place:'World',title:'The World Wide Web is proposed',description:'At CERN, Tim Berners-Lee proposed an information-sharing system that became the World Wide Web.',source:'CERN',url:'https://home.cern/cern-celebrates-web-anniversary/'},
  {id:'web-1993',date:'1993-04-30',place:'World',title:'The Web becomes freely available',description:'CERN placed its World Wide Web software in the public domain, helping the Web spread around the world.',source:'CERN',url:'https://home.cern/science/computing/the-birth-of-the-web'},
- {id:'covid-2020',date:'2020-03-11',place:'World',title:'COVID-19 characterized as a pandemic',description:'The World Health Organization assessed that COVID-19 could be characterized as a pandemic.',source:'World Health Organization',url:'https://www.who.int/news-room/detail/27-04-2020-who-timeline---COVID-19'},
+ {id:'covid-2020',date:'2020-03-11',place:'World',title:'COVID-19 pandemic',description:'The World Health Organization assessed that COVID-19 could be characterized as a pandemic.',source:'World Health Organization',url:'https://www.who.int/news-room/detail/27-04-2020-who-timeline---COVID-19'},
 ];
 
-// Assign each event once. Nearby context must never be presented as an exact date match.
-export function worldEventsByFamilyYear(years, events=worldEvents, maximumDistance=5) {
- const recorded=[...new Set(years.filter(Number.isFinite))].sort((a,b)=>a-b);
- const groups=new Map();
- for(const event of [...events].sort((a,b)=>a.date.localeCompare(b.date))){
-  const eventYear=Number(event.date.slice(0,4));
-  const closest=recorded.reduce((best,year)=>best===null || Math.abs(year-eventYear)<Math.abs(best-eventYear)?year:best,null);
-  if(closest===null || Math.abs(closest-eventYear)>maximumDistance)continue;
-  if(!groups.has(closest))groups.set(closest,[]);
-  groups.get(closest).push({...event,year:eventYear,offset:eventYear-closest});
+// Editorial priorities choose at most two landmarks per decade from matching family years.
+const landmarkPriority=new Map([
+ 'moon-1969','philippine-independence-1898','philippine-independence-1946',
+ 'ww2-surrender-1945','titanic-1912','september-11-2001','pinatubo-1991',
+ 'edsa-1986','us-immigration-act-1965','thrilla-manila-1975','martial-law-1972',
+ 'rizal-born-1861','bonifacio-born-1863','first-flight-1903','ww1-1914',
+ 'mens-world-cup-1998','web-1993','iphone-2007','covid-2020','web-1989',
+].map((id,index)=>[id,index]));
+// Context stays in the exact calendar year; no event is moved to fill a decade.
+export function worldEventsByFamilyYear(years, events=worldEvents) {
+ const recorded=new Set(years.filter(Number.isFinite)),groups=new Map(),decades=new Map();
+ const candidates=events.filter(event=>recorded.has(Number(event.date.slice(0,4))));
+ candidates.sort((a,b)=>(landmarkPriority.get(a.id) ?? 100)-(landmarkPriority.get(b.id) ?? 100) || a.date.localeCompare(b.date) || a.id.localeCompare(b.id));
+ const selected=[];
+ for(const event of candidates){
+  const decade=Math.floor(Number(event.date.slice(0,4))/10)*10;
+  if((decades.get(decade) || 0)>=2)continue;
+  decades.set(decade,(decades.get(decade) || 0)+1);selected.push(event);
+ }
+ for(const event of selected.sort((a,b)=>a.date.localeCompare(b.date))){
+  const year=Number(event.date.slice(0,4));
+  if(!groups.has(year))groups.set(year,[]);
+  groups.get(year).push({...event,year,offset:0});
  }
  return groups;
 }

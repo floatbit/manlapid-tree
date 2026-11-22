@@ -45,7 +45,7 @@ onBeforeUnmount(() => headerObserver?.disconnect());
     </div>
     <SearchField class="timeline-search"><input id="timelineSearch" type="search" aria-label="Search timeline" placeholder="Search people, events, places, or years…" /></SearchField>
     <label class="timeline-history-toggle"><input type="checkbox" v-model="showWorldEvents" aria-controls="timelineEvents" /><span>Show world events</span></label>
-    <p v-if="showWorldEvents" class="timeline-history-hint">World and Philippine history, shown once near a family year. Nearby events are within five years; dates are historical context, not exact matches to family milestones.</p>
+    <p v-if="showWorldEvents" class="timeline-history-hint">Selected world and Philippine landmarks from the same calendar year, limited to two per decade. These notes provide context, not an exact date match to a family milestone.</p>
     <p v-if="timelinePeriod" class="timeline-period"><strong>{{timelinePeriod.from}}–{{timelinePeriod.to}}</strong> <button type="button" @click="useRuntime().clearInsightTimelinePeriod()">Show all years</button></p>
     <p id="timelineSummary" class="hint" role="status"></p>
         <TimelineEvents />

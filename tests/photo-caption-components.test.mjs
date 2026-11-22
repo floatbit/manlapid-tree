@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {mount,flushPromises} from './mount-component.mjs';
+import PhotoCaption from '../src/components/PhotoCaption.vue';
+import PhotoLightbox from '../src/dialogs/PhotoLightbox.vue';
+import {family,ui,canEdit,bindRuntime,lightbox} from '../src/ui/runtime.js';
+let fail=false;const calls=[];
+bindRuntime({savePhotoCaption:async(photo,caption)=>{if(fail)throw Error('Conflict');calls.push([photo,caption]);ui.sync({...family.value,photoCaptions:{...family.value.photoCaptions,[photo]:caption}});},displayName:p=>p.name,personMatchesQuery:()=>true});
+const photo='uploads/albums/a/photo.jpg';ui.sync({people:[],links:[],albums:[],photoTags:{},photoCaptions:{}});canEdit.value=true;
+const page=mount(PhotoCaption,{props:{photo}});
+await page.find('.photo-caption-edit').trigger('click');await page.find('textarea').setValue('Christmas at Grandma’s house.');await page.find('.primary').trigger('click');await flushPromises();
+assert.deepEqual(calls.at(-1),[photo,'Christmas at Grandma’s house.']);assert.equal(page.find('.photo-caption-text').text(),'Christmas at Grandma’s house.');
+await page.find('.photo-caption-edit').trigger('click');await page.find('textarea').setValue('Unsaved');await page.findAll('.photo-caption-actions button')[1].trigger('click');assert.equal(page.find('.photo-caption-text').text(),'Christmas at Grandma’s house.');
+await page.find('.photo-caption-edit').trigger('click');await page.find('textarea').setValue('Retry this');fail=true;await page.find('.primary').trigger('click');await flushPromises();assert(page.find('[role=alert]').text().includes('Conflict'));assert.equal(page.find('textarea').element.value,'Retry this');fail=false;await page.find('textarea').setValue('');await page.find('.primary').trigger('click');await flushPromises();assert.equal(calls.at(-1)[1],'');page.unmount();
+ui.sync({...family.value,photoCaptions:{[photo]:'<script>plain text</script>'}});canEdit.value=false;const reader=mount(PhotoCaption,{props:{photo}});assert.equal(reader.findAll('button').length,0);assert.equal(reader.findAll('script').length,0);assert(reader.find('.photo-caption-text').text().includes('<script>'));reader.unmount();
+canEdit.value=true;lightbox.value={photos:[photo,'uploads/albums/a/other.jpg'],index:0,title:'Family',personId:null};const viewer=mount(PhotoLightbox);await viewer.find('.photo-caption-edit').trigger('click');await viewer.find('textarea').setValue('Draft caption');window.confirm=()=>false;await viewer.find('#lightboxNext').trigger('click');assert.equal(lightbox.value.index,0,'Unsaved caption guards navigation');window.confirm=()=>true;await viewer.find('#lightboxNext').trigger('click');assert.equal(lightbox.value.index,1);assert.equal(viewer.findAll('.photo-caption-editor').length,0,'Draft never leaks to next photo');viewer.unmount();
+console.log('Passed: caption save, cancel, clearing, failed-save draft, reader access, escaped text and guarded photo navigation.');

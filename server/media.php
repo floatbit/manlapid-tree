@@ -19,7 +19,8 @@ function syncAlbumMedia(PDO $db,string $albumId,array $photos): void {
     foreach($photos as $position=>$path)$wanted[]=['album',$albumId,$path,$position];reconcileMediaRows($db,$wanted);
 }
 function reconcileMediaRows(PDO $db,array $wanted): void {
-    $existing=familyMediaRows($db);$pools=[];
+    $existing=familyMediaRows($db);$pools=[];$captions=[];
+    foreach($existing as $row)if($row['owner_type']!=='person'&&isset($row['caption'])&&$row['caption']!=='')$captions[$row['file_path']]=$row['caption'];
     foreach($existing as $row)$pools[$row['owner_type']][$row['owner_id']][$row['file_path']][]=$row;
     $insert=$db->prepare('INSERT INTO family_media (id,owner_type,owner_id,file_path,media_type,mime_type,byte_size,width,height,display_order) VALUES (?,?,?,?,?,?,?,?,?,?)');
     $reorder=$db->prepare('UPDATE family_media SET display_order=? WHERE id=?');$kept=[];
@@ -29,6 +30,7 @@ function reconcileMediaRows(PDO $db,array $wanted): void {
         $file=imageFilePath($path);$mime=null;$bytes=null;$width=null;$height=null;
         if($file&&is_file($file)){$bytes=filesize($file);$mime=(new finfo(FILEINFO_MIME_TYPE))->file($file)?:null;if(!preg_match('/\.(mp4|mov)$/i',$path)){$size=@getimagesize($file);if($size){$width=$size[0];$height=$size[1];}}}
         $id=mediaUuid();$insert->execute([$id,$type,$owner,$path,preg_match('/\.(mp4|mov)$/i',$path)?'video':'image',$mime,$bytes,$width,$height,$position]);$kept[$id]=true;
+        if($type!=='person'&&isset($captions[$path]))$db->prepare('UPDATE family_media SET caption=? WHERE id=?')->execute([$captions[$path],$id]);
     }
     $remove=$db->prepare('DELETE FROM family_media WHERE id=?');foreach($existing as $row)if(!isset($kept[$row['id']]))$remove->execute([$row['id']]);
 }

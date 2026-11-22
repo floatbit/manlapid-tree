@@ -141,6 +141,7 @@ function sharedPayload(action) {
     people: data.people,
     links: data.links,
     familyGroups: data.familyGroups || [],
+    ...(data.pendingPhotoCaptionImports ? {photoCaptionAssignments:data.pendingPhotoCaptionImports} : {}),
     ...(data.pendingPhotoTagImports ? {photoTagAssignments:data.pendingPhotoTagImports} : {}),
     milestones: data.milestones || [],
     ...(action === 'bootstrap' || collectionRevisions.has('albums') ? { albums: data.albums } : {}),
@@ -222,8 +223,10 @@ function applyShared(result) {
   data.expanded = data.expanded.map(resolve);
   data.root = resolve(data.root);
   data.selected = resolve(data.selected);
+  delete data.pendingPhotoCaptionImports;
   delete data.pendingPhotoTagImports;
   data.photoTags = result.photoTags || {};
+  data.photoCaptions = result.photoCaptions || {};
   data.photoPins = result.photoPins || {};
   data.familyGroups = result.familyGroups || [];
   data.people = result.people;

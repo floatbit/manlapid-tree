@@ -6,6 +6,7 @@ import MobileSidebar from '../components/MobileSidebar.vue';
 import { onMounted, onBeforeUnmount, ref } from 'vue';
 import { PhArrowRight } from '@phosphor-icons/vue';
 import SearchField from '../components/SearchField.vue';
+import TimelineEraRail from '../components/TimelineEraRail.vue';
 import TimelineEvents from '../components/TimelineEvents.vue';
 import UpcomingAnniversaries from '../components/UpcomingAnniversaries.vue';
 import OnThisDay from '../components/OnThisDay.vue';
@@ -48,6 +49,7 @@ onBeforeUnmount(() => headerObserver?.disconnect());
     <p v-if="showWorldEvents" class="timeline-history-hint">Selected world and Philippine landmarks from the same calendar year, limited to two per decade. These notes provide context, not an exact date match to a family milestone.</p>
     <p v-if="timelinePeriod" class="timeline-period"><strong>{{timelinePeriod.from}}–{{timelinePeriod.to}}</strong> <button type="button" @click="useRuntime().clearInsightTimelinePeriod()">Show all years</button></p>
     <p id="timelineSummary" class="hint" role="status"></p>
+        <TimelineEraRail />
         <TimelineEvents />
       </section>
       <MobileSidebar sidebar-key="timeline" label="Timeline details"><aside :data-mobile-view="timelinePanel" class="timeline-sidebar-stack" tabindex="0" aria-label="Family dates and upcoming anniversaries">

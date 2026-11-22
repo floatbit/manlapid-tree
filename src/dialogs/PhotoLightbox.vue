@@ -1,14 +1,15 @@
 <script setup lang="js">
 import { PhX, PhCaretLeft, PhCaretRight, PhLink, PhTrash } from '@phosphor-icons/vue';
 import { computed, nextTick, ref, watch } from 'vue';
+import PhotoCaption from '../components/PhotoCaption.vue';
 import PhotoPeopleTags from '../components/PhotoPeopleTags.vue';
 import { family, lightbox, useRuntime } from '../ui/runtime.js';
-const tagPicker=ref(null), dialog=ref(null), video=ref(null), failed=ref(false);
+const captionEditor=ref(null),tagPicker=ref(null), dialog=ref(null), video=ref(null), failed=ref(false);
 const deleting=ref(false), deleteError=ref('');
 const media=computed(()=>lightbox.value.photos[lightbox.value.index]);
 const isVideo=computed(()=>/\.(mp4|mov)$/i.test(media.value || '') || /^data:video\/(mp4|quicktime)[;,]/i.test(media.value || ''));
 function openPerson(id) {if(canLeave())useRuntime().openTaggedPerson(id);}
-function canLeave() {return !deleting.value && !tagPicker.value?.saving;}
+function canLeave() {return !deleting.value && !tagPicker.value?.saving && (!captionEditor.value || captionEditor.value.canLeave());}
 const owner=computed(()=>{
   if(lightbox.value.personId) return {photosOf:lightbox.value.personId,media:media.value};
   const album=(family.value.albums || []).find((a)=>a.photos?.includes(media.value));
@@ -61,7 +62,7 @@ function closed() {video.value?.pause();const focus=lightbox.value.returnFocus;l
         @click="useRuntime().copyDirectLink(owner)"
       >
         <PhLink :size="16" aria-hidden="true" /> Copy link</button
-      ><button v-if="!isVideo && media?.startsWith('uploads/')" type="button" class="lightbox-delete" :disabled="deleting || tagPicker?.saving" @click="deletePhoto"><PhTrash :size="16" aria-hidden="true" /> {{ deleting ? 'Deleting…' : 'Delete Photo' }}</button><span id="lightboxCounter" aria-live="polite" aria-atomic="true"
+      ><button v-if="!isVideo && media?.startsWith('uploads/')" type="button" class="lightbox-delete" :disabled="deleting || tagPicker?.saving || captionEditor?.saving" @click="deletePhoto"><PhTrash :size="16" aria-hidden="true" /> {{ deleting ? 'Deleting…' : 'Delete Photo' }}</button><span id="lightboxCounter" aria-live="polite" aria-atomic="true"
         >{{ lightbox.index + 1 }} / {{ lightbox.photos.length }}</span
       ><button id="lightboxClose" type="button" aria-label="Close photo viewer" @click="close">
         <PhX :size="20" aria-hidden="true" />
@@ -82,7 +83,7 @@ function closed() {video.value?.pause();const focus=lightbox.value.returnFocus;l
         id="lightboxImage"
         :hidden="isVideo"
         :src="!isVideo ? media : undefined"
-        :alt="`${lightbox.title} — photo ${lightbox.index + 1} of ${lightbox.photos.length}`"
+        :alt="family.photoCaptions?.[media] || `${lightbox.title} — photo ${lightbox.index + 1} of ${lightbox.photos.length}`"
         @error="failed = true"
       /><video
         id="lightboxVideo"
@@ -118,7 +119,8 @@ function closed() {video.value?.pause();const focus=lightbox.value.returnFocus;l
       <PhCaretRight :size="28" aria-hidden="true" />
     </button>
     <p v-if="deleteError" class="lightbox-delete-error" role="alert">{{ deleteError }}</p>
-    <PhotoPeopleTags v-if="!isVideo && media" :inert="deleting" ref="tagPicker" :photo="media" />
+    <PhotoCaption v-if="!isVideo && media?.startsWith('uploads/') && !family.people.some(p=>p.photo===media || p.headshotOriginal===media)" ref="captionEditor" :photo="media" :inert="deleting" />
+    <PhotoPeopleTags :before-navigate="canLeave" v-if="!isVideo && media" :inert="deleting" ref="tagPicker" :photo="media" />
     <p class="lightbox-help">← → to browse · Esc to close</p>
   </dialog>
 </template>

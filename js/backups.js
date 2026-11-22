@@ -19,6 +19,7 @@ async function exportFamily() {
         JSON.stringify({
           format: 'kinfolk-v1',
           familyGroups: data.familyGroups || [],
+          photoCaptionAssignments: ['album','recipe','milestone'].flatMap(type => (data[type === 'album' ? 'albums' : type === 'recipe' ? 'recipes' : 'milestones'] || []).flatMap(owner => (type==='milestone' && owner.albumId ? [] : (owner.photos || []).flatMap((photo,index) => data.photoCaptions?.[photo] ? [{type,owner:owner.id,index,fingerprint:photo.split('/').pop(),caption:data.photoCaptions[photo]}] : [])))),
           photoTagAssignments: ['album','recipe','milestone'].flatMap(type => (data[type === 'album' ? 'albums' : type === 'recipe' ? 'recipes' : 'milestones'] || []).flatMap(owner => (type==='milestone' && owner.albumId ? [] : (owner.photos || []).flatMap((photo,index) => data.photoTags?.[photo]?.length ? [{type,owner:owner.id,index,fingerprint:photo.split('/').pop(),people:data.photoTags[photo]}] : [])))),
           people: data.people,
           links: data.links,
@@ -91,6 +92,10 @@ $('#familyBackup').onchange = async (e) => {
     const incoming = JSON.parse(await file.text());
     if (!Array.isArray(incoming.people) || !Array.isArray(incoming.links))
       throw new Error('Choose a Kinfolk family backup.');
+    if(incoming.photoCaptionAssignments !== undefined){
+      if(!Array.isArray(incoming.photoCaptionAssignments))throw new Error('Invalid photo captions.');
+      data.pendingPhotoCaptionImports=incoming.photoCaptionAssignments;
+    }
     if(incoming.photoTagAssignments !== undefined) {
       if(!Array.isArray(incoming.photoTagAssignments)) throw new Error('Invalid photo tags.');
       data.pendingPhotoTagImports=incoming.photoTagAssignments;

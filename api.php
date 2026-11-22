@@ -31,7 +31,7 @@ function snapshot(PDO $db, string $csrf): array {
     unset($event);
     hydrateFamilyMedia($db,$people,$milestones);
     $collections=[];foreach(['albums','recipes'] as $kind)if(($_GET['view']??'')!=='core'||in_array($kind,explode(',',$_GET['include']??''),true))$collections[$kind]=$kind==='albums'?familyAlbums($db):familyRecipes($db);
-    return $collections + ['canEdit'=>familyCanEdit(),'photoPins'=>(object)personPhotoPins($db),'photoTags'=>(object)photoTags($db),'familyGroups'=>familyGroups($db), 'mapsApiKey'=>$mapsConfig['api_key']??'', 'personAliases' => $db->query('SELECT old_id,person_id FROM family_person_aliases')->fetchAll(), 'milestones' => $milestones, 'revision' => (int)$state['revision'], 'people' => $people, 'links' => $links, 'email' => $state['request_email'], 'csrf' => $csrf];
+    return $collections + ['canEdit'=>familyCanEdit(),'photoPins'=>(object)personPhotoPins($db),'photoTags'=>(object)photoTags($db),'photoCaptions'=>(object)photoCaptions($db),'familyGroups'=>familyGroups($db), 'mapsApiKey'=>$mapsConfig['api_key']??'', 'personAliases' => $db->query('SELECT old_id,person_id FROM family_person_aliases')->fetchAll(), 'milestones' => $milestones, 'revision' => (int)$state['revision'], 'people' => $people, 'links' => $links, 'email' => $state['request_email'], 'csrf' => $csrf];
 }
 function field(array $row, string $key, int $max): string {
     $value = $row[$key] ?? '';
@@ -114,20 +114,21 @@ try {
     if (!familyCanEdit()) respond(401,['error'=>'Log in to make changes.','canEdit'=>false]);
     if ((int)($_SERVER['CONTENT_LENGTH'] ?? 0) > 160000000) respond(413,['error'=>'This update is too large.']);
     $body = json_decode(file_get_contents('php://input'),true,512,JSON_THROW_ON_ERROR);
-    if (!is_array($body) || !in_array($body['action'] ?? '',['save','bootstrap','attach_birth_album','save_album','delete_album','save_recipe','delete_recipe','save_family_group','delete_family_group','save_photo_tags','delete_photo','save_person_photos','pin_person_photo'],true)) throw new InvalidArgumentException('Invalid request.');
-    if(in_array($body['action'],['attach_birth_album','save_album','delete_album','save_recipe','delete_recipe','save_family_group','delete_family_group','save_photo_tags','delete_photo','save_person_photos','pin_person_photo'],true)){
+    if (!is_array($body) || !in_array($body['action'] ?? '',['save','bootstrap','attach_birth_album','save_album','delete_album','save_recipe','delete_recipe','save_family_group','delete_family_group','save_photo_tags','save_photo_caption','delete_photo','save_person_photos','pin_person_photo'],true)) throw new InvalidArgumentException('Invalid request.');
+    if(in_array($body['action'],['attach_birth_album','save_album','delete_album','save_recipe','delete_recipe','save_family_group','delete_family_group','save_photo_tags','save_photo_caption','delete_photo','save_person_photos','pin_person_photo'],true)){
         $db->beginTransaction();$revision=(int)$db->query('SELECT revision FROM family_state WHERE id=1 FOR UPDATE')->fetchColumn();
         if(($body['revision']??null)!==$revision){$db->rollBack();respond(409,['error'=>'Another browser changed the family. Reload before saving.']);}
         if($body['action']==='attach_birth_album'){attachBirthAlbum($db,field($body,'personId',64),field($body,'albumId',64));}
         elseif($body['action']==='delete_photo'){deleteLightboxPhoto($db,field($body,'photo',512));}
         elseif($body['action']==='pin_person_photo'){setPersonPhotoPin($db,field($body,'personId',64),field($body,'photo',512),$body['pinned']??null);}
         elseif($body['action']==='save_person_photos'){storePersonPhotos($db,field($body,'personId',64),$body['photos']??null,field($body,'albumId',64),field($body,'albumTitle',200));}
+        elseif($body['action']==='save_photo_caption'){savePhotoCaption($db,field($body,'photo',512),$body['caption']??null);}
         elseif($body['action']==='save_photo_tags'){savePhotoTags($db,field($body,'photo',512),$body['people']??null);}
         elseif($body['action']==='save_family_group'){if(!is_array($body['familyGroup']??null))throw new InvalidArgumentException('Invalid family group.');if(isset($body['album'])){if(!is_array($body['album'])||($body['album']['id']??null)!==($body['familyGroup']['albumId']??null))throw new InvalidArgumentException('Invalid family album.');storeAlbum($db,cleanAlbum($db,$body['album']));}$group=cleanFamilyGroup($db,$body['familyGroup']);storeFamilyGroup($db,$group);}
         elseif($body['action']==='delete_family_group'){$id=field($body,'familyGroupId',64);$db->prepare('DELETE FROM family_groups WHERE id=?')->execute([$id]);}
         elseif($body['action']==='save_recipe'){if(!is_array($body['recipe']??null))throw new InvalidArgumentException('Invalid recipe.');storeRecipe($db,cleanRecipe($db,$body['recipe']));}
         elseif($body['action']==='delete_recipe'){$id=field($body,'recipeId',64);syncRecipeMedia($db,$id,[]);$db->prepare('DELETE FROM family_recipes WHERE id=?')->execute([$id]);}
-        elseif($body['action']==='save_album'){if(!is_array($body['album']??null))throw new InvalidArgumentException('Invalid album.');storeAlbum($db,cleanAlbum($db,$body['album']));if(isset($body['birthPersonId']))attachBirthAlbum($db,field($body,'birthPersonId',64),$body['album']['id']);}
+        elseif($body['action']==='save_album'){if(!is_array($body['album']??null))throw new InvalidArgumentException('Invalid album.');storeAlbum($db,cleanAlbum($db,$body['album']));if(isset($body['photoCaptions']))saveAlbumPhotoCaptions($db,$body['album']['id'],$body['photoCaptions']);if(isset($body['birthPersonId']))attachBirthAlbum($db,field($body,'birthPersonId',64),$body['album']['id']);}
         else{$id=field($body,'albumId',64);$db->prepare('UPDATE family_people SET birth_album_id=NULL WHERE birth_album_id=?')->execute([$id]);$db->prepare('UPDATE family_groups SET album_id=NULL WHERE album_id=?')->execute([$id]);$db->prepare("UPDATE family_milestones SET album_id=NULL,photos='[]' WHERE album_id=?")->execute([$id]);syncAlbumMedia($db,$id,[]);$db->prepare('DELETE FROM family_albums WHERE id=?')->execute([$id]);}
     $db->exec('UPDATE family_state SET revision=revision+1 WHERE id=1');$result=snapshot($db,$csrf);$db->commit();respond(200,$result);
     }
@@ -189,6 +190,7 @@ try {
     $db->exec('UPDATE family_recipes SET person_id=NULL WHERE person_id IS NOT NULL AND person_id NOT IN (SELECT id FROM family_people)');
     if(isset($body['recipes'])){if(!is_array($body['recipes']))throw new InvalidArgumentException('Invalid recipes.');$existingRecipes=array_column(familyRecipes($db),'id');foreach($body['recipes'] as $row){if(!is_array($row))throw new InvalidArgumentException('Invalid recipe.');if(!in_array($row['id']??null,$existingRecipes,true)){$recipe=cleanRecipe($db,$row);storeRecipe($db,$recipe);$existingRecipes[]=$recipe['id'];}}}
 if(isset($body['familyGroups'])){if(!is_array($body['familyGroups']))throw new InvalidArgumentException('Invalid family groups.');$existing=array_column(familyGroups($db),'id');foreach($body['familyGroups'] as $group)if(!in_array($group['id']??null,$existing,true))storeFamilyGroup($db,cleanFamilyGroup($db,$group));}
+    if(isset($body['photoCaptionAssignments']))importPhotoCaptions($db,$body['photoCaptionAssignments']);
     if(isset($body['photoTagAssignments']))importPhotoTags($db,$body['photoTagAssignments']);
     $db->prepare('UPDATE family_state SET revision = revision + 1, request_email = ? WHERE id = 1')->execute([$email]);
     $result = snapshot($db,$csrf); $db->commit(); respond(200,$result);

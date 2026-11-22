@@ -19,6 +19,7 @@ for (const key of [
 ])
   Object.defineProperty(globalThis, key, { value: dom.window[key], configurable: true });
 globalThis.requestAnimationFrame = (callback) => setTimeout(callback, 0);
+globalThis.cancelAnimationFrame = clearTimeout;
 dom.window.HTMLElement.prototype.scrollIntoView = function () {};
 dom.window.HTMLDialogElement.prototype.showModal = function () {
   this.open = true;

@@ -19,7 +19,7 @@ async function open(event) {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const headerHeight = document.querySelector('#app > header')?.getBoundingClientRect().height || 0;
     entry.focus({ preventScroll: true });
-    window.scrollTo({ top: Math.max(0, window.scrollY + entry.getBoundingClientRect().top - headerHeight - 24), behavior: reduced ? 'instant' : 'smooth' });
+    window.scrollTo({ top: Math.max(0, window.scrollY + entry.getBoundingClientRect().top - headerHeight - (document.querySelector('.timeline-era-rail')?.getBoundingClientRect().height || 0) - 24), behavior: reduced ? 'instant' : 'smooth' });
     document.querySelectorAll('.anniversary-highlight').forEach(item => item.classList.remove('anniversary-highlight'));
     entry.classList.add('anniversary-highlight');
     if (!reduced) entry.animate([

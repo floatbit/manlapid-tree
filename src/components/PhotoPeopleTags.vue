@@ -4,13 +4,13 @@ import {family,useRuntime,canEdit} from '../ui/runtime.js';
 import {recentPhotoTags,rememberPhotoTags} from '../ui/recent-photo-tags.js';
 import PersonAvatar from './PersonAvatar.vue';
 import PersonAutocomplete from './PersonAutocomplete.vue';
-const props=defineProps({photo:String,showRecent:Boolean,selectedTagsTarget:String,prefix:{type:String,default:'photoPeople'}});
+const props=defineProps({beforeNavigate:Function,photo:String,showRecent:Boolean,selectedTagsTarget:String,prefix:{type:String,default:'photoPeople'}});
 const media=computed(()=>props.photo);
 const picker=ref(null), draftPeople=ref([]), savingTags=ref(false), tagError=ref('');
 const recentPeople=computed(()=>recentPhotoTags.value.map(id=>family.value.people.find(p=>p.id===id)).filter(Boolean).sort((a,b)=>useRuntime().displayName(a).localeCompare(useRuntime().displayName(b),undefined,{sensitivity:'base'})));
 const savedPeople=computed(() => (family.value.photoTags?.[media.value] || []).map(id => family.value.people.find(p=>p.id===id)).filter(Boolean));
 const taggable=computed(()=>!!media.value && !media.value.startsWith('data:'));
-function openPerson(id) {if(!savingTags.value)useRuntime().openTaggedPerson(id);}
+function openPerson(id) {if(props.beforeNavigate && !props.beforeNavigate())return;if(!savingTags.value)useRuntime().openTaggedPerson(id);}
 async function updateTags(ids) {
   draftPeople.value=[...new Set(ids)];
   if(savingTags.value) return;

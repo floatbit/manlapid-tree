@@ -13,7 +13,7 @@ async function createBirthEventAlbum(personId) {
   $('#albumDate').value = /^\d{4}-\d{2}-\d{2}$/.test(birth) ? birth : '';
   $('#albumMilestoneLink').textContent = 'Birth album for ' + displayName(p);
 }
-let albumDraftPhotos = [],
+let albumDraftCaptions = {}, albumDraftPhotos = [],
   albumUploadSession = 0,
   albumUploading = false;
 function sortedAlbums(albums, order = 'newest', query = '') {
@@ -61,6 +61,7 @@ function openAlbum(id) {
   $('#albumDate').value = album?.date || '';
   $('#albumDescription').value = album?.description || '';
   albumDraftPhotos = [...(album?.photos || [])];
+  albumDraftCaptions = {};
   $('#albumError').textContent = '';
   $('#albumStatus').textContent = '';
   $('#deleteAlbum').hidden = !album;
@@ -128,7 +129,7 @@ $('#albumForm').onsubmit = async (event) => {
     description: $('#albumDescription').value.trim(),
     photos: [...albumDraftPhotos],
   };
-  if (await albumRequest({ action: 'save_album', album, ...(birthAlbumPersonId ? { birthPersonId: birthAlbumPersonId } : {}) })) {
+  if (await albumRequest({ action: 'save_album', album, photoCaptions:albumCaptionUpdates(album.photos), ...(birthAlbumPersonId ? { birthPersonId: birthAlbumPersonId } : {}) })) {
     $('#albumDialog').close();
     notify('Album saved');
   }
@@ -149,8 +150,10 @@ async function setAlbumCover(index) {
     previousIndex = photos.indexOf(cover);
   if (previousIndex >= 0) photos.splice(previousIndex, 1);
   photos.unshift(cover);
-  if (await albumRequest({ action: 'save_album', album: { ...album, photos } })) {
+  if (await albumRequest({ action: 'save_album', album: { ...album, photos },photoCaptions:albumCaptionUpdates(photos) })) {
+    const previousCover=albumDraftPhotos[0];
     albumDraftPhotos[0] = data.albums.find((a) => a.id === album.id).photos[0];
+    if(Object.hasOwn(albumDraftCaptions,previousCover)){albumDraftCaptions[albumDraftPhotos[0]]=albumDraftCaptions[previousCover];}
     $('#albumStatus').textContent = 'Cover saved';
     renderAlbumPhotos();
   } else {
@@ -162,7 +165,7 @@ function renderAlbumPhotos() {
   $('#albumPhotoPreview').innerHTML = albumDraftPhotos
     .map(
       (photo, i) =>
-        `<div class="milestone-photo"><button type="button" class="open-gallery-photo" data-album-preview="${i}" aria-label="View item ${
+        `<div class="album-photo-item"><div class="milestone-photo"><button type="button" class="open-gallery-photo" data-album-preview="${i}" aria-label="View item ${
           i + 1
         }">${milestoneMediaPreview(
           photo,
@@ -174,9 +177,10 @@ function renderAlbumPhotos() {
           i === 0
             ? '<span class="cover-badge">Cover</span>'
             : `<button class="set-photo-cover" type="button" data-album-cover="${i}">Set as cover</button>`
-        }</div>`,
+        }</div>${!isMilestoneVideo(photo)?`<label class="album-photo-caption">Caption<textarea data-album-caption="${i}" rows="2" maxlength="2000" placeholder="Add a caption…">${esc(Object.hasOwn(albumDraftCaptions,photo)?albumDraftCaptions[photo]:data.photoCaptions?.[photo] || '')}</textarea></label>`:''}</div>`,
     )
     .join('');
+  $('#albumPhotoPreview').querySelectorAll('[data-album-caption]').forEach(field=>field.oninput=()=>{albumDraftCaptions[albumDraftPhotos[Number(field.dataset.albumCaption)]]=field.value;});
   $('#albumPhotoPreview')
     .querySelectorAll('[data-album-preview]')
     .forEach(
@@ -300,3 +304,7 @@ albumDrop.addEventListener('keydown', (event) => {
     $('#albumFiles').click();
   }
 });
+
+function albumCaptionUpdates(photos) {
+ return photos.flatMap((photo,index)=>!isMilestoneVideo(photo)&&Object.hasOwn(albumDraftCaptions,photo)?[{index,caption:albumDraftCaptions[photo]}]:[]);
+}

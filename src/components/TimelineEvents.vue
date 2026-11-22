@@ -85,7 +85,7 @@ function marriagePeople(event) {
       <div v-if="yearGap(index) > 1" class="timeline-year-gap">
         <span>{{ yearGap(index) }} years later</span>
       </div>
-      <section class="birth-year" :class="{'birth-year-with-history':showWorldEvents}" :aria-label="'Family events in ' + year">
+      <section class="birth-year" :data-timeline-year="typeof year==='number'?year:undefined" :class="{'birth-year-with-history':showWorldEvents}" :aria-label="'Family events in ' + year">
         <h2>{{ year }}</h2>
         <div class="birth-cards">
           <template v-for="event in items" :key="event.id">

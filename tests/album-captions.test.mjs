@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
+document.body.innerHTML='<div id="albumPhotoPreview"></div><input id="albumTitle" value="Family"><div id="albumDialog"></div>';
+const photos=['uploads/albums/a/one.jpg','data:image/png;base64,new','uploads/albums/a/movie.mp4'];
+const context=vm.createContext({document,albumDraftPhotos:photos,albumDraftCaptions:{},data:{photoCaptions:{[photos[0]]:'Saved caption'}},$:s=>document.querySelector(s),esc:s=>String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('"','&quot;'),isMilestoneVideo:p=>p.endsWith('.mp4'),milestoneMediaPreview:()=>'<img>',openPhotoLightbox(){},setAlbumCover(){}});
+const source=fs.readFileSync('js/albums.js','utf8');vm.runInContext(source.slice(source.indexOf('function renderAlbumPhotos('),source.indexOf('async function addAlbumFiles('))+source.slice(source.indexOf('function albumCaptionUpdates(')),context);
+context.renderAlbumPhotos();assert.equal(document.querySelectorAll('.album-photo-item').length,3);assert.equal(document.querySelectorAll('[data-album-caption]').length,2,'Videos have no photo caption field');assert.equal(document.querySelector('[data-album-caption="0"]').value,'Saved caption');
+const input=document.querySelector('[data-album-caption="1"]');input.value='New upload caption';input.dispatchEvent(new Event('input'));
+assert.equal(context.albumDraftCaptions[photos[1]],'New upload caption');
+context.albumDraftPhotos=[photos[1],photos[0],photos[2]];context.renderAlbumPhotos();assert.equal(document.querySelector('[data-album-caption="0"]').value,'New upload caption','Draft follows photo through reorder');
+assert.equal(context.albumCaptionUpdates(context.albumDraftPhotos)[0].index,0);
+assert.equal(context.albumCaptionUpdates([photos[0]]).length,0,'Untouched captions never overwrite newer saved values');
+console.log('Passed: album caption fields, new uploads, video exclusion, reorder persistence and changed-only saves.');

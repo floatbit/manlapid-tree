@@ -76,6 +76,7 @@ function familyDatabase(): PDO {
     initializeFamilyGroups($db);
     require_once __DIR__.'/photo-tags.php';
     initializePhotoTags($db);
+    require_once __DIR__.'/photo-captions.php';
     require_once __DIR__.'/person-photos.php';
     initializePersonPhotos($db);
     return $db;

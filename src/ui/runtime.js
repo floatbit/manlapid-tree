@@ -164,9 +164,11 @@ ui.setRecipeDetail = (recipe) => {
   recipeDetail.value = recipe;
 };
 
+export const timelineAll = shallowRef([]);
 export const timelineView = shallowRef([]);
 export const timelineQuery = shallowRef('');
-ui.setTimeline = (events, query = '') => {
+ui.setTimeline = (events, query = '', allEvents = events) => {
+  timelineAll.value = allEvents;
   timelineQuery.value = query;
   timelineView.value = events;
 };

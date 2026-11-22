@@ -125,7 +125,8 @@ function renderTimeline() {
   renderUpcomingAnniversaries();
   const births = birthEvents(data.people),
     query = $('#timelineSearch').value.trim(),
-    events = timelineItems().filter(event => timelineEventMatches(event, query) && (!ui.timelinePeriod.value || (familyDateYear(event.date)>=ui.timelinePeriod.value.from && familyDateYear(event.date)<=ui.timelinePeriod.value.to))),
+    allEvents = timelineItems(),
+    events = allEvents.filter(event => timelineEventMatches(event, query) && (!ui.timelinePeriod.value || (familyDateYear(event.date)>=ui.timelinePeriod.value.from && familyDateYear(event.date)<=ui.timelinePeriod.value.to))),
     missing = data.people.length - births.length;
   $('#timelineSummary').textContent = query ? `${events.length} matching ${events.length === 1 ? 'event' : 'events'}` : `${births.length} ${
     births.length === 1 ? 'birth' : 'births'
@@ -133,7 +134,7 @@ function renderTimeline() {
     (data.milestones || []).length === 1 ? 'milestone' : 'milestones'
   }${missing ? ` · ${missing} ${missing === 1 ? 'person needs' : 'people need'} a birthday` : ''}`;
   ui.sync(data);
-  ui.setTimeline(events, query);
+  ui.setTimeline(events, query, allEvents);
 }
 let draftMilestonePhotos = [],
   milestonePhotoSession = 0,
@@ -516,7 +517,7 @@ async function openInsightTimeline({year=null,kind='birth',id=null}={}) {
  await ui.afterNextTick();
  requestAnimationFrame(()=>{
   const entry=id?document.getElementById('timeline-'+kind+'-'+id):document.querySelector('#timeline .birth-event');
-  if(entry){window.scrollTo({top:window.scrollY+entry.getBoundingClientRect().top-(document.querySelector('#app > header')?.getBoundingClientRect().height || 0)-24,behavior:'smooth'});entry.classList.add('anniversary-highlight');setTimeout(()=>entry.classList.remove('anniversary-highlight'),5000);}
+  if(entry){window.scrollTo({top:window.scrollY+entry.getBoundingClientRect().top-(document.querySelector('#app > header')?.getBoundingClientRect().height || 0)-(document.querySelector('.timeline-era-rail')?.getBoundingClientRect().height || 0)-24,behavior:'smooth'});entry.classList.add('anniversary-highlight');setTimeout(()=>entry.classList.remove('anniversary-highlight'),5000);}
   else window.scrollTo({top:0,behavior:'smooth'});
  });
 }

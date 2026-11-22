@@ -60,3 +60,11 @@ async function pinPersonPhoto(personId,photo,pinned) {
     applyShared(result);ui.sync(data);notify(pinned?'Photo pinned':'Photo unpinned');
   } finally {savingShared=false;}
 }
+
+async function savePhotoCaption(photo,caption) {
+ if(!document.body.classList.contains('is-editor'))throw new Error('Log in to edit captions.');
+ if(!sharedReady || savingShared)throw new Error('Please wait for the current save to finish.');
+ savingShared=true;
+ try{const result=await requestDatabase({action:'save_photo_caption',photo,caption,revision:sharedRevision});applyShared(result);ui.sync(data);if($('#albumDialog').open)renderAlbumPhotos();}
+ finally{savingShared=false;}
+}

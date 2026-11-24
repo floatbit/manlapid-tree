@@ -3011,16 +3011,16 @@ header > .search .searchbox .search-clear-button,
 .family-parents h3 > span { background: #dce7ce; }
 .family-ancestors h3 > span { background: #faecd5; color: #8a6828; }
 .family-member-grid { grid-template-columns: repeat(auto-fit,minmax(min(100%,240px),1fr)); gap: 14px; }
-.family-member { flex-direction: row; min-height: 100px; padding: 16px 18px; gap: 14px; text-align: left; justify-content: flex-start; border-radius: 12px; border: 1px solid var(--line); background: #fffefa; transition: transform .15s ease, background .15s ease, border-color .15s ease, box-shadow .15s ease; }
-.family-member:hover { border-color: #9db18e; background: #f6f8f1; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(38, 60, 54, 0.08); }
+.family-member { flex-direction: row; min-height: 100px; padding: 16px 18px; gap: 14px; text-align: left; justify-content: flex-start; border-radius: 12px; border: 1px solid var(--line); background: #fffefa; transition: background .15s ease, border-color .15s ease, box-shadow .15s ease; }
+.family-member:hover { border-color: #9db18e; background: #f6f8f1; box-shadow: 0 6px 16px rgba(38, 60, 54, 0.08); }
 .family-member.active { outline: 2px solid #8ca677; border-color: transparent; background: #edf3e7; }
 .family-member .avatar { flex-shrink: 0; width: 64px; height: 64px; border: 3px solid #fffefa; box-shadow: 0 0 0 1px #dce4d5; transition: transform .15s; }
 .family-member:hover .avatar { transform: scale(1.03); }
 .family-member-info { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .family-member-info strong { font-size: 15px; font-weight: 700; line-height: 1.35; color: var(--ink); }
 .family-member-info small { font-size: 11px; line-height: 1.4; color: var(--muted); }
-.family-member .family-member-arrow { margin-left: auto; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #f2f6ee; color: #728b64; font-size: 14px; transition: all .15s ease; flex-shrink: 0; }
-.family-member:hover .family-member-arrow { background: var(--green); color: white; transform: translateX(2px); }
+.family-member .family-member-arrow { margin-left: auto; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #f2f6ee; color: #728b64; font-size: 14px; transition: background .15s ease, color .15s ease; flex-shrink: 0; }
+.family-member:hover .family-member-arrow { background: var(--green); color: white; }
 .family-generation-connector {
   display: flex;
   flex-direction: column;
@@ -3379,9 +3379,9 @@ body:not(.is-editor) .lightbox-people:not(:has(.lightbox-person-tag)) { display:
 .viewer-identity-dialog h2 { padding-right: 30px; }
 .viewer-dialog-close { position: absolute; right: 12px; top: 12px; display: flex; padding: 8px; border: 0; background: transparent; }
 .viewer-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
-:root { --relationship-badge-background: var(--line); }
-.viewer-relationship { display: inline-block; width: fit-content; max-width: 100%; border-radius: 5px; padding: 2px 6px; background: var(--relationship-badge-background); color: #4e594f; border: 0; box-shadow: none; font-size: 11px; font-weight: 500; line-height: 1.4; letter-spacing: normal; text-transform: none; }
-.node .viewer-relationship { --relationship-badge-background: #edf3e5; color: #47634a; max-width: 164px; font-size: 10px; padding: 1px 4px; }
+:root { --relationship-badge-background: var(--line); --relationship-badge-color: #58635c; }
+.viewer-relationship { display: inline-block; width: fit-content; max-width: 100%; border-radius: 5px; padding: 2px 6px; background: var(--relationship-badge-background); color: var(--relationship-badge-color); border: 0; box-shadow: none; font-size: 11px; font-weight: 500; line-height: 1.4; letter-spacing: normal; text-transform: none; }
+.node .viewer-relationship { --relationship-badge-background: #edf3e5; color: var(--relationship-badge-color); max-width: 164px; font-size: 10px; padding: 1px 4px; }
 .node .node-perspective { min-height: 18px; }
 .person-autocomplete [role='option'] .viewer-relationship { margin-left: 8px; }
 .map-profile-relative .viewer-relationship { display: block; margin-top: 4px; }
@@ -3781,6 +3781,8 @@ body:not(.is-editor) .lightbox-people:not(:has(.lightbox-person-tag)) { display:
 .sidebar-edit-actions, .family-person-actions { margin-top:32px; margin-bottom:0; }
 .arrow-link-icon { transition:transform .15s ease; }
 :is(a,button):is(:hover,:focus-visible):not(:disabled) .arrow-link-icon { transform:translateX(3px); }
+#familiesPage .family-member .arrow-link-icon,
+#familiesPage .family-member:is(:hover,:focus-visible) .arrow-link-icon { transform:none; transition:none; }
 @media (prefers-reduced-motion:reduce) { .arrow-link-icon { transition:none; } }
 
 /* Keep profile facts compact and edit actions last, with the standard button treatment. */

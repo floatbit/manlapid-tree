@@ -2500,6 +2500,13 @@ input[type='search']:not(#search),
   display: flex;
   padding-left: 4px;
 }
+.family-directory-card > .family-cover-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #dce7d5;
+  background: #38634e;
+}
 .family-card-portraits .avatar {
   width: 42px;
   height: 42px;
@@ -3260,6 +3267,8 @@ body:not(.is-editor) .lightbox-people:not(:has(.lightbox-person-tag)) { display:
 }
 #photoLightbox .lightbox-tag-editor { width: 100%; }
 #photoLightbox .lightbox-tag-field { flex: 1 1 auto; width: 100%; justify-content: flex-start; }
+#photoLightbox .lightbox-people.is-readonly .lightbox-tag-field { justify-content: center; }
+#photoLightbox .lightbox-people.is-readonly { background: transparent; }
 #photoLightbox .lightbox-tag-field > .person-autocomplete { flex: 0 0 240px; width: 240px; max-width: 100%; }
 @media (max-width: 600px) {
   #photoLightbox .lightbox-people { width: calc(100% - 20px); }
@@ -3288,7 +3297,14 @@ body:not(.is-editor) .lightbox-people:not(:has(.lightbox-person-tag)) { display:
 #explore .workspace:has(#empty:not([hidden])) #details,
 #explore .canvas:has(#empty:not([hidden])) .canvas-bottom { display: none; }
 #emptySuggestions #shufflePeople { background: #dce7cc; color: var(--ink); border: 0; margin: 0; height: 56px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+#timeline .birth-event {
+  outline: 3px solid transparent;
+  outline-offset: 4px;
+  transition: outline-color .7s ease, border-color .7s ease, box-shadow .7s ease, background-color .7s ease;
+}
+#timeline .birth-event:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
 #timeline .birth-event.anniversary-highlight { outline: 3px solid #7d9a68; outline-offset: 4px; }
+@media (prefers-reduced-motion: reduce) { #timeline .birth-event { transition: none; } }
 
 /* Consistent breathing room between sidebar content groups. */
 :is(#details, #mapSelectedPerson, .family-person-sidebar, .insights-person-details) > :is(section, .person-tagged-photos),
@@ -3544,6 +3560,8 @@ body:not(.is-editor) .lightbox-people:not(:has(.lightbox-person-tag)) { display:
   justify-content: center;
   border-radius: 50%;
 }
+.viewer-identity .viewer-identity-trigger.has-viewer { padding: 3px; }
+.viewer-identity-trigger .avatar { width: 32px; height: 32px; min-width: 32px; flex: 0 0 32px; border-radius: 50%; object-fit: cover; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; }
 @media (min-width: 1024px) and (max-width: 1200px) {
   #app > header { padding: 0 16px; gap: 15px; }
   #app > header #mainNavigation button { padding-inline: 2px; }
@@ -4081,3 +4099,105 @@ button.album-milestone-badge:focus-visible { outline:2px solid var(--green); out
 .album-photo-caption textarea { box-sizing:border-box; width:100%; padding:8px; min-height:60px; font:inherit; color:var(--ink); resize:vertical; }
 @media(hover:none) { #photoLightbox .photo-caption-text + .photo-caption-edit { opacity:1; } }
 @media(max-width:600px) { #photoLightbox .photo-caption { width:calc(100% - 24px); padding-inline:8px; } }
+
+/* Recorded family journeys stay readable even when several stops wrap. */
+.family-migrations { margin-block:32px; }
+.family-migrations > h3 { margin:0 0 12px; }
+.family-migrations > .hint { max-width:720px; }
+.family-migration-route { padding:20px; margin-top:14px; border:1px solid var(--line); border-radius:12px; background:#fffefa; }
+.family-migration-person { display:inline-flex; align-items:center; gap:10px; padding:0; border:0; background:transparent; text-align:left; }
+.family-migration-person .avatar { width:36px; height:36px; min-width:36px; flex:0 0 36px; font-size:12px; }
+.family-migration-stops { display:flex; flex-wrap:wrap; align-items:flex-start; gap:14px 20px; list-style:none; padding:0; margin:18px 0 0; }
+.family-migration-stops li { display:flex; align-items:center; gap:14px; max-width:100%; }
+.family-migration-stops li > span { display:flex; flex-direction:column; gap:5px; min-width:0; overflow-wrap:anywhere; }
+.family-migration-stops strong { font-size:13px; color:var(--green); }
+.family-migration-stops small { font-size:11px; color:var(--muted); }
+.family-migration-arrow { flex-shrink:0; color:#8da280; }
+@media(max-width:600px) {
+  .family-migration-stops { flex-direction:column; gap:16px; }
+  .family-migration-stops li:first-child { padding-left:32px; }
+  .family-migration-arrow { transform:rotate(90deg); }
+}
+
+/* Family moments share the horizontal year axis used in Insights. */
+.family-years-scroll { overflow-x:auto; max-width:100%; margin-top:24px; }
+.family-years-chart { position:relative; border-bottom:1px solid var(--line); margin-bottom:40px; }
+.family-years-tick { position:absolute; top:30px; bottom:0; border-left:1px solid var(--line); pointer-events:none; }
+.family-years-tick > span { position:absolute; left:0; transform:translateX(-50%); white-space:nowrap; font-size:11px; }
+.family-years-tick > span:first-child { top:-25px; }
+.family-years-tick > span:last-child { bottom:-25px; }
+.family-year-event { position:absolute; transform:translateX(-50%); width:34px; height:34px; border-radius:50%; padding:0; display:grid; place-items:center; background:#e5eddc; border:1px solid #9bb387; color:var(--green); }
+.family-year-event:hover,.family-year-event:focus-visible,.family-year-event.is-matching { border:2px solid var(--green); background:#dce8d2; outline-offset:3px; }
+.family-years-cursor { position:absolute; top:30px; bottom:0; border-left:1px solid var(--green); pointer-events:none; }
+.family-years-cursor > span { position:absolute; top:-29px; left:0; transform:translateX(-50%); color:white; background:var(--green); border-radius:5px; padding:3px 8px; font-size:11px; }
+.family-years-preview { display:flex; flex-direction:column; gap:5px; min-height:46px; margin-top:12px; font-size:13px; }
+.family-years-preview > span { color:var(--muted); font-size:11px; }
+.family-years-help { min-height:46px; margin-top:12px; }
+
+.family-timeline-locations { grid-template-columns:minmax(0,1fr); }
+.family-timeline-locations .family-mini-timeline { min-width:0; width:100%; }
+.family-years-chart { width:100%; }
+.family-year-event { width:54px; height:54px; }
+.family-year-event > .avatar { position:absolute; inset:2px; width:calc(100% - 4px); height:calc(100% - 4px); min-width:0; min-height:0; margin:0; border-radius:50%; object-fit:cover; font-size:18px; display:flex; align-items:center; justify-content:center; }
+.family-year-icon-badge { position:absolute; left:50%; bottom:-14px; transform:translateX(-50%); width:24px; height:24px; display:grid; place-items:center; border:3px solid var(--paper); border-radius:50%; background:#edf3e5; color:#587347; box-shadow:0 0 0 1px #cbd8bf; }
+.family-location-group { padding:16px 0; border-bottom:1px solid var(--line); }
+.family-location-group > button { display:flex; align-items:center; gap:8px; border:0; background:transparent; padding:0; text-align:left; font-weight:600; color:var(--green); }
+.family-location-people { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.family-location-people > button { display:inline-flex; align-items:center; gap:8px; padding:6px 12px 6px 6px; background:#edf3e7; border-radius:24px; font-size:12px; }
+.family-location-people .avatar { width:28px; height:28px; min-width:28px; flex:0 0 28px; font-size:10px; }
+.family-years-cursor > span:last-child { top:auto; bottom:-29px; }
+.family-years-tick.is-near-cursor > span,.insights-swarm-year.is-near-cursor > text { opacity:0; }
+.insights-swarm-year > text { font-size:11px; }
+.family-years-details { display:grid; margin-top:12px; }
+.family-years-details > :is(.family-years-preview,.family-years-help) { grid-area:1 / 1; visibility:hidden; margin:0; min-height:56px; }
+.family-years-details > .is-visible { visibility:visible; }
+.family-year-event.is-couple { background:transparent; border-color:transparent; }
+.family-year-couple { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
+.family-year-couple > .avatar { width:36px; height:36px; min-width:36px; flex:0 0 36px; margin:0; border:2px solid var(--paper); border-radius:50%; object-fit:cover; box-shadow:0 0 0 1px #9bb387; font-size:12px; }
+.family-year-couple > .avatar + .avatar { margin-left:-9px; }
+.family-year-event.is-couple:is(:hover,:focus-visible,.is-matching) .avatar { box-shadow:0 0 0 2px var(--green); }
+.family-location-people { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; }
+.family-location-people > button { width:100%; padding:10px; gap:10px; border:1px solid transparent; border-radius:9px; background:#edf2e6; text-align:left; }
+.family-location-people > button:hover { background:#e2ecd9; border-color:#cbd8bf; }
+.family-location-people .avatar { width:36px; height:36px; min-width:36px; flex:0 0 36px; font-size:12px; }
+.family-location-person-info { display:flex; flex-direction:column; align-items:flex-start; gap:4px; min-width:0; flex:1; }
+.family-location-person-info > strong { font-size:12px; line-height:1.4; overflow-wrap:anywhere; }
+.family-location-people > button > svg { margin-left:auto; flex-shrink:0; color:#728b64; }
+
+/* Shared dates and shared places reveal connections across family journeys. */
+.family-migrations-heading { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+.family-migrations-heading h3 { margin:0; }
+.family-migration-hubs { display:flex; flex-wrap:wrap; gap:8px; margin:20px 0; }
+.family-migration-hubs > button { display:flex; align-items:center; gap:7px; padding:7px 10px; font-size:12px; background:#fffefa; border-radius:20px; }
+.family-migration-hubs > button[aria-pressed=true] { border-color:var(--hub-color); background:#edf2e6; }
+.family-migration-hubs i { width:9px; height:9px; background:var(--hub-color); border-radius:50%; flex-shrink:0; }
+.family-migration-hubs small { color:var(--muted); font-size:10px; }
+.family-migration-swimlane-scroll { overflow-x:auto; border:1px solid var(--line); border-radius:12px; }
+.family-migration-swimlanes { min-width:960px; background:#fffefa; }
+.family-migration-axis,.family-migration-lane { display:grid; grid-template-columns:160px minmax(0,1fr) 200px; align-items:center; gap:12px; padding:0 16px; }
+.family-migration-axis { background:#f0f3eb; font-size:11px; color:var(--muted); }
+.family-migration-axis svg,.family-migration-track { display:block; width:100%; }
+.family-migration-axis text { fill:var(--ink); font-size:11px; }
+.family-migration-lane { border-top:1px solid var(--line); min-height:90px; }
+.family-migration-lane .family-migration-person { font-size:12px; }
+.family-migration-person strong { overflow-wrap:anywhere; }
+.family-migration-track g[role=button] { cursor:pointer; outline:none; }
+.family-migration-track g[role=button]:focus-visible circle { stroke:var(--ink); stroke-width:3px; }
+.family-migrations .is-dimmed { opacity:.28; }
+.family-migration-undated { border-left:1px dashed #aebca4; padding:12px; display:flex; flex-direction:column; gap:8px; }
+.family-migration-undated > button { border:1px dashed var(--hub-color); border-radius:8px; background:transparent; padding:8px; text-align:left; font-size:11px; color:var(--green); }
+.family-migration-undated small { display:block; color:var(--muted); font-size:10px; margin-top:4px; }
+.family-migration-place-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr)); gap:16px; }
+.family-migration-place-card { border:1px solid var(--line); border-top:3px solid var(--hub-color); padding:18px; border-radius:10px; background:#fffefa; }
+.family-migration-place-card h4 { margin:0; font-size:15px; }
+.family-migration-place-card > button { display:flex; align-items:center; gap:10px; width:100%; text-align:left; padding:10px; margin-top:8px; background:#edf2e6; border:0; border-radius:9px; }
+.family-migration-place-card .avatar { width:34px; height:34px; min-width:34px; flex:0 0 34px; font-size:12px; }
+.family-migration-place-card > button > span { display:flex; flex-direction:column; gap:4px; }
+.family-migration-place-card strong { font-size:12px; }
+.family-migration-place-card small { font-size:11px; color:var(--muted); }
+.family-migration-shared-details { height:110px; overflow:auto; padding:16px 0; display:flex; flex-direction:column; gap:5px; font-size:12px; color:var(--muted); }
+.family-migration-shared-details strong { color:var(--green); }
+
+@media (max-width:1100px) { .family-location-people { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+@media (max-width:800px) { .family-location-people { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:480px) { .family-location-people { grid-template-columns:minmax(0,1fr); } }

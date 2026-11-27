@@ -1,9 +1,10 @@
 <script setup lang="js">
 import {openMobileSidebar} from '../ui/mobile-sidebar.js';
 import FamilyTimeline from '../components/FamilyTimeline.vue';
+import FamilyMigrations from '../components/FamilyMigrations.vue';
 import MobileSidebar from '../components/MobileSidebar.vue';
 import ViewerRelation from '../components/ViewerRelation.vue';
-import { PhArrowRight, PhArrowLeft, PhArrowUp, PhArrowDown, PhHeart, PhHouse, PhMapPin, PhPlus, PhMinus } from '@phosphor-icons/vue';
+import { PhArrowRight, PhArrowLeft, PhArrowUp, PhArrowDown, PhHeart, PhHouse, PhMapPin, PhPlus, PhMinus, PhTreeStructure } from '@phosphor-icons/vue';
 import MediaPreview from '../components/MediaPreview.vue';
 import SearchField from '../components/SearchField.vue';
 import { computed, ref, watch, onMounted, onBeforeUnmount } from 'vue';
@@ -180,12 +181,7 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
           @click="select(group)"
         >
           <MediaPreview v-if="group.cover" :src="group.cover" :alt="group.name" class-name="family-cover" />
-          <span v-else class="family-card-portraits"
-            ><PersonAvatar
-              v-for="p in members([...group.parents, ...group.children]).slice(0, 4)"
-              :key="p.id"
-              :person="p"
-          /></span>
+          <span v-else class="family-cover family-cover-placeholder" aria-hidden="true"><PhTreeStructure :size="72" weight="thin" /></span>
           <strong>{{ group.name }} <span aria-hidden="true"><PhArrowRight :size="16" class="arrow-link-icon ui-icon" aria-hidden="true" /></span></strong>
           <span>{{
             members(group.parents)
@@ -330,16 +326,18 @@ function editPerson() {api.value.showSection('people');api.value.edit(selectedPe
           <section class="family-locations">
             <h3>Family Locations</h3>
             <p v-if="!locations.length" class="hint">No family locations recorded yet.</p>
+            <div v-for="place in locations" :key="place" class="family-location-group">
             <button
-              v-for="place in locations"
-              :key="place"
               type="button"
               @click="openLocation(place)"
             >
               <PhMapPin :size="16" class="ui-icon" aria-hidden="true" /> {{ place }} <span aria-hidden="true"><PhArrowRight :size="16" class="arrow-link-icon ui-icon" aria-hidden="true" /></span>
             </button>
+            <div class="family-location-people"><button v-for="person in members(visibleIds).filter(p=>p.location===place)" :key="person.id" type="button" @click="selectMember(person.id)"><PersonAvatar :person="person" /><span class="family-location-person-info"><strong>{{api.displayName(person)}}</strong><ViewerRelation :person-id="person.id" /></span><PhArrowRight :size="16" aria-hidden="true" /></button></div>
+            </div>
           </section>
           </div>
+          <FamilyMigrations :people="members(visibleIds)" @select="selectMember" />
           <section class="family-photos">
             <div class="family-photos-heading"><h3>Family Photos <span v-if="selected.photoCount">({{ selected.photoCount }})</span></h3>
               <button v-if="canEdit" type="button" @click="edit(selected)">{{ selected.albumId ? 'Add / Manage Photos' : 'Create Family Album' }} <PhArrowRight :size="16" class="arrow-link-icon ui-icon" aria-hidden="true" /></button>

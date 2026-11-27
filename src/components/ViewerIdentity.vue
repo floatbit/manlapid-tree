@@ -1,8 +1,9 @@
 <script setup>
 import { computed, nextTick, ref, watch } from 'vue';
-import { PhUserCircleDashed, PhUserCircleCheck, PhX } from '@phosphor-icons/vue';
+import { PhUserCircleDashed, PhX } from '@phosphor-icons/vue';
 import { family, viewerId, setViewer, ready, canEdit, useRuntime } from '../ui/runtime.js';
 import PersonAutocomplete from './PersonAutocomplete.vue';
+import PersonAvatar from './PersonAvatar.vue';
 const picker = ref(null), dialog = ref(null), introduction = ref(false);
 const viewer = computed(() => family.value.people.find(p => p.id === viewerId.value));
 const api = computed(useRuntime);
@@ -29,13 +30,14 @@ watch([ready, canEdit], ([loaded, editing]) => {
     const url = new URL(window.location.href); url.searchParams.delete('select-me');
     window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash);
   }
-  if (!viewer.value && (afterLogin || !alreadyPrompted())) open(true);
+  if (!alreadyPrompted() || (!viewer.value && afterLogin)) open(true);
 }, { immediate: true, flush: 'post' });
 </script>
 <template>
   <div class="viewer-identity">
-    <button type="button" class="viewer-identity-trigger" :disabled="!ready" :title="viewerLabel" :aria-label="viewerLabel" aria-haspopup="dialog" aria-controls="viewerIdentityDialog" @click="open()">
-      <component :is="viewer ? PhUserCircleCheck : PhUserCircleDashed" :size="24" aria-hidden="true" />
+    <button type="button" class="viewer-identity-trigger" :class="{ 'has-viewer': viewer }" :disabled="!ready" :title="viewerLabel" :aria-label="viewerLabel" aria-haspopup="dialog" aria-controls="viewerIdentityDialog" @click="open()">
+      <PersonAvatar v-if="viewer && api" :person="viewer" />
+      <PhUserCircleDashed v-else :size="24" aria-hidden="true" />
     </button>
   </div>
   <Teleport to="body">

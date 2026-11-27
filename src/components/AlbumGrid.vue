@@ -26,7 +26,7 @@ async function showMilestone(album) {
     window.scrollTo({top:Math.max(0,window.scrollY+entry.getBoundingClientRect().top-headerHeight-(document.querySelector('.timeline-era-rail')?.getBoundingClientRect().height || 0)-24),behavior:reduced?'instant':'smooth'});
     document.querySelectorAll('.anniversary-highlight').forEach(item=>item.classList.remove('anniversary-highlight'));
     entry.classList.add('anniversary-highlight');
-    if(!reduced)entry.animate([{boxShadow:'0 0 0 4px #91aa7b99'},{boxShadow:'0 0 0 8px #91aa7b00'}],{duration:1800,iterations:2});
+    setTimeout(() => entry.classList.remove('anniversary-highlight'), 5000);
   } catch(error){api.value.notify(error.message);}
 }
 </script>

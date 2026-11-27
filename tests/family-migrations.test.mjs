@@ -1,0 +1,23 @@
+import assert from 'node:assert/strict';
+import {familyMigrationStops} from '../src/domain/family-migrations.js';
+const person={birthplace:{location:'Aritao, Philippines'},birthday:'1980-01-01',location:'Toronto, Canada',locationHistory:[{location:'Toronto, Canada',date:'2012'},{location:'Queens, NY, USA',date:'1997'}]};
+const stops=familyMigrationStops(person);
+assert.deepEqual(stops.map(s=>s.label),['Aritao, Philippines','Queens, NY, USA','Toronto, Canada']);
+assert.deepEqual(stops.map(s=>s.year),[1980,1997,2012]);
+assert(stops[2].current,'Repeated current home keeps the recorded year');
+assert.deepEqual(familyMigrationStops({birthplace:'Paris',location:'Paris'}),[]);
+assert.equal(familyMigrationStops({birthplace:'Paris',location:'Toronto',deceased:true})[1].kind,'Last recorded location');
+assert.equal(familyMigrationStops({birthplace:'Paris',location:'Toronto'})[1].year,null);
+assert.equal(person.locationHistory[0].location,'Toronto, Canada','Source order is preserved');
+console.log('Passed: recorded routes, chronology, duplicate places, unknown dates and last locations.');
+
+const {familyMigrationLayout}=await import('../src/domain/family-migrations.js');
+const layout=familyMigrationLayout([{...person,id:'a'}, {id:'b',birthplace:'Aritao, Philippines',birthday:'1954',location:'Toronto, Canada'}],2026);
+assert.equal(layout.hubs.find(h=>h.label==='Aritao, Philippines').people.length,2);
+assert.equal(layout.hubs.find(h=>h.label==='Toronto, Canada').people.length,2);
+assert.equal(layout.routes[1].unknown.length,1,'An unknown move year stays off the year scale');
+assert.equal(layout.routes[0].points[0].year,1980);
+assert(layout.routes[0].points[0].x>layout.routes[1].points[0].x,'Later dates appear farther right');
+assert.equal(layout.ticks.at(-1).year,2026);
+assert.equal(familyMigrationLayout([],2026).routes.length,0);
+console.log('Passed: shared hubs, proportional years and undated stops.');

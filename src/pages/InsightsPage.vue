@@ -177,17 +177,17 @@ async function activateStat(card) {
     <div v-else class="insights-chart-scroll"><svg class="insights-swarm" :viewBox="`0 -34 1000 ${swarmHeight+119}`" role="group" aria-label="Family birth years" @pointermove="hoverBirthYear" @pointerleave="hoveredBirth=null">
       <rect x="0" y="-34" width="1000" :height="swarmHeight+119" fill="transparent" aria-hidden="true" />
       <line x1="40" x2="960" :y1="swarmHeight" :y2="swarmHeight" stroke="var(--line)" />
-      <g v-for="year in lifespanTicks" :key="year" class="insights-swarm-year" aria-hidden="true">
+      <g v-for="year in lifespanTicks" :key="year" class="insights-swarm-year" :class="{ 'is-near-cursor': hoveredBirth && Math.abs(x(year)-hoveredBirth.x)<36 }" aria-hidden="true">
         <line :x1="x(year)" :x2="x(year)" y1="30" :y2="swarmHeight" :stroke="year===now?'#38634e66':'#80917624'" />
         <text :x="x(year)" y="18" text-anchor="middle">{{year}}</text>
         <text :x="x(year)" :y="swarmHeight+28" text-anchor="middle">{{year}}</text>
       </g>
       <g v-if="hoveredBirth" class="insights-birth-hover" aria-hidden="true" pointer-events="none">
-        <line :x1="hoveredBirth.x" :x2="hoveredBirth.x" y1="-6" :y2="swarmHeight+48" stroke="var(--green)" stroke-width="1" vector-effect="non-scaling-stroke" />
-        <rect :x="Math.min(918,Math.max(4,hoveredBirth.x-39))" y="-32" width="78" height="26" rx="5" fill="var(--green)" />
-        <text :x="Math.min(957,Math.max(43,hoveredBirth.x))" y="-14" text-anchor="middle" style="fill:white;font-size:12px;font-weight:600">{{hoveredBirth.birth.approximate?'c. ':''}}{{hoveredBirth.birth.year}}</text>
-        <rect :x="Math.min(918,Math.max(4,hoveredBirth.x-39))" :y="swarmHeight+48" width="78" height="26" rx="5" fill="var(--green)" />
-        <text :x="Math.min(957,Math.max(43,hoveredBirth.x))" :y="swarmHeight+66" text-anchor="middle" style="fill:white;font-size:12px;font-weight:600">{{hoveredBirth.birth.approximate?'c. ':''}}{{hoveredBirth.birth.year}}</text>
+        <line :x1="hoveredBirth.x" :x2="hoveredBirth.x" y1="30" :y2="swarmHeight" stroke="var(--green)" stroke-width="1" vector-effect="non-scaling-stroke" />
+        <rect :x="Math.min(948,Math.max(4,hoveredBirth.x-24))" y="1" width="48" height="22" rx="5" fill="var(--green)" />
+        <text :x="Math.min(972,Math.max(28,hoveredBirth.x))" y="16" text-anchor="middle" style="fill:white;font-size:11px;font-weight:500">{{hoveredBirth.birth.approximate?'c. ':''}}{{hoveredBirth.birth.year}}</text>
+        <rect :x="Math.min(948,Math.max(4,hoveredBirth.x-24))" :y="swarmHeight+12" width="48" height="22" rx="5" fill="var(--green)" />
+        <text :x="Math.min(972,Math.max(28,hoveredBirth.x))" :y="swarmHeight+27" text-anchor="middle" style="fill:white;font-size:11px;font-weight:500">{{hoveredBirth.birth.approximate?'c. ':''}}{{hoveredBirth.birth.year}}</text>
       </g>
       <g v-for="p in swarm" :key="p.person.id" role="button" tabindex="0" :aria-label="tooltip(p)" @click="showPerson(p.person,true)" @keydown.enter.prevent="showPerson(p.person,true)" @keydown.space.prevent="showPerson(p.person,true)" class="insights-dot" :class="{'insights-dot-year-match':hoveredBirth && p.birth.year===hoveredBirth.birth.year}" @mouseenter="hoveredBirth=p" @mouseleave="hoveredBirth=null" @focus="hoveredBirth=p" @blur="hoveredBirth=null"><title>{{tooltip(p)}}</title><circle :cx="p.x" :cy="swarmHeight-24-p.row*26" r="11" fill="#e4ecd9" stroke="#8ca677"/><svg :x="p.x-10" :y="swarmHeight-34-p.row*26" width="20" height="20" viewBox="0 0 28 28"><image v-if="p.person.photo" :href="p.person.photo" width="28" height="28" preserveAspectRatio="xMidYMid slice" style="clip-path:circle(50%)"/><text v-else x="14" y="18" text-anchor="middle" font-size="9">{{api?.initials(p.person)}}</text></svg></g>
     </svg></div><small>{{data.lives.length}} recorded birth years · {{family.people.length-data.lives.length}} unavailable · Year-only and approximate dates are marked in tooltips.</small>

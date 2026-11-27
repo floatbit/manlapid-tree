@@ -33,7 +33,7 @@ function closeSearch(){picker.value?.close();}
 defineExpose({saving:savingTags,closeSearch});
 </script>
 <template>
-    <section v-if="media" class="lightbox-people" aria-label="People in this photo">
+    <section v-if="media" class="lightbox-people" :class="{ 'is-readonly': !canEdit }" aria-label="People in this photo">
       <div v-if="taggable" class="lightbox-tag-editor">
         <div class="lightbox-tag-field">
           <div class="photo-tag-primary">

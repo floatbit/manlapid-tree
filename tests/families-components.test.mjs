@@ -145,16 +145,33 @@ console.log(
  family.value={people:relatives,links:[{type:'child',a:'r1',b:'r7'}],milestones:[{id:'w',title:'Family wedding',date:'1970-01-01',participants:['r0'],photos:['wedding.jpg']}],albums:[]};
  bindRuntime({displayName:p=>p.name,initials:p=>p.name[0],familyDateYear:d=>Number(String(d).slice(0,4)),familyDateLabel:d=>d,openPhotoLightbox:(...args)=>opened.push(args)});
  const timeline=mount(FamilyTimeline,{props:{group:{id:'f',parents:['r0'],children:relatives.slice(1,7).map(p=>p.id)},visibleIds:['r7'],onSelect:id=>selected.push(id)}});
- assert.equal(timeline.findAll('.family-mini-events li').length,6);
- await timeline.find('.family-mini-more').trigger('click');
- assert.equal(timeline.findAll('.family-mini-events li').length,9,'Visible grandchildren are included in the timeline');
- await timeline.findAll('.family-mini-event').at(-1).trigger('click');
+ assert.equal(timeline.findAll('.family-year-event').length,9,'All visible family moments appear on the year axis');
+ await timeline.findAll('.family-year-event').at(-1).trigger('click');
  assert.deepEqual(opened[0],[['wedding.jpg'],0,'Family wedding']);
- await timeline.find('.family-mini-portraits button').trigger('click');
+ await timeline.find('.family-year-event').trigger('click');
  assert.deepEqual(selected,['r0']);
+ await timeline.find('.family-year-event').trigger('focus');
+ assert(timeline.find('.family-years-preview').text().includes('Relative 0 was born'));
+ assert(timeline.findAll('.family-years-tick').length>=2,'Year axis has endpoint labels');
  await timeline.findAll('.family-mini-scope button')[1].trigger('click');
- assert.equal(timeline.findAll('.family-mini-more').length,0,'All generations needs no expansion button');
- assert.equal(timeline.findAll('.family-mini-events li').length,9,'All generations includes recorded descendants');
+ assert.equal(timeline.findAll('.family-year-event').length,9,'All generations includes recorded descendants');
  timeline.unmount();
  console.log('Passed: compact family timeline scope, expansion, portrait selection and album opening.');
+}
+
+{
+ const {default:FamilyMigrations}=await import('../src/components/FamilyMigrations.vue');
+ const selected=[];
+ const people=[{id:'a',name:'Alex',birthday:'1980',birthplace:'Paris, France',location:'Toronto, Canada'},{id:'b',name:'Beth',birthday:'1990',birthplace:'Paris, France',location:'London, UK'}];
+ const migrations=mount(FamilyMigrations,{props:{people,onSelect:id=>selected.push(id)}});
+ assert.equal(migrations.findAll('.family-migration-lane').length,2);
+ await migrations.find('.family-migration-hubs button').trigger('click');
+ assert(migrations.find('.family-migration-shared-details').text().includes('Alex'));
+ assert(migrations.find('.family-migration-shared-details').text().includes('Beth'));
+ await migrations.findAll('.family-mini-scope button')[1].trigger('click');
+ assert.equal(migrations.findAll('.family-migration-place-card').length,3);
+ await migrations.find('.family-migration-place-card button').trigger('click');
+ assert.deepEqual(selected,['a']);
+ migrations.unmount();
+ console.log('Passed: migration view switching, shared-place selection and person navigation.');
 }

@@ -46,12 +46,7 @@ async function open(event) {
     });
     document.querySelectorAll('.anniversary-highlight').forEach(item => item.classList.remove('anniversary-highlight'));
     entry.classList.add('anniversary-highlight');
-    if (!reduced) {
-      entry.animate([
-        { boxShadow: '0 0 0 4px #91aa7b99' },
-        { boxShadow: '0 0 0 8px #91aa7b00' },
-      ], { duration: 1800, iterations: 2 });
-    }
+    setTimeout(() => entry.classList.remove('anniversary-highlight'), 5000);
     return;
   }
   if (event.personId) {
